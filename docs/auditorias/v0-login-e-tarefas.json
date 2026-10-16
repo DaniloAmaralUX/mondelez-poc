@@ -1,0 +1,43 @@
+{
+  "title": "Rotinas Operacionais — Login e Tarefas do posto",
+  "project": "Mondelez · Gestão de Rotinas Operacionais",
+  "date": "2026-10-16",
+  "version": "v0",
+  "macro_bets": [
+    { "category": "velocity", "description": "Entrar no tablet compartilhado em segundos", "alignment": "moderate" }
+  ],
+  "jtbd": [
+    { "user": "Operador", "situation": "trocando de pessoa no tablet do posto", "motivation": "entrar sem digitar muito", "outcome": "começar a registrar como ele mesmo" },
+    { "user": "Supervisora", "situation": "conferindo o posto no meio do turno", "motivation": "ver o que está feito, atrasado e por vir", "outcome": "decidir onde ir" }
+  ],
+  "visual_hierarchy": {
+    "title": "Visual Hierarchy",
+    "checks": [
+      { "label": "Login: ação primária", "status": "pass", "notes": "Botão Entrar em largura total." },
+      { "label": "Login: PIN", "status": "warn", "notes": "PIN em campo de senha comum; com 4 dígitos, slots grandes leem melhor e permitem envio automático." },
+      { "label": "Tarefas: densidade", "status": "pass", "notes": "Tabela do template adequada à liderança." },
+      { "label": "Tarefas: seleção sem uso", "status": "warn", "notes": "Checkboxes de seleção sem ação em massa geram ruído." },
+      { "label": "Tarefas: ordenação", "status": "pass", "notes": "Atrasadas primeiro." },
+      { "label": "Tarefas: concluídas", "status": "warn", "notes": "Feitas vão para a página 2; falta um resumo do posto no topo." }
+    ]
+  },
+  "visual_style": {
+    "title": "Visual Style",
+    "checks": [
+      { "label": "Fidelidade", "status": "pass", "notes": "Login v2 e Tasks preservados." },
+      { "label": "Status na tabela", "status": "pass", "notes": "Badges coloridos por estado." }
+    ]
+  },
+  "accessibility": {
+    "title": "Accessibility",
+    "checks": [
+      { "label": "Rótulos de formulário", "status": "pass", "notes": "Field + Label em todos os campos." },
+      { "label": "Erros", "status": "pass", "notes": "FieldError junto do campo." },
+      { "label": "Alvos de toque no login", "status": "warn", "notes": "Inputs de 32 px." }
+    ]
+  },
+  "priority_fixes": [
+    { "rank": 1, "title": "PIN com InputOTP", "description": "Quatro slots grandes, teclado numérico e envio ao completar.", "framework_reference": "22-patterns-cognitive-load.md → Simplified Forms" },
+    { "rank": 2, "title": "Resumo do posto e sem seleção", "description": "Contadores por estado acima da tabela; remover a coluna de seleção.", "framework_reference": "20-patterns-chunking.md" }
+  ]
+}

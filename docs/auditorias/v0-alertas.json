@@ -1,0 +1,55 @@
+{
+  "title": "Rotinas Operacionais — Alertas (supervisão)",
+  "project": "Mondelez · Gestão de Rotinas Operacionais",
+  "date": "2026-10-16",
+  "version": "v0",
+  "macro_bets": [
+    { "category": "accuracy", "description": "Desvio tratado em minutos, com responsável e histórico auditável", "alignment": "strong" }
+  ],
+  "jtbd": [
+    { "user": "Supervisora de produção", "situation": "andando pela linha com tablet ou no notebook da sala", "motivation": "ver o desvio mais urgente e agir", "outcome": "zero surpresa no fim do turno e prova de tratamento" }
+  ],
+  "visual_hierarchy": {
+    "title": "Visual Hierarchy",
+    "checks": [
+      { "label": "Ordem por urgência", "status": "pass", "notes": "Abertos e críticos primeiro, depois idade." },
+      { "label": "Uso do topo do detalhe", "status": "fail", "notes": "A linha do tempo ocupa 320–420 px e fica quase vazia quando o alerta é recente; as ações ficam abaixo da dobra." },
+      { "label": "Ação primária", "status": "warn", "notes": "Assumir e Resolver ficam na aba Tratamento, a dois toques." },
+      { "label": "Leitura do card", "status": "warn", "notes": "'Supervisão, sem responsável ?' soa como erro; o '?' no lugar do avatar confunde." },
+      { "label": "Estados", "status": "pass", "notes": "Badge de status com cor por estado." },
+      { "label": "Idade do alerta", "status": "pass", "notes": "Idade e horário de criação no card." }
+    ]
+  },
+  "visual_style": {
+    "title": "Visual Style",
+    "checks": [
+      { "label": "Fidelidade ao Logistics", "status": "pass", "notes": "Lista + detalhe + Sheet no tablet." },
+      { "label": "Metáfora do mapa", "status": "warn", "notes": "Funciona, mas o histórico de ações é melhor lido como timeline vertical." },
+      { "label": "Movimento", "status": "warn", "notes": "Alerta muda de estado e reordena sem transição; o card some/aparece de repente." },
+      { "label": "Indicador de status", "status": "warn", "notes": "Anel de progresso pequeno (12 px) é o único sinal no card." }
+    ]
+  },
+  "accessibility": {
+    "title": "Accessibility",
+    "checks": [
+      { "label": "Botões só com ícone", "status": "pass", "notes": "Copiar e Filtros com aria-label." },
+      { "label": "Alvos de toque", "status": "warn", "notes": "Botões sm de 28 px nas ações de tratamento." },
+      { "label": "Sheet com título", "status": "pass", "notes": "SheetTitle sr-only." },
+      { "label": "Contraste da faixa âmbar", "status": "pass", "notes": "Cores do template." }
+    ]
+  },
+  "navigation": {
+    "title": "Navigation",
+    "checks": [
+      { "label": "Contagem de alertas abertos", "status": "fail", "notes": "Nem o item Alertas da sidebar nem o botão de sino mostram quantos estão abertos." },
+      { "label": "Aviso de novo alerta", "status": "fail", "notes": "A liderança só descobre um alerta novo abrindo a tela." },
+      { "label": "Itens indisponíveis no menu", "status": "warn", "notes": "Oito itens 'em breve' disputam atenção com os disponíveis." }
+    ]
+  },
+  "priority_fixes": [
+    { "rank": 1, "title": "Ações de tratamento sempre à mão", "description": "Barra fixa no rodapé do detalhe com Assumir / Registrar ação / Resolver.", "framework_reference": "22-patterns-cognitive-load.md → Simplified Forms" },
+    { "rank": 2, "title": "Contagem e aviso de alerta novo", "description": "Badge com abertos no menu e no sino; toast para a liderança quando surge alerta.", "framework_reference": "25-patterns-feedback.md → Notifications" },
+    { "rank": 3, "title": "Histórico como timeline vertical", "description": "Trocar o mapa do turno por cabeçalho compacto e timeline de eventos no corpo.", "framework_reference": "23-patterns-visual-hierarchy.md → Whitespace" },
+    { "rank": 4, "title": "Itens 'em breve' agrupados", "description": "Um único grupo recolhido 'Próximas telas'.", "framework_reference": "31-patterns-navigation.md → Priority Navigation" }
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "title": "Rotinas Operacionais — Minha Rotina (operador, tablet)",
+  "project": "Mondelez · Gestão de Rotinas Operacionais",
+  "date": "2026-10-16",
+  "version": "v0",
+  "macro_bets": [
+    { "category": "velocity", "description": "Template reaproveitado 1:1 para chegar rápido a uma demo navegável", "alignment": "strong" },
+    { "category": "accuracy", "description": "Nenhum registro obrigatório esquecido; atraso vira alerta", "alignment": "moderate" }
+  ],
+  "jtbd": [
+    { "user": "Operador de embalagem", "situation": "no início e ao longo do turno, com luva e mãos ocupadas", "motivation": "saber o que fazer agora e registrar em poucos toques", "outcome": "terminar o turno sem pendência nem cobrança posterior" }
+  ],
+  "visual_hierarchy": {
+    "title": "Visual Hierarchy",
+    "checks": [
+      { "label": "Ação primária evidente", "status": "fail", "notes": "A próxima tarefa divide o mesmo peso visual com 'Agora' e 'Turno' nos três cards de resumo; o título trunca ('Sobrepeso...') e não há botão de ação." },
+      { "label": "Títulos distintos", "status": "pass", "notes": "Saudação, Tarefas, Rotinas e Registros rápidos com escala clara." },
+      { "label": "Agrupamento por proximidade", "status": "warn", "notes": "Tarefas, Rotinas e Registros rápidos repetem a mesma informação em três formatos." },
+      { "label": "Fluxo de leitura", "status": "warn", "notes": "No retrato a coluna direita (calendário) cai para o fim; a passagem do turno anterior fica abaixo de tudo." },
+      { "label": "Peso do estado atrasado", "status": "pass", "notes": "Badge destrutivo 'Atrasada' destaca bem." },
+      { "label": "Uso do espaço", "status": "fail", "notes": "Calendário mensal ocupa o topo da coluna direita sem servir a nenhuma tarefa do turno." },
+      { "label": "Redundância de rótulos", "status": "warn", "notes": "Linha da tarefa repete o nome do módulo no título e no badge (ex.: 'Sobrepeso, refugo e reprocesso' duas vezes)." }
+    ]
+  },
+  "visual_style": {
+    "title": "Visual Style",
+    "checks": [
+      { "label": "Consistência de espaçamento", "status": "pass", "notes": "Ritmo do template mantido." },
+      { "label": "Paleta e tema", "status": "pass", "notes": "Tema Linear aplicado por preset; acento violeta único." },
+      { "label": "Tipografia", "status": "pass", "notes": "Inter, escala do template." },
+      { "label": "Ícones", "status": "pass", "notes": "Lucide em todo o app." },
+      { "label": "Movimento", "status": "warn", "notes": "Números e listas mudam sem transição quando o relógio avança ou uma tarefa é concluída; mudança brusca de lista." },
+      { "label": "Estados visuais de status", "status": "warn", "notes": "Status só em badges de texto; não há indicador compacto e consistente (ponto + rótulo) entre telas." }
+    ]
+  },
+  "accessibility": {
+    "title": "Accessibility",
+    "checks": [
+      { "label": "Alvos de toque ≥ 44 px", "status": "fail", "notes": "Checkbox de 16 px e botões de 32 px; uso com luva no tablet (doc 09 pede 56 px)." },
+      { "label": "Foco visível", "status": "pass", "notes": "Anel de foco do template." },
+      { "label": "Contraste", "status": "pass", "notes": "muted-foreground do tema ≈ 4,6:1 sobre branco." },
+      { "label": "Rótulos", "status": "pass", "notes": "Checkbox com aria-label do título." },
+      { "label": "Semântica", "status": "pass", "notes": "Seções com h2." },
+      { "label": "Movimento reduzido", "status": "na", "notes": "Sem animações próprias." }
+    ]
+  },
+  "usability": {
+    "title": "Usability",
+    "checks": [
+      { "label": "Prevenção de erro", "status": "fail", "notes": "Tocar o checkbox de tarefa sem formulário conclui na hora, sem confirmação nem desfazer." },
+      { "label": "Feedback de sincronização", "status": "fail", "notes": "RF-07 pede estado de envio visível; só existe dentro do menu de demonstração." },
+      { "label": "Carga cognitiva", "status": "warn", "notes": "Seis cards de rotina com 0% e cinco atalhos repetem a lista de tarefas." },
+      { "label": "Descoberta da próxima ação", "status": "warn", "notes": "'Registrar agora' fica na sidebar e no topo da lista, mas não no card da próxima tarefa." }
+    ]
+  },
+  "priority_fixes": [
+    { "rank": 1, "title": "Card 'Fazer agora' dominante", "description": "Próxima tarefa como bloco principal com prazo, estado e botão grande; contadores viram informação secundária.", "framework_reference": "23-patterns-visual-hierarchy.md → Size and Scale" },
+    { "rank": 2, "title": "Alvos de toque de 44 px no fluxo do operador", "description": "Linhas de tarefa inteiras tocáveis e botões grandes; remover o checkbox como ação.", "framework_reference": "27-patterns-accessibility.md → Touch Targets" },
+    { "rank": 3, "title": "Desfazer em conclusões rápidas", "description": "Concluir tarefa sem formulário com toast 'Desfazer' (Sonner).", "framework_reference": "26-patterns-error-handling.md → Undo/Redo" },
+    { "rank": 4, "title": "Linha do turno no lugar do calendário", "description": "Timeline vertical do turno com o que foi feito, o que está aberto e o que vem; substitui o calendário mensal e os cards de rotina.", "framework_reference": "22-patterns-cognitive-load.md → Chunking" },
+    { "rank": 5, "title": "Estado de envio sempre visível", "description": "Indicador de sincronização no header em todas as telas.", "framework_reference": "25-patterns-feedback.md → System Status" }
+  ],
+  "notes": "A v0 cumpre o fluxo, mas o template de produtividade pessoal distribui atenção por igual; o operador precisa de uma ação dominante."
+}

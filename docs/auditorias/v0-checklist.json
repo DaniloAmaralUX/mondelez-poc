@@ -1,0 +1,61 @@
+{
+  "title": "Rotinas Operacionais — Checklist (PPLI e Centerlining)",
+  "project": "Mondelez · Gestão de Rotinas Operacionais",
+  "date": "2026-10-16",
+  "version": "v0",
+  "macro_bets": [
+    { "category": "accuracy", "description": "Registro rastreável, NC justificada, centerline dentro da faixa", "alignment": "strong" },
+    { "category": "velocity", "description": "Registrar em poucos toques no ponto de uso", "alignment": "moderate" }
+  ],
+  "jtbd": [
+    { "user": "Operador de embalagem", "situation": "ao lado da Loeschpack, no início do turno", "motivation": "conferir limpeza, lubrificação e parâmetros e registrar o resultado", "outcome": "máquina liberada com prova de que o padrão foi seguido" }
+  ],
+  "visual_hierarchy": {
+    "title": "Visual Hierarchy",
+    "checks": [
+      { "label": "Ação primária alcançável", "status": "fail", "notes": "'Registrar checklist' fica no topo; com 9 itens no retrato, some ao rolar." },
+      { "label": "Progresso visível", "status": "warn", "notes": "Contagem só nas abas (9/9); não há barra de progresso junto da ação final." },
+      { "label": "Prioridade do conteúdo", "status": "fail", "notes": "Formulário/versão, abertura, prazo e equipamento ocupam a primeira dobra antes do primeiro item." },
+      { "label": "Prévia do documento", "status": "warn", "notes": "No retrato a prévia vai para baixo do formulário e dobra a altura da página; é útil na revisão, não durante o preenchimento." },
+      { "label": "Item crítico distinto", "status": "pass", "notes": "Texto 'item crítico' abaixo do item." },
+      { "label": "Situação por item", "status": "pass", "notes": "Coluna Situação com NC em destrutivo." }
+    ]
+  },
+  "visual_style": {
+    "title": "Visual Style",
+    "checks": [
+      { "label": "Consistência com o template", "status": "pass", "notes": "Composição da Invoice preservada." },
+      { "label": "Controles de resposta", "status": "warn", "notes": "C/NC/NA em ToggleGroup sm (28 px); estado selecionado neutro, sem cor por resultado." },
+      { "label": "Campos numéricos", "status": "warn", "notes": "Input numérico sem incremento e sem mostrar a posição do valor na faixa." },
+      { "label": "Movimento", "status": "warn", "notes": "Campo de justificativa surge sem transição ao marcar NC." },
+      { "label": "Espaçamento do papel", "status": "pass", "notes": "Ajustado para 9 itens caberem na folha." }
+    ]
+  },
+  "accessibility": {
+    "title": "Accessibility",
+    "checks": [
+      { "label": "Alvos de toque", "status": "fail", "notes": "Toggle de 28 px e input de 32 px." },
+      { "label": "Rótulos", "status": "pass", "notes": "Cada grupo e campo com aria-label." },
+      { "label": "Erros junto do campo", "status": "pass", "notes": "FieldError na linha do item e rolagem até o primeiro erro." },
+      { "label": "Estado inválido", "status": "pass", "notes": "aria-invalid nos controles." },
+      { "label": "Teclado numérico", "status": "pass", "notes": "inputMode decimal." }
+    ]
+  },
+  "forms": {
+    "title": "Forms",
+    "checks": [
+      { "label": "Divisão em etapas", "status": "warn", "notes": "Abas filtram grupos, mas o fluxo natural é Limpeza → Lubrificação → Centerline → revisar; um stepper guia melhor." },
+      { "label": "Atalho de preenchimento", "status": "pass", "notes": "'Restantes conformes' acelera o caso comum." },
+      { "label": "Autosave", "status": "pass", "notes": "Rascunho salvo a cada resposta." },
+      { "label": "Validação condicional", "status": "pass", "notes": "NC e centerline fora da faixa exigem justificativa (RN-02)." },
+      { "label": "Estado já concluído", "status": "fail", "notes": "Tarefa concluída antes do protótipo (pré-partida do seed) abre em modo de preenchimento." }
+    ]
+  },
+  "priority_fixes": [
+    { "rank": 1, "title": "Barra de ação fixa no rodapé", "description": "Progresso, 'Restantes conformes' e 'Registrar' sempre visíveis.", "framework_reference": "25-patterns-feedback.md → Progress Indicators" },
+    { "rank": 2, "title": "Stepper por grupo com revisão final", "description": "Uma etapa por grupo e a prévia do documento como última etapa.", "framework_reference": "22-patterns-cognitive-load.md → Steppers and Wizards" },
+    { "rank": 3, "title": "Controles de 44 px", "description": "C/NC/NA maiores, com cor do resultado; campo numérico com −/+ e indicador de faixa.", "framework_reference": "27-patterns-accessibility.md → Touch Targets" },
+    { "rank": 4, "title": "Metadados compactos", "description": "Formulário, janela e equipamento em uma linha de resumo.", "framework_reference": "21-patterns-progressive-disclosure.md" },
+    { "rank": 5, "title": "Tarefa concluída sem registro abre em consulta", "description": "Corrigir o modo quando a tarefa já está feita.", "framework_reference": "11-checklist-fidelity.md → Component States" }
+  ]
+}
