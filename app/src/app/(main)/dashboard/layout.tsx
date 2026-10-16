@@ -10,8 +10,8 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/s
 import { users } from "@/data/users";
 import { getPreference } from "@/server/server-actions";
 
-import { AccountSwitcher } from "./_components/header/account-switcher";
 import { AlertWatcher } from "./_components/alert-watcher";
+import { AccountSwitcher } from "./_components/header/account-switcher";
 import { DemoMenu } from "./_components/header/demo-menu";
 import { LayoutControls } from "./_components/header/layout-controls";
 import { SearchDialog } from "./_components/header/search-dialog";

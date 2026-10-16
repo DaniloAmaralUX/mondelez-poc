@@ -126,8 +126,7 @@ export function Tasks({ data }: TasksProps) {
       </Table>
       <div className="flex flex-col gap-3 border-t px-4 py-4 md:flex-row md:items-center md:justify-between">
         <div className="text-muted-foreground text-sm">
-          {table.getFilteredSelectedRowModel().rows.length} de {table.getFilteredRowModel().rows.length} tarefa(s)
-          selecionada(s).
+          {table.getFilteredRowModel().rows.length} tarefa(s) no filtro.
         </div>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end sm:gap-6 lg:gap-8">
           <div className="flex items-center gap-2">

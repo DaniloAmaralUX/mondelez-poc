@@ -4,22 +4,27 @@ import * as React from "react";
 
 import { cn } from "cn";
 import { Bell, Search, SlidersHorizontal } from "lucide-react";
+import { motion } from "motion/react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Status, StatusIndicator, StatusLabel } from "@/components/ui/status";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { localRepository } from "@/data/repository";
 import type { Alerta, EstadoAlerta } from "@/domain/types";
 import { formatarHora } from "@/lib/format";
 import { ICONE_MODULO } from "@/lib/modulo-icones";
+import { getInitials } from "@/lib/utils";
 import { useAgora } from "@/stores/session/session-store";
 
-import { getProgressRingClass, STATUS_LABEL, statusVisual } from "./alerta-estilos";
+import { STATUS_LABEL, STATUS_VARIANTE, statusVisual } from "./alerta-estilos";
 import { idadeDoAlerta, progressoDoAlerta } from "./idade";
 
 type Filtro = "todos" | EstadoAlerta;
+
+const REORDENAR = { duration: 0.2, ease: [0.23, 1, 0.32, 1] } as const;
 
 const FILTROS: { value: Filtro; label: string }[] = [
   { value: "todos", label: "Todos" },
@@ -43,7 +48,6 @@ type AlertListProps = {
 
 function AlertCard({ alerta, active, onSelectAlert, agora }: AlertCardProps) {
   const progresso = progressoDoAlerta(alerta, agora);
-  const angle = (progresso / 100) * 360;
   const status = statusVisual(alerta);
   const Icon = ICONE_MODULO[alerta.moduloSlug] ?? Bell;
   const posto = localRepository.posto(alerta.postoId);
@@ -67,14 +71,10 @@ function AlertCard({ alerta, active, onSelectAlert, agora }: AlertCardProps) {
       <div className="flex items-center justify-between">
         <div>#{alerta.regra}</div>
 
-        <div className="flex items-center gap-1">
-          <div style={{ "--angle": `${angle}deg` } as React.CSSProperties} className={getProgressRingClass(status)}>
-            <div className="grid size-2 place-items-center rounded-full bg-card">
-              <div className="size-1 rounded-full bg-current" />
-            </div>
-          </div>
-          <div className="text-muted-foreground text-xs">{STATUS_LABEL[status]}</div>
-        </div>
+        <Status variant={STATUS_VARIANTE[status]}>
+          <StatusIndicator className={status === "critico" ? undefined : "before:hidden"} />
+          <StatusLabel>{STATUS_LABEL[status]}</StatusLabel>
+        </Status>
       </div>
 
       <div className="flex items-center justify-between">
@@ -90,11 +90,11 @@ function AlertCard({ alerta, active, onSelectAlert, agora }: AlertCardProps) {
 
         <div className="flex items-center gap-1.5 text-right">
           <div className="flex flex-col gap-0.5">
-            <div className="font-medium text-xs leading-none">Supervisão,</div>
-            <div className="text-muted-foreground text-xs">{responsavel?.nome ?? "sem responsável"}</div>
+            <div className="font-medium text-xs leading-none">Responsável,</div>
+            <div className="text-muted-foreground text-xs">{responsavel?.nome ?? "ninguém assumiu"}</div>
           </div>
           <div className="grid size-7 place-items-center rounded-xs text-xs outline">
-            {responsavel ? responsavel.nome.slice(0, 1) : "?"}
+            {responsavel ? getInitials(responsavel.nome) : "—"}
           </div>
         </div>
       </div>
@@ -184,13 +184,15 @@ export function AlertList({ alertas, selectedAlertId, onSelectAlert }: AlertList
               </div>
             )}
             {visiveis.map((alerta) => (
-              <AlertCard
-                active={alerta.id === selectedAlertId}
-                key={alerta.id}
-                alerta={alerta}
-                agora={agora}
-                onSelectAlert={onSelectAlert}
-              />
+              // Reordenação por estado e criticidade desliza em vez de pular (oportunidades de movimento, item 4).
+              <motion.div key={alerta.id} layout="position" transition={REORDENAR}>
+                <AlertCard
+                  active={alerta.id === selectedAlertId}
+                  alerta={alerta}
+                  agora={agora}
+                  onSelectAlert={onSelectAlert}
+                />
+              </motion.div>
             ))}
           </div>
         </ScrollArea>

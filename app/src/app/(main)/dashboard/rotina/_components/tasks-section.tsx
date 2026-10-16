@@ -69,12 +69,7 @@ export function TasksSection() {
           {items.length === 0 && <li className="p-4 text-muted-foreground text-sm">{VAZIO[filtro]}</li>}
           <AnimatePresence initial={false}>
             {items.map((tarefa) => (
-              <motion.li
-                key={tarefa.id}
-                layout="position"
-                exit={{ opacity: 0, scale: 0.98 }}
-                transition={SAIDA}
-              >
+              <motion.li key={tarefa.id} layout="position" exit={{ opacity: 0, scale: 0.98 }} transition={SAIDA}>
                 <LinhaTarefa tarefa={tarefa} agora={agora} onConcluir={() => concluir(tarefa)} />
               </motion.li>
             ))}
@@ -86,15 +81,7 @@ export function TasksSection() {
 }
 
 /** Linha inteira tocável (≥ 56 px); a ação fica explícita no fim da linha, nunca num checkbox. */
-function LinhaTarefa({
-  tarefa,
-  agora,
-  onConcluir,
-}: {
-  tarefa: TarefaInstancia;
-  agora: Date;
-  onConcluir: () => void;
-}) {
+function LinhaTarefa({ tarefa, agora, onConcluir }: { tarefa: TarefaInstancia; agora: Date; onConcluir: () => void }) {
   const Icone = ICONE_MODULO[tarefa.moduloSlug] ?? LayoutGrid;
   const feita = concluida(tarefa);
   const conteudo = (
@@ -119,7 +106,10 @@ function LinhaTarefa({
       <Link
         prefetch={false}
         href={hrefDaTarefa(tarefa)}
-        className={cn(linha, "transition-colors hover:bg-muted/50 focus-visible:bg-muted/50 focus-visible:outline-none")}
+        className={cn(
+          linha,
+          "transition-colors hover:bg-muted/50 focus-visible:bg-muted/50 focus-visible:outline-none",
+        )}
       >
         {conteudo}
         <ChevronRight className="size-4 shrink-0 text-muted-foreground" aria-hidden />

@@ -15,7 +15,7 @@ export function useConcluirTarefa() {
   const desfazerConclusao = useSessionStore((s) => s.desfazerConclusao);
 
   return (tarefa: TarefaInstancia) => {
-    if (tarefa.formularioId || tarefa.rota) {
+    if (temTela(tarefa)) {
       router.push(hrefDaTarefa(tarefa));
       return;
     }
@@ -28,5 +28,5 @@ export function useConcluirTarefa() {
 }
 
 export function temTela(tarefa: TarefaInstancia) {
-  return Boolean(tarefa.formularioId || tarefa.rota);
+  return tarefa.formularioId !== undefined || tarefa.rota !== undefined;
 }

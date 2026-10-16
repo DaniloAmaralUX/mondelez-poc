@@ -8,6 +8,7 @@ import { Bell, Check, ListChecks, LogOut, MapPin } from "lucide-react";
 import { toast } from "sonner";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,6 +17,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { localRepository } from "@/data/repository";
 import { getInitials } from "@/lib/utils";
 import { useSessionStore } from "@/stores/session/session-store";
 
@@ -40,7 +42,7 @@ export function AccountSwitcher({
   const setActiveUser = (user: (typeof users)[number]) => {
     if (user.id === usuarioId) return;
     entrarComo(user.id);
-    toast(`Agora com ${user.name}`, { description: user.role });
+    toast(`Agora com ${user.name}`, { description: localRepository.usuario(user.id)?.cargo });
   };
 
   const encerrar = () => {
@@ -54,11 +56,14 @@ export function AccountSwitcher({
 
   return (
     <DropdownMenu>
+      {/* Gatilho focável e com nome acessível: o Avatar sozinho não recebia teclado (UI Audit, acessibilidade). */}
       <DropdownMenuTrigger asChild>
-        <Avatar className="size-8 rounded-lg">
-          <AvatarImage src={activeUser.avatar || undefined} alt={activeUser.name} />
-          <AvatarFallback>{getInitials(activeUser.name)}</AvatarFallback>
-        </Avatar>
+        <Button variant="ghost" size="icon" className="size-8 rounded-lg p-0" aria-label={`Trocar pessoa (agora: ${activeUser.name})`}>
+          <Avatar className="size-8 rounded-lg">
+            <AvatarImage src={activeUser.avatar || undefined} alt="" />
+            <AvatarFallback>{getInitials(activeUser.name)}</AvatarFallback>
+          </Avatar>
+        </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="min-w-56 space-y-1 rounded-lg" side="bottom" align="end" sideOffset={4}>
         {users.map((user) => (

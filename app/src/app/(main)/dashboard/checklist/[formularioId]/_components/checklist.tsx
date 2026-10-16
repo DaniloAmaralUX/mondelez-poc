@@ -203,7 +203,8 @@ function AvisoDoModo({
         {registro.naoConformes > 0 ? <TriangleAlert /> : <CircleCheck />}
         <AlertTitle>
           Registrado às {formatarHora(new Date(registro.criadoEm))} por {autor?.nome}
-          {registro.naoConformes > 0 && ` · ${registro.naoConformes} não conforme${registro.naoConformes > 1 ? "s" : ""}`}
+          {registro.naoConformes > 0 &&
+            ` · ${registro.naoConformes} não conforme${registro.naoConformes > 1 ? "s" : ""}`}
         </AlertTitle>
         <AlertDescription>
           {registro.syncStatus === "sincronizado"
@@ -216,7 +217,8 @@ function AvisoDoModo({
 
   if (modo === "consulta") {
     let texto = "Este checklist não tem tarefa no turno atual deste posto.";
-    if (tarefa?.concluidaEm) texto = `Tarefa concluída às ${formatarHora(tarefa.concluidaEm)}, antes do registro detalhado.`;
+    if (tarefa?.concluidaEm)
+      texto = `Tarefa concluída às ${formatarHora(tarefa.concluidaEm)}, antes do registro detalhado.`;
     else if (tarefa?.futura) texto = `A janela deste checklist abre às ${formatarHora(tarefa.abre)}.`;
     else if (tarefa && !perfilOperacao) texto = "Visualização da liderança: o registro é feito pela operação do posto.";
     return (

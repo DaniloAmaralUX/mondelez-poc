@@ -18,6 +18,14 @@ export const STATUS_LABEL: Record<StatusVisual, string> = {
   resolvido: "Resolvido",
 };
 
+/** Variante do componente Status para cada estado visual. */
+export const STATUS_VARIANTE = {
+  critico: "error",
+  atencao: "warning",
+  tratamento: "info",
+  resolvido: "success",
+} as const satisfies Record<StatusVisual, "error" | "warning" | "info" | "success">;
+
 export const progressRingClasses: Record<StatusVisual, string> = {
   critico: "text-destructive",
   atencao: "text-amber-500",

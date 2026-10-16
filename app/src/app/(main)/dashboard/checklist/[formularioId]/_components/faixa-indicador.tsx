@@ -28,7 +28,7 @@ export function FaixaIndicador({ faixa, valor }: { faixa: NonNullable<ItemFormul
         >
           <div
             className={cn(
-              "-translate-x-1/2 -translate-y-1/2 absolute top-1/2 left-0 size-3 rounded-full border-2 border-background shadow-xs",
+              "absolute top-1/2 left-0 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-background shadow-xs",
               fora ? "bg-destructive" : "bg-green-600",
             )}
           />

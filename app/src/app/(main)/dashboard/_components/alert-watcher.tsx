@@ -30,8 +30,12 @@ export function AlertWatcher() {
       if (!lideranca) continue;
       const avisar = alerta.criticidade === "critico" ? toast.error : toast.warning;
       avisar(alerta.titulo, {
-        description: alerta.regra === "A-NC" ? "Não conformidade registrada no posto." : "Tarefa obrigatória sem registro.",
-        action: { label: "Ver", onClick: () => router.push(`/dashboard/alertas?alerta=${encodeURIComponent(alerta.id)}`) },
+        description:
+          alerta.regra === "A-NC" ? "Não conformidade registrada no posto." : "Tarefa obrigatória sem registro.",
+        action: {
+          label: "Ver",
+          onClick: () => router.push(`/dashboard/alertas?alerta=${encodeURIComponent(alerta.id)}`),
+        },
       });
     }
   }, [alertas, lideranca, router]);

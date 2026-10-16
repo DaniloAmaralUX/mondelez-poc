@@ -33,10 +33,7 @@ export const ETAPA_REVISAR = "revisar";
 const PRESSAO = "transition-transform duration-150 ease-out active:scale-[0.97]";
 
 function slug(grupo: string) {
-  return grupo
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .toLowerCase();
+  return grupo.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 }
 
 export function etapasDoFormulario(formulario: Formulario) {
@@ -131,11 +128,7 @@ export function ChecklistStepper({
       <fieldset disabled={somenteLeitura} className="min-w-0">
         {etapas.map((e) => (
           <StepperContent key={e.value} value={e.value}>
-            <ChecklistItems
-              itens={e.itens}
-              numeros={numeros}
-              erros={tentadas.has(e.value) ? errosDa(e.itens) : {}}
-            />
+            <ChecklistItems itens={e.itens} numeros={numeros} erros={tentadas.has(e.value) ? errosDa(e.itens) : {}} />
           </StepperContent>
         ))}
       </fieldset>
@@ -148,12 +141,11 @@ export function ChecklistStepper({
       </StepperContent>
 
       {/* Barra fixa: progresso e próxima ação sempre visíveis no tablet (UI Audit, prioridade 1). */}
-      <div className="-mx-4 md:-mx-6 sticky bottom-0 z-10 flex items-center gap-3 border-t bg-background/95 px-4 py-3 backdrop-blur-sm md:px-6">
+      <div className="sticky bottom-0 z-10 -mx-4 flex items-center gap-3 border-t bg-background/95 px-4 py-3 backdrop-blur-sm md:-mx-6 md:px-6">
         <div className="hidden min-w-0 flex-1 flex-col gap-1.5 sm:flex">
           <span className="truncate text-muted-foreground text-xs tabular-nums">
             {resumo.respondidos} de {resumo.total} respondidos
-            {resumo.naoConformes > 0 &&
-              ` · ${resumo.naoConformes} não conforme${resumo.naoConformes > 1 ? "s" : ""}`}
+            {resumo.naoConformes > 0 && ` · ${resumo.naoConformes} não conforme${resumo.naoConformes > 1 ? "s" : ""}`}
           </span>
           <Progress value={(resumo.respondidos / resumo.total) * 100} className="h-1.5 max-w-60" />
         </div>

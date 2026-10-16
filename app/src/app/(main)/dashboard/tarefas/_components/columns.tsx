@@ -3,13 +3,11 @@
 import Link from "next/link";
 
 import type { Column, ColumnDef } from "@tanstack/react-table";
-import { Subscribe } from "@tanstack/react-table";
 import { cn } from "cn";
 import { ArrowDown, ArrowUp, ArrowUpDown, MoreHorizontal, RotateCcw } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -71,41 +69,6 @@ function TitleColumnHeader({ column }: { column: Column<DataTableFeatures, Task,
 }
 
 export const columns: ColumnDef<DataTableFeatures, Task>[] = [
-  {
-    id: "select",
-    header: ({ table }) => (
-      <Subscribe
-        source={table.atoms.rowSelection}
-        selector={() =>
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected() && "indeterminate")
-        }
-      >
-        {(checked) => (
-          <Checkbox
-            checked={checked}
-            onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-            aria-label="Selecionar todas"
-            className="translate-y-0.5"
-          />
-        )}
-      </Subscribe>
-    ),
-    cell: ({ row }) => (
-      <Subscribe source={row.table.atoms.rowSelection} selector={(selection) => Boolean(selection?.[row.id])}>
-        {(checked) => (
-          <Checkbox
-            checked={checked}
-            onCheckedChange={(value) => row.toggleSelected(!!value)}
-            aria-label="Selecionar tarefa"
-            className="translate-y-0.5"
-          />
-        )}
-      </Subscribe>
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
   {
     accessorKey: "janela",
     header: "Janela",

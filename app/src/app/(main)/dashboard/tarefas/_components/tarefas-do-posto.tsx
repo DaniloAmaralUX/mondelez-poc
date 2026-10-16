@@ -1,6 +1,8 @@
 "use client";
 
+import { Status, StatusIndicator, StatusLabel } from "@/components/ui/status";
 import { localRepository } from "@/data/repository";
+import { concluida } from "@/domain/routine-engine";
 import { turnoAtual } from "@/domain/turno";
 import { useTarefas } from "@/hooks/use-turno";
 import { formatarHora } from "@/lib/format";
@@ -27,6 +29,27 @@ export function TarefasDoPosto() {
           {formatarHora(turno.fim)}
           {atrasadas > 0 && ` · ${atrasadas} ${atrasadas === 1 ? "atrasada" : "atrasadas"}`}
         </p>
+      </div>
+      {/* Resumo do posto antes da tabela (UI Audit): onde está o problema sem precisar filtrar. */}
+      <div className="flex flex-wrap gap-2">
+        {[
+          { rotulo: "Atrasadas", n: atrasadas, variante: "error" as const },
+          {
+            rotulo: "Abertas",
+            n: tarefas.filter((t) => !concluida(t) && !t.futura && t.estado !== "atrasada").length,
+            variante: "info" as const,
+          },
+          { rotulo: "Com NC", n: tarefas.filter((t) => t.estado === "com_nc").length, variante: "warning" as const },
+          { rotulo: "Feitas", n: tarefas.filter((t) => t.estado === "feita").length, variante: "success" as const },
+          { rotulo: "Mais tarde", n: tarefas.filter((t) => t.futura).length, variante: "default" as const },
+        ].map((c) => (
+          <Status key={c.rotulo} variant={c.variante}>
+            <StatusIndicator className={c.variante === "error" && c.n > 0 ? undefined : "before:hidden"} />
+            <StatusLabel className="tabular-nums">
+              {c.n} {c.rotulo.toLowerCase()}
+            </StatusLabel>
+          </Status>
+        ))}
       </div>
       <Tasks data={tarefas.map(paraLinha)} />
     </div>

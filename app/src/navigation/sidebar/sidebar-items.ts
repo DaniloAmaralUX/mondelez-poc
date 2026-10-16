@@ -1,11 +1,4 @@
-import {
-  Bell,
-  ClipboardCheck,
-  Construction,
-  type LucideIcon,
-  ListChecks,
-  ListTodo,
-} from "lucide-react";
+import { Bell, ClipboardCheck, Construction, ListChecks, ListTodo, type LucideIcon } from "lucide-react";
 
 export type NavBadge = "new" | "soon";
 
@@ -66,8 +59,16 @@ export const sidebarItems: NavGroup[] = [
         subItems: [
           { id: "checklist-ppli", title: "PPLI e Centerlining", url: "/dashboard/checklist/ppli-l4" },
           { id: "checklist-pre-partida", title: "Pré-partida", url: "/dashboard/checklist/pre-partida-l4" },
-          { id: "checklist-rastreabilidade", title: "Rastreabilidade", url: "/dashboard/checklist/rastreabilidade-envoltorio" },
-          { id: "checklist-manutencao", title: "Manutenção autônoma", url: "/dashboard/checklist/manutencao-autonoma-l4" },
+          {
+            id: "checklist-rastreabilidade",
+            title: "Rastreabilidade",
+            url: "/dashboard/checklist/rastreabilidade-envoltorio",
+          },
+          {
+            id: "checklist-manutencao",
+            title: "Manutenção autônoma",
+            url: "/dashboard/checklist/manutencao-autonoma-l4",
+          },
           { id: "checklist-limpeza", title: "Limpeza semanal", url: "/dashboard/checklist/limpeza-semanal" },
         ],
       },

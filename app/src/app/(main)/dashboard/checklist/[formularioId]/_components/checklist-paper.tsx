@@ -140,7 +140,7 @@ export function ChecklistPaper({ formulario, valores, tarefa, registro }: Checkl
 
       <footer className="absolute right-12.25 bottom-11 left-12.25 grid grid-cols-2 gap-14 text-neutral-500 text-sm leading-relaxed">
         <div>
-          <p>{valores.observacao?.trim() || "Sem observações."}</p>
+          <p>{valores.observacao.trim() || "Sem observações."}</p>
           <p>Dispositivo {registro?.dispositivoId ?? "tablet do posto"}</p>
         </div>
         <div>

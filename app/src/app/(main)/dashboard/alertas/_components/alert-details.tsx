@@ -1,28 +1,34 @@
 "use client";
 
-import * as React from "react";
-
 import Link from "next/link";
 
 import { cn } from "cn";
-import { AlertTriangleIcon, CheckCircle2, Copy, Hand, MessageSquareText, Send, ShieldAlert, Star } from "lucide-react";
+import { AlertTriangleIcon, Copy, MessageSquareText, Send, ShieldAlert, Star } from "lucide-react";
 import { toast } from "sonner";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
+import {
+  Timeline,
+  TimelineConnector,
+  TimelineContent,
+  TimelineDescription,
+  TimelineDot,
+  TimelineHeader,
+  TimelineItem,
+  TimelineTime,
+  TimelineTitle,
+} from "@/components/ui/timeline";
 import { localRepository } from "@/data/repository";
 import type { Alerta } from "@/domain/types";
 import { formatarHora } from "@/lib/format";
 import { getInitials } from "@/lib/utils";
-import { useAgora, useSessionStore, useUsuarioAtual } from "@/stores/session/session-store";
+import { useAgora, useSessionStore } from "@/stores/session/session-store";
 
-import { AlertTimelineMap } from "./alert-timeline-map";
+import { AlertActions } from "./alert-actions";
 import { progressRingClasses, STATUS_LABEL, statusBadgeClasses, statusVisual } from "./alerta-estilos";
 import { idadeDoAlerta } from "./idade";
 
@@ -56,7 +62,7 @@ function useOrigem(alerta: Alerta) {
   return { registro, pessoa };
 }
 
-function AlertOverview({ alerta, onTratar }: { alerta: Alerta; onTratar: () => void }) {
+function AlertOverview({ alerta }: { alerta: Alerta }) {
   const agora = useAgora();
   const status = statusVisual(alerta);
   const { registro, pessoa } = useOrigem(alerta);
@@ -130,12 +136,14 @@ function AlertOverview({ alerta, onTratar }: { alerta: Alerta; onTratar: () => v
         <div className="flex items-start justify-between gap-4">
           <h2 className="font-medium">Detalhes do alerta</h2>
 
-          {alerta.estado !== "resolvido" && (
-            <Button variant="outline" size="sm" onClick={onTratar}>
-              <Hand data-icon="inline-start" />
-              {alerta.estado === "aberto" ? "Assumir" : "Tratar"}
-            </Button>
-          )}
+          <Button asChild variant="outline" size="sm">
+            <Link
+              prefetch={false}
+              href={registro ? `/dashboard/checklist/${registro.formularioId}` : "/dashboard/tarefas"}
+            >
+              {registro ? "Abrir o registro" : "Ver tarefas do posto"}
+            </Link>
+          </Button>
         </div>
 
         <div className="grid grid-cols-2 gap-x-4 gap-y-5 md:grid-cols-[1.35fr_1fr_1.1fr_1.15fr_1fr]">
@@ -208,182 +216,64 @@ function AlertOverview({ alerta, onTratar }: { alerta: Alerta; onTratar: () => v
   );
 }
 
-function AlertTreatment({ alerta }: { alerta: Alerta }) {
-  const usuario = useUsuarioAtual();
-  const tratarAlerta = useSessionStore((s) => s.tratarAlerta);
-  const [texto, setTexto] = React.useState("");
-  const podeTratar = usuario && usuario.perfil !== "operacao";
-
-  if (alerta.estado === "resolvido") {
-    return (
-      <div className="grid h-full place-items-center rounded-md border border-dashed text-muted-foreground text-sm">
-        Alerta resolvido. O histórico fica guardado para auditoria.
-      </div>
-    );
-  }
-
-  if (!podeTratar) {
-    return (
-      <div className="grid h-full place-items-center rounded-md border border-dashed p-4 text-center text-muted-foreground text-sm">
-        O tratamento é feito pela supervisão, gerência ou especialista (RM-09).
-      </div>
-    );
-  }
-
-  function registrar(tipo: "assumir" | "acao" | "resolver") {
-    const descricao =
-      texto.trim() ||
-      { assumir: "Assumiu o tratamento.", acao: "Ação registrada.", resolver: "Desvio tratado e encerrado." }[tipo];
-    if (tipo === "resolver" && !texto.trim()) {
-      toast.error("Descreva a ação que resolveu o desvio");
-      return;
-    }
-    tratarAlerta(alerta.id, tipo, descricao);
-    setTexto("");
-    toast.success({ assumir: "Alerta assumido", acao: "Ação registrada", resolver: "Alerta resolvido" }[tipo], {
-      description: alerta.titulo,
-    });
-  }
-
-  return (
-    <div className="flex flex-col gap-4">
-      <Field className="gap-1">
-        <FieldLabel className="text-xs" htmlFor="acao-alerta">
-          Ação tomada
-        </FieldLabel>
-        <Textarea
-          id="acao-alerta"
-          rows={3}
-          placeholder="O que foi feito no posto?"
-          value={texto}
-          onChange={(e) => setTexto(e.target.value)}
-        />
-        <FieldDescription className="text-xs">
-          Fica no histórico do alerta com seu nome e horário. Para resolver, descreva a ação.
-        </FieldDescription>
-      </Field>
-      <div className="flex flex-wrap gap-2">
-        {alerta.estado === "aberto" && (
-          <Button variant="outline" onClick={() => registrar("assumir")}>
-            <Hand data-icon="inline-start" />
-            Assumir
-          </Button>
-        )}
-        <Button variant="outline" onClick={() => registrar("acao")} disabled={!texto.trim()}>
-          <MessageSquareText data-icon="inline-start" />
-          Registrar ação
-        </Button>
-        <Button onClick={() => registrar("resolver")}>
-          <CheckCircle2 data-icon="inline-start" />
-          Resolver
-        </Button>
-      </div>
-    </div>
-  );
-}
-
+/** Ciclo do alerta como linha do tempo vertical: quem fez o quê e quando (substitui a faixa de 420 px da v0). */
 function AlertHistory({ alerta }: { alerta: Alerta }) {
-  return (
-    <div className="flex flex-col gap-4">
-      {alerta.acoes.map((acao) => {
-        const autor = acao.usuarioId ? localRepository.usuario(acao.usuarioId) : undefined;
-        return (
-          <div key={`${acao.tipo}-${acao.em}`} className="flex items-start gap-3">
-            <Avatar className="size-8 after:rounded-sm">
-              <AvatarFallback className="rounded-sm text-xs">{autor ? getInitials(autor.nome) : "RO"}</AvatarFallback>
-            </Avatar>
-            <div className="flex min-w-0 flex-col gap-1">
-              <div className="text-sm leading-none">
-                <span className="font-medium">{ACAO_LABEL[acao.tipo]}</span>
-                <span className="text-muted-foreground"> · {formatarHora(new Date(acao.em))}</span>
-              </div>
-              <p className="text-muted-foreground text-sm">
-                {acao.texto}
-                {autor && ` · ${autor.nome}`}
-              </p>
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-function AlertOrigin({ alerta }: { alerta: Alerta }) {
-  const { registro } = useOrigem(alerta);
-  const formulario = registro ? localRepository.formulario(registro.formularioId) : undefined;
+  const eventos = [
+    { id: "criado", titulo: "Alerta gerado", texto: alerta.descricao, em: alerta.criadoEm, autor: undefined },
+    ...alerta.acoes.map((acao) => ({
+      id: `${acao.tipo}-${acao.em}`,
+      titulo: ACAO_LABEL[acao.tipo],
+      texto: acao.texto,
+      em: new Date(acao.em),
+      autor: acao.usuarioId ? localRepository.usuario(acao.usuarioId) : undefined,
+    })),
+  ];
 
   return (
-    <div className="flex flex-col items-start gap-3 text-sm">
-      <p className="text-muted-foreground">
-        {registro
-          ? `Registro ${registro.id} de ${formulario?.titulo}, versão ${registro.versaoFormulario}, às ${formatarHora(new Date(registro.criadoEm))}.`
-          : "Tarefa obrigatória do posto que não teve registro até o fim da janela."}
-      </p>
-      <Button asChild variant="outline" size="sm">
-        <Link prefetch={false} href={registro ? `/dashboard/checklist/${registro.formularioId}` : "/dashboard/tarefas"}>
-          {registro ? "Abrir o registro" : "Ver tarefas do posto"}
-        </Link>
-      </Button>
-    </div>
+    <section className="flex flex-col gap-4">
+      <h2 className="font-medium">Histórico</h2>
+      <Timeline activeIndex={alerta.estado === "resolvido" ? eventos.length : eventos.length - 1} className="gap-5">
+        {eventos.map((evento) => (
+          <TimelineItem key={evento.id}>
+            <TimelineDot />
+            <TimelineConnector />
+            <TimelineContent>
+              <TimelineHeader>
+                <TimelineTime dateTime={evento.em.toISOString()} className="tabular-nums">
+                  {formatarHora(evento.em)}
+                </TimelineTime>
+                <TimelineTitle>{evento.titulo}</TimelineTitle>
+              </TimelineHeader>
+              <TimelineDescription>
+                {evento.texto}
+                {evento.autor && ` · ${evento.autor.nome}`}
+              </TimelineDescription>
+            </TimelineContent>
+          </TimelineItem>
+        ))}
+      </Timeline>
+    </section>
   );
 }
 
 export function AlertDetails({ alerta }: AlertDetailsProps) {
-  const [aba, setAba] = React.useState("overview");
-
   if (!alerta) {
     return (
-      <div className="grid h-full min-h-0 grid-rows-[320px_1fr] overflow-hidden lg:grid-rows-[420px_1fr]">
-        <div className="min-h-0 overflow-hidden">
-          <AlertTimelineMap alerta={null} />
-        </div>
-        <div className="min-h-0 overflow-hidden p-4">
-          <EmptyAlertOverview />
-        </div>
+      <div className="h-full p-4">
+        <EmptyAlertOverview />
       </div>
     );
   }
 
   return (
-    <div className="grid h-full min-h-0 grid-rows-[320px_1fr] overflow-hidden lg:grid-rows-[420px_1fr]">
-      <div className="min-h-0 overflow-hidden">
-        <AlertTimelineMap alerta={alerta} />
+    <div className="grid h-full min-h-0 grid-rows-[minmax(0,1fr)_auto] overflow-hidden">
+      <div className="flex min-h-0 flex-col gap-6 overflow-auto p-4">
+        <AlertOverview alerta={alerta} />
+        <Separator />
+        <AlertHistory alerta={alerta} />
       </div>
-      <div className="min-h-0 overflow-hidden">
-        <div className="h-full min-h-0 py-2">
-          <Tabs value={aba} onValueChange={setAba} className="h-full gap-0">
-            <TabsList
-              className="w-full justify-start gap-2 border-b px-4 **:data-[slot=tabs-trigger]:text-xs sm:gap-4 sm:**:data-[slot=tabs-trigger]:text-sm"
-              variant="line"
-            >
-              <TabsTrigger className="flex-none" value="overview">
-                Visão geral
-              </TabsTrigger>
-              <TabsTrigger className="flex-none" value="tratamento">
-                Tratamento
-              </TabsTrigger>
-              <TabsTrigger className="flex-none" value="historico">
-                Histórico ({alerta.acoes.length})
-              </TabsTrigger>
-              <TabsTrigger className="flex-none" value="origem">
-                Origem
-              </TabsTrigger>
-            </TabsList>
-            <TabsContent className="min-h-0 overflow-auto p-4" value="overview">
-              <AlertOverview alerta={alerta} onTratar={() => setAba("tratamento")} />
-            </TabsContent>
-            <TabsContent className="min-h-0 overflow-auto p-4" value="tratamento">
-              <AlertTreatment alerta={alerta} />
-            </TabsContent>
-            <TabsContent className="min-h-0 overflow-auto p-4" value="historico">
-              <AlertHistory alerta={alerta} />
-            </TabsContent>
-            <TabsContent className="min-h-0 overflow-auto p-4" value="origem">
-              <AlertOrigin alerta={alerta} />
-            </TabsContent>
-          </Tabs>
-        </div>
+      <div className="border-t bg-background/95 px-4 py-3 backdrop-blur-sm">
+        <AlertActions alerta={alerta} />
       </div>
     </div>
   );

@@ -184,7 +184,12 @@ function NavItem({ item, contagem, isItemActive, isSubItemActive, isSubmenuOpen 
 
   if (!hasSubItems(item)) {
     return (
-      <NavLinkItem item={item} contagem={contagem} isActive={isItemActive(item)} showIconFallback={isCollapsedDesktop} />
+      <NavLinkItem
+        item={item}
+        contagem={contagem}
+        isActive={isItemActive(item)}
+        showIconFallback={isCollapsedDesktop}
+      />
     );
   }
 

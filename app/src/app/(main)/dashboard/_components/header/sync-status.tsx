@@ -7,7 +7,9 @@ import { useSessionHydrated, useSessionStore } from "@/stores/session/session-st
 export function SyncStatus() {
   const hydrated = useSessionHydrated();
   const rede = useSessionStore((s) => s.rede);
-  const pendentes = useSessionStore((s) => Object.values(s.registros).filter((r) => r.syncStatus !== "sincronizado").length);
+  const pendentes = useSessionStore(
+    (s) => Object.values(s.registros).filter((r) => r.syncStatus !== "sincronizado").length,
+  );
 
   if (!hydrated) return null;
 

@@ -19,6 +19,11 @@ import { formatarHora } from "@/lib/format";
 import { statusDaTarefa } from "./status-tarefa";
 
 const FEITAS_VISIVEIS = 3;
+
+function prefixoDaHora(tarefa: { concluidaEm?: Date; futura: boolean }) {
+  if (tarefa.concluidaEm) return "feita ";
+  return tarefa.futura ? "abre " : "até ";
+}
 const PROXIMAS_VISIVEIS = 3;
 
 /**
@@ -33,7 +38,9 @@ export function LinhaDoTurno() {
     .filter(concluida)
     .sort((a, b) => ordem(a) - ordem(b))
     .slice(-FEITAS_VISIVEIS);
-  const abertas = tarefas.filter((t) => !concluida(t) && !t.futura).sort((a, b) => a.prazo.getTime() - b.prazo.getTime());
+  const abertas = tarefas
+    .filter((t) => !concluida(t) && !t.futura)
+    .sort((a, b) => a.prazo.getTime() - b.prazo.getTime());
   const proximas = tarefas
     .filter((t) => t.futura)
     .sort((a, b) => a.abre.getTime() - b.abre.getTime())
@@ -60,14 +67,12 @@ export function LinhaDoTurno() {
                   <TimelineContent>
                     <TimelineHeader>
                       <TimelineTime dateTime={hora.toISOString()} className="tabular-nums">
-                        {tarefa.concluidaEm ? "feita " : tarefa.futura ? "abre " : "até "}
+                        {prefixoDaHora(tarefa)}
                         {formatarHora(hora)}
                       </TimelineTime>
                       <TimelineTitle className="line-clamp-2 text-sm">{tarefa.titulo.split(" · ")[0]}</TimelineTitle>
                     </TimelineHeader>
-                    <TimelineDescription
-                      className={tarefa.estado === "atrasada" ? "text-destructive" : undefined}
-                    >
+                    <TimelineDescription className={tarefa.estado === "atrasada" ? "text-destructive" : undefined}>
                       {rotulo}
                     </TimelineDescription>
                   </TimelineContent>

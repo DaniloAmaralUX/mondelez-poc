@@ -2,6 +2,8 @@
 
 import * as React from "react";
 
+import { useSearchParams } from "next/navigation";
+
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useAlertas } from "@/hooks/use-turno";
 
@@ -11,7 +13,8 @@ import { AlertList } from "./alert-list";
 export function Alertas() {
   const alertas = useAlertas();
   const [detailsOpen, setDetailsOpen] = React.useState(false);
-  const [selectedAlertId, setSelectedAlertId] = React.useState<string | null>(null);
+  // O aviso de alerta novo abre esta tela com ?alerta=<id> já selecionado.
+  const [selectedAlertId, setSelectedAlertId] = React.useState<string | null>(useSearchParams().get("alerta"));
   const selectedAlert = alertas.find((alerta) => alerta.id === selectedAlertId) ?? alertas[0] ?? null;
 
   function handleSelectAlert(alertaId: string) {
