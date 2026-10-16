@@ -1,22 +1,17 @@
+"use client";
+
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
-import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty";
 
 export default function NotFound() {
   return (
-    <Empty className="h-dvh">
-      <EmptyHeader>
-        <EmptyTitle className="text-2xl">Página não encontrada</EmptyTitle>
-        <EmptyDescription className="text-base">O endereço não existe neste protótipo.</EmptyDescription>
-      </EmptyHeader>
-      <EmptyContent>
-        <Button asChild className="h-touch px-6 text-base">
-          <Link replace href="/rotina">
-            Voltar para Minha Rotina
-          </Link>
-        </Button>
-      </EmptyContent>
-    </Empty>
+    <div className="flex h-dvh flex-col items-center justify-center space-y-2 text-center">
+      <h1 className="font-semibold text-2xl">Page not found.</h1>
+      <p className="text-muted-foreground">The page you are looking for could not be found.</p>
+      <Link prefetch={false} replace href="/dashboard/default">
+        <Button variant="outline">Go back home</Button>
+      </Link>
+    </div>
   );
 }

@@ -62,14 +62,14 @@ export const PREFERENCE_REGISTRY = {
 
   theme_preset: definePreference({
     values: THEME_PRESET_VALUES,
-    defaultValue: "default",
+    defaultValue: "linear",
     persistence: "client-cookie",
     attribute: "data-theme-preset",
   }),
 
   font: definePreference({
     values: fontKeys,
-    defaultValue: "geist",
+    defaultValue: "inter",
     persistence: "client-cookie",
     attribute: "data-font",
   }),

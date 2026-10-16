@@ -28,6 +28,14 @@ export const THEME_PRESET_OPTIONS = [
     },
   },
   {
+    label: "Linear",
+    value: "linear",
+    primary: {
+      light: "oklch(0.491 0.27 292.581)",
+      dark: "oklch(0.432 0.232 292.759)",
+    },
+  },
+  {
     label: "Soft Pop",
     value: "soft-pop",
     primary: {
