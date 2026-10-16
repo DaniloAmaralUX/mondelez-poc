@@ -1,20 +1,46 @@
 "use client";
 
 import { cn } from "cn";
-import { CheckCheck } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
 import { useFormContext, useWatch } from "react-hook-form";
 
-import { Button } from "@/components/ui/button";
+import {
+  NumberField,
+  NumberFieldDecrement,
+  NumberFieldGroup,
+  NumberFieldIncrement,
+  NumberFieldInput,
+} from "@/components/reui/number-field";
 import { FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { MIN_JUSTIFICATIVA, situacaoItem } from "@/domain/formulario-engine";
 import type { ItemFormulario, Resposta, ValorCnc } from "@/domain/types";
 
 import type { ChecklistFormValues } from "./data";
+import { FaixaIndicador } from "./faixa-indicador";
 
-const SITUACAO_LABEL = { pendente: "—", C: "Conforme", NC: "Não conforme", NA: "N/A" } as const;
+const SITUACAO_LABEL = { pendente: "Pendente", C: "Conforme", NC: "Não conforme", NA: "Não se aplica" } as const;
+
+// Cor do resultado escolhido: a resposta se lê de longe, não só pela posição do botão.
+const OPCOES: { valor: ValorCnc; rotulo: string; aria: string; ativo: string }[] = [
+  {
+    valor: "C",
+    rotulo: "C",
+    aria: "Conforme",
+    ativo:
+      "data-[state=on]:border-green-600/40 data-[state=on]:bg-green-600/10 data-[state=on]:text-green-700 dark:data-[state=on]:text-green-400",
+  },
+  {
+    valor: "NC",
+    rotulo: "NC",
+    aria: "Não conforme",
+    ativo: "data-[state=on]:border-destructive/40 data-[state=on]:bg-destructive/10 data-[state=on]:text-destructive",
+  },
+  { valor: "NA", rotulo: "N/A", aria: "Não se aplica", ativo: "data-[state=on]:bg-muted" },
+];
+
+const REVELAR = { duration: 0.2, ease: [0.23, 1, 0.32, 1] } as const;
 
 export function ChecklistItems({
   itens,
@@ -25,57 +51,22 @@ export function ChecklistItems({
   numeros: Record<string, number>;
   erros: Record<string, string>;
 }) {
-  const { getValues, setValue } = useFormContext<ChecklistFormValues>();
+  const { setValue } = useFormContext<ChecklistFormValues>();
   const respostas = useWatch<ChecklistFormValues, "respostas">({ name: "respostas" }) ?? {};
-  const restantes = itens.filter(
-    (item) => item.tipo === "cnc" && situacaoItem(item, respostas[item.id]) === "pendente",
-  );
-
-  function marcarRestantesConformes() {
-    const atuais = getValues("respostas") ?? {};
-    const proximas = { ...atuais };
-    for (const item of restantes) proximas[item.id] = { ...proximas[item.id], valor: "C" };
-    setValue("respostas", proximas, { shouldDirty: true });
-  }
 
   return (
-    <section className="flex flex-col gap-4">
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="font-medium tracking-tight">Itens do checklist</h2>
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={marcarRestantesConformes}
-          disabled={restantes.length === 0}
-        >
-          <CheckCheck data-icon="inline-start" />
-          Restantes conformes
-        </Button>
-      </div>
-
-      <div className="flex flex-col gap-2">
-        <div className="hidden items-center gap-2 px-1 font-medium text-muted-foreground text-xs md:grid md:grid-cols-[24px_minmax(0,1fr)_176px_96px]">
-          <span />
-          <span>Item</span>
-          <span className="px-2">Resposta</span>
-          <span className="text-right">Situação</span>
-        </div>
-
-        <div className="flex flex-col gap-3">
-          {itens.map((item) => (
-            <ItemRow
-              key={item.id}
-              item={item}
-              numero={numeros[item.id] ?? 0}
-              resposta={respostas[item.id]}
-              erro={erros[item.id]}
-              onChange={(resposta) => setValue(`respostas.${item.id}`, resposta, { shouldDirty: true })}
-            />
-          ))}
-        </div>
-      </div>
-    </section>
+    <div className="flex flex-col gap-3">
+      {itens.map((item) => (
+        <ItemRow
+          key={item.id}
+          item={item}
+          numero={numeros[item.id] ?? 0}
+          resposta={respostas[item.id]}
+          erro={erros[item.id]}
+          onChange={(resposta) => setValue(`respostas.${item.id}`, resposta, { shouldDirty: true })}
+        />
+      ))}
+    </div>
   );
 }
 
@@ -93,7 +84,6 @@ function ItemRow({
   onChange: (resposta: Resposta) => void;
 }) {
   const situacao = situacaoItem(item, resposta);
-  const pedeJustificativa = situacao === "NC";
   const detalhes = [
     item.faixa &&
       `Padrão ${item.faixa.min.toLocaleString("pt-BR")}–${item.faixa.max.toLocaleString("pt-BR")} ${item.faixa.unidade}`,
@@ -104,84 +94,149 @@ function ItemRow({
     <div
       id={`item-${item.id}`}
       data-invalid={erro ? true : undefined}
-      className="grid min-w-0 scroll-mt-24 grid-cols-[24px_minmax(0,1fr)_96px] items-center gap-2 rounded-lg md:grid-cols-[24px_minmax(0,1fr)_176px_96px]"
+      className={cn(
+        "flex scroll-mt-24 flex-col gap-3 rounded-xl border bg-card p-3 transition-colors",
+        erro && "border-destructive/50",
+      )}
     >
-      <span className="text-center text-muted-foreground text-xs tabular-nums">{numero}</span>
-      <div className="min-w-0 max-md:col-span-2">
-        <p className="text-sm">{item.texto}</p>
-        {detalhes.length > 0 && <p className="text-muted-foreground text-xs">{detalhes.join(" · ")}</p>}
-      </div>
+      <div className="flex flex-col gap-3 md:flex-row md:items-center">
+        <div className="flex min-w-0 flex-1 gap-3">
+          <span className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-md bg-muted text-muted-foreground text-xs tabular-nums">
+            {numero}
+          </span>
+          <div className="min-w-0">
+            <p className="font-medium text-sm">{item.texto}</p>
+            <p
+              className={cn(
+                "text-xs",
+                situacao === "NC" ? "text-destructive" : "text-muted-foreground",
+                situacao === "C" && "text-green-700 dark:text-green-400",
+              )}
+            >
+              {[SITUACAO_LABEL[situacao], ...detalhes].join(" · ")}
+            </p>
+          </div>
+        </div>
 
-      <div className="max-md:col-start-2 max-md:row-start-2">
-        {item.tipo === "cnc" && (
-          <ToggleGroup
-            type="single"
-            variant="outline"
-            size="sm"
-            value={resposta?.valor ?? ""}
-            onValueChange={(valor) => onChange({ ...resposta, valor: (valor || undefined) as ValorCnc | undefined })}
-            aria-label={item.texto}
-            aria-invalid={erro ? true : undefined}
-          >
-            <ToggleGroupItem value="C" aria-label="Conforme">
-              C
-            </ToggleGroupItem>
-            <ToggleGroupItem value="NC" aria-label="Não conforme">
-              NC
-            </ToggleGroupItem>
-            <ToggleGroupItem value="NA" aria-label="Não se aplica">
-              N/A
-            </ToggleGroupItem>
-          </ToggleGroup>
-        )}
-        {item.tipo === "numero" && (
-          <InputGroup>
-            <InputGroupInput
-              type="number"
-              inputMode="decimal"
-              step="0.1"
+        <div className="md:shrink-0">
+          {item.tipo === "cnc" && (
+            <ToggleGroup
+              type="single"
+              variant="outline"
+              size="lg"
+              value={resposta?.valor ?? ""}
+              onValueChange={(valor) => onChange({ ...resposta, valor: (valor || undefined) as ValorCnc | undefined })}
               aria-label={item.texto}
               aria-invalid={erro ? true : undefined}
-              value={resposta?.numero ?? ""}
-              onChange={(e) =>
-                onChange({ ...resposta, numero: e.target.value === "" ? undefined : Number(e.target.value) })
-              }
+            >
+              {OPCOES.map((opcao) => (
+                <ToggleGroupItem
+                  key={opcao.valor}
+                  value={opcao.valor}
+                  aria-label={opcao.aria}
+                  className={cn("h-11 min-w-14 font-medium", opcao.ativo)}
+                >
+                  {opcao.rotulo}
+                </ToggleGroupItem>
+              ))}
+            </ToggleGroup>
+          )}
+
+          {item.tipo === "numero" && item.faixa && (
+            <CampoCenterline item={item} faixa={item.faixa} resposta={resposta} erro={erro} onChange={onChange} />
+          )}
+
+          {item.tipo === "texto" && (
+            <Input
+              className="h-11 md:w-64"
+              aria-label={item.texto}
+              aria-invalid={erro ? true : undefined}
+              value={resposta?.texto ?? ""}
+              onChange={(e) => onChange({ ...resposta, texto: e.target.value })}
             />
-            <InputGroupAddon align="inline-end">{item.faixa?.unidade}</InputGroupAddon>
-          </InputGroup>
-        )}
-        {item.tipo === "texto" && (
-          <Input
-            aria-label={item.texto}
-            aria-invalid={erro ? true : undefined}
-            value={resposta?.texto ?? ""}
-            onChange={(e) => onChange({ ...resposta, texto: e.target.value })}
-          />
-        )}
-      </div>
-
-      <div
-        className={cn(
-          "min-w-0 text-right font-medium text-sm max-md:col-start-3 max-md:row-start-2",
-          situacao === "NC" && "text-destructive",
-          situacao === "pendente" && "text-muted-foreground",
-        )}
-      >
-        {SITUACAO_LABEL[situacao]}
-      </div>
-
-      {pedeJustificativa && (
-        <div className="col-span-full md:col-start-2">
-          <Input
-            aria-label={`Justificativa: ${item.texto}`}
-            aria-invalid={erro ? true : undefined}
-            placeholder={`O que está fora do padrão? (mínimo ${MIN_JUSTIFICATIVA} caracteres)`}
-            value={resposta?.justificativa ?? ""}
-            onChange={(e) => onChange({ ...resposta, justificativa: e.target.value })}
-          />
+          )}
         </div>
-      )}
-      {erro && <FieldError className="col-span-full md:col-start-2">{erro}</FieldError>}
+      </div>
+
+      <AnimatePresence initial={false}>
+        {situacao === "NC" && (
+          <motion.div
+            key="justificativa"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={REVELAR}
+            className="overflow-hidden"
+          >
+            <Input
+              className="h-11"
+              aria-label={`Justificativa: ${item.texto}`}
+              aria-invalid={erro ? true : undefined}
+              placeholder={`O que está fora do padrão? (mínimo ${MIN_JUSTIFICATIVA} caracteres)`}
+              value={resposta?.justificativa ?? ""}
+              onChange={(e) => onChange({ ...resposta, justificativa: e.target.value })}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+      {erro && <FieldError>{erro}</FieldError>}
+    </div>
+  );
+}
+
+/** Centerline com −/+ grandes e régua da faixa; −/+ num campo vazio começam do meio do padrão. */
+function CampoCenterline({
+  item,
+  faixa,
+  resposta,
+  erro,
+  onChange,
+}: {
+  item: ItemFormulario;
+  faixa: NonNullable<ItemFormulario["faixa"]>;
+  resposta: Resposta | undefined;
+  erro: string | undefined;
+  onChange: (resposta: Resposta) => void;
+}) {
+  const span = faixa.max - faixa.min;
+  const passo = span <= 2 ? 0.1 : 1;
+  const meio = Math.round(((faixa.min + faixa.max) / 2) * 10) / 10;
+  const valor = resposta?.numero;
+
+  return (
+    <div className="flex w-full flex-col gap-2 md:w-56">
+      <NumberField
+        size="lg"
+        value={valor ?? null}
+        step={passo}
+        format={{ maximumFractionDigits: 1 }}
+        locale="pt-BR"
+        onValueChange={(v) => onChange({ ...resposta, numero: v ?? undefined })}
+        aria-label={item.texto}
+      >
+        <NumberFieldGroup
+          className="h-11"
+          aria-invalid={erro ? true : undefined}
+          onPointerDownCapture={(event) => {
+            const alvo = (event.target as HTMLElement).closest(
+              '[data-slot="number-field-increment"],[data-slot="number-field-decrement"]',
+            );
+            if (valor === undefined && alvo) {
+              event.preventDefault();
+              event.stopPropagation();
+              onChange({ ...resposta, numero: meio });
+            }
+          }}
+        >
+          <NumberFieldDecrement className="px-3.5" aria-label={`Diminuir ${item.texto}`} />
+          <NumberFieldInput placeholder={meio.toLocaleString("pt-BR")} inputMode="decimal" />
+          <NumberFieldIncrement className="px-3.5" aria-label={`Aumentar ${item.texto}`} />
+        </NumberFieldGroup>
+      </NumberField>
+      <div className="flex items-center gap-2">
+        <FaixaIndicador faixa={faixa} valor={valor} />
+        <span className="shrink-0 text-muted-foreground text-xs">{faixa.unidade}</span>
+      </div>
     </div>
   );
 }
