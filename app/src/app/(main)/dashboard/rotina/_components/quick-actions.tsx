@@ -2,18 +2,10 @@
 
 import Link from "next/link";
 
-import { Bell, ClipboardCheck, HardHat, ListTodo, PackageSearch, SprayCan, Wrench } from "lucide-react";
+import { Bell, ListTodo } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { useUsuarioAtual } from "@/stores/session/session-store";
-
-const checklists = [
-  { label: "PPLI e Centerlining", icon: ClipboardCheck, href: "/dashboard/checklist/ppli-l4" },
-  { label: "Pré-partida", icon: HardHat, href: "/dashboard/checklist/pre-partida-l4" },
-  { label: "Rastreabilidade", icon: PackageSearch, href: "/dashboard/checklist/rastreabilidade-envoltorio" },
-  { label: "Manutenção autônoma", icon: Wrench, href: "/dashboard/checklist/manutencao-autonoma-l4" },
-  { label: "Limpeza semanal", icon: SprayCan, href: "/dashboard/checklist/limpeza-semanal" },
-] as const;
 
 const lideranca = [
   { label: "Alertas", icon: Bell, href: "/dashboard/alertas" },
@@ -22,7 +14,9 @@ const lideranca = [
 
 export function QuickActions() {
   const usuario = useUsuarioAtual();
-  const quickActions = usuario?.perfil === "operacao" ? checklists : lideranca;
+  // Para o operador os atalhos repetiam a lista de tarefas (UI Audit); ficam só para a liderança.
+  if (!usuario || usuario.perfil === "operacao") return null;
+  const quickActions = lideranca;
 
   return (
     <section className="flex flex-col gap-2">

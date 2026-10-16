@@ -29,7 +29,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { proximaTarefa } from "@/domain/routine-engine";
-import { useMinhasTarefas } from "@/hooks/use-turno";
+import { useAlertas, useMinhasTarefas } from "@/hooks/use-turno";
 import { hrefDaTarefa } from "@/lib/rotas";
 import type {
   NavBadge,
@@ -44,6 +44,7 @@ interface NavMainProps {
 }
 interface NavItemProps {
   readonly item: NavMainItem;
+  readonly contagem?: number;
   readonly isItemActive: (item: NavMainItem) => boolean;
   readonly isSubItemActive: (url: string) => boolean;
   readonly isSubmenuOpen: (item: NavMainParentItem) => boolean;
@@ -51,6 +52,7 @@ interface NavItemProps {
 
 interface NavLinkItemProps {
   readonly item: NavMainLinkItem;
+  readonly contagem?: number;
   readonly isActive: boolean;
   readonly showIconFallback: boolean;
 }
@@ -88,6 +90,9 @@ function hasSubItems(item: NavMainItem): item is NavMainParentItem {
 export function NavMain({ items }: NavMainProps) {
   const path = usePathname();
   const proxima = proximaTarefa(useMinhasTarefas());
+  // Contagem de alertas sem resolução no menu e no sino (UI Audit: alertas novos passavam despercebidos).
+  const alertasAbertos = useAlertas().filter((a) => a.estado !== "resolvido").length;
+  const contagens: Record<string, number> = { alertas: alertasAbertos };
 
   const isItemActive = (item: NavMainItem) => {
     if (hasSubItems(item)) {
@@ -127,9 +132,19 @@ export function NavMain({ items }: NavMainProps) {
                 className="h-9 w-9 shrink-0 group-data-[collapsible=icon]:opacity-0"
                 variant="outline"
               >
-                <Link prefetch={false} href="/dashboard/alertas">
+                <Link prefetch={false} href="/dashboard/alertas" className="relative">
                   <Bell />
-                  <span className="sr-only">Alertas</span>
+                  <span className="sr-only">
+                    Alertas{alertasAbertos > 0 ? `: ${alertasAbertos} sem resolução` : ""}
+                  </span>
+                  {alertasAbertos > 0 && (
+                    <span
+                      aria-hidden
+                      className="absolute -top-1 -right-1 grid h-4 min-w-4 place-items-center rounded-full bg-destructive px-1 font-medium text-[10px] text-white tabular-nums"
+                    >
+                      {alertasAbertos}
+                    </span>
+                  )}
                 </Link>
               </Button>
             </SidebarMenuItem>
@@ -149,6 +164,7 @@ export function NavMain({ items }: NavMainProps) {
                 <NavItem
                   key={item.id}
                   item={item}
+                  contagem={contagens[item.id]}
                   isItemActive={isItemActive}
                   isSubItemActive={isSubItemActive}
                   isSubmenuOpen={isSubmenuOpen}
@@ -162,12 +178,14 @@ export function NavMain({ items }: NavMainProps) {
   );
 }
 
-function NavItem({ item, isItemActive, isSubItemActive, isSubmenuOpen }: NavItemProps) {
+function NavItem({ item, contagem, isItemActive, isSubItemActive, isSubmenuOpen }: NavItemProps) {
   const { state, isMobile } = useSidebar();
   const isCollapsedDesktop = state === "collapsed" && !isMobile;
 
   if (!hasSubItems(item)) {
-    return <NavLinkItem item={item} isActive={isItemActive(item)} showIconFallback={isCollapsedDesktop} />;
+    return (
+      <NavLinkItem item={item} contagem={contagem} isActive={isItemActive(item)} showIconFallback={isCollapsedDesktop} />
+    );
   }
 
   if (isCollapsedDesktop) {
@@ -184,7 +202,7 @@ function NavItem({ item, isItemActive, isSubItemActive, isSubmenuOpen }: NavItem
   );
 }
 
-function NavLinkItem({ item, isActive, showIconFallback }: NavLinkItemProps) {
+function NavLinkItem({ item, contagem, isActive, showIconFallback }: NavLinkItemProps) {
   return (
     <SidebarMenuItem>
       <SidebarMenuButton asChild aria-disabled={item.disabled} tooltip={item.title} isActive={isActive}>
@@ -199,6 +217,7 @@ function NavLinkItem({ item, isActive, showIconFallback }: NavLinkItemProps) {
         </Link>
       </SidebarMenuButton>
       <NavItemBadge badge={item.badge} />
+      {contagem ? <SidebarMenuBadge className="tabular-nums">{contagem}</SidebarMenuBadge> : null}
     </SidebarMenuItem>
   );
 }

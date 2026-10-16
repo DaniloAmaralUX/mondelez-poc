@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { REGEXP_ONLY_DIGITS } from "input-otp";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -10,12 +11,15 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { localRepository } from "@/data/repository";
 import { primeiroNome } from "@/lib/format";
 import { useSessionStore } from "@/stores/session/session-store";
 
 const PLANTA_ID = "chocolate";
+const TAMANHO_PIN = 4;
+const SLOTS_PIN = Array.from({ length: TAMANHO_PIN }, (_, i) => i);
 
 const formSchema = z.object({
   matricula: z.string().regex(/^\d{6}$/, { message: "A matrícula tem 6 números." }),
@@ -89,16 +93,33 @@ export function LoginForm() {
           render={({ field, fieldState }) => (
             <Field className="gap-1.5" data-invalid={fieldState.invalid}>
               <FieldLabel htmlFor="login-pin">PIN</FieldLabel>
-              <Input
-                {...field}
+              <InputOTP
                 id="login-pin"
-                type="password"
+                ref={field.ref}
+                name={field.name}
+                value={field.value}
+                onChange={field.onChange}
+                onBlur={field.onBlur}
+                maxLength={TAMANHO_PIN}
                 inputMode="numeric"
+                pattern={REGEXP_ONLY_DIGITS}
                 autoComplete="current-password"
-                placeholder="••••"
-                maxLength={4}
+                // PIN completo envia sozinho: menos um toque no tablet compartilhado.
+                onComplete={() => form.handleSubmit(onSubmit)()}
                 aria-invalid={fieldState.invalid}
-              />
+                containerClassName="w-full"
+              >
+                <InputOTPGroup className="w-full">
+                  {SLOTS_PIN.map((index) => (
+                    <InputOTPSlot
+                      key={index}
+                      index={index}
+                      aria-invalid={fieldState.invalid}
+                      className="h-11 flex-1 text-lg [-webkit-text-security:disc]"
+                    />
+                  ))}
+                </InputOTPGroup>
+              </InputOTP>
               {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
             </Field>
           )}

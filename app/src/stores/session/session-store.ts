@@ -57,6 +57,7 @@ interface SessionState {
     rascunho: Rascunho;
   }) => Registro | undefined;
   confirmarTarefa: (tarefaId: string) => void;
+  desfazerConclusao: (tarefaId: string) => void;
   tratarAlerta: (alertaId: string, tipo: AcaoAlerta["tipo"], texto: string) => void;
   avancarRelogio: (minutos: number) => void;
   irParaFimDoTurno: () => void;
@@ -183,6 +184,11 @@ export const useSessionStore = create<SessionState>()(
             conclusoes: { ...s.conclusoes, [tarefaId]: { estado: "feita", em: agora().toISOString(), usuarioId } },
           }));
         },
+
+        desfazerConclusao: (tarefaId) =>
+          setState((s) => ({
+            conclusoes: Object.fromEntries(Object.entries(s.conclusoes).filter(([id]) => id !== tarefaId)),
+          })),
 
         tratarAlerta: (alertaId, tipo, texto) => {
           const { usuarioId } = getState();

@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 
 import type { Metadata } from "next";
 
+import { MotionProvider } from "@/components/motion-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { APP_CONFIG } from "@/config/app-config";
@@ -40,7 +41,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
       <body className={`${fontVars} min-h-screen antialiased`}>
         <TooltipProvider>
           <PreferencesStoreProvider initialValues={PREFERENCE_DEFAULTS}>
-            {children}
+            <MotionProvider>{children}</MotionProvider>
             <Toaster />
           </PreferencesStoreProvider>
         </TooltipProvider>
