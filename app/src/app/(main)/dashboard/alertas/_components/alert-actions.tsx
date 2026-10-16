@@ -67,9 +67,11 @@ export function AlertActions({ alerta }: { readonly alerta: Alerta }) {
     setDialogo(null);
   }
 
+  // Alturas do notebook iguais às da v0.2 (44 px); no toque a camada (src/styles/tablet.css) leva Assumir e Registrar
+  // ação a 56 px e Resolver, a ação primária do alerta, vai a 64 px (docs/12 §5 item 1).
   return (
     <>
-      <div className="flex flex-wrap items-center justify-end gap-2">
+      <div className="flex flex-wrap items-center justify-end gap-3">
         {alerta.estado === "aberto" && (
           <Button
             variant="outline"
@@ -87,14 +89,19 @@ export function AlertActions({ alerta }: { readonly alerta: Alerta }) {
           <MessageSquareText data-icon="inline-start" />
           Registrar ação
         </Button>
-        <Button className={`h-11 px-5 ${PRESSAO}`} onClick={() => setDialogo("resolver")}>
+        <Button
+          className={`h-11 toque:h-16 px-5 toque:px-6 toque:text-base ${PRESSAO}`}
+          onClick={() => setDialogo("resolver")}
+        >
           <CheckCircle2 data-icon="inline-start" />
           Resolver
         </Button>
       </div>
 
       <Dialog open={dialogo !== null} onOpenChange={(aberto) => !aberto && setDialogo(null)}>
-        <DialogContent>
+        {/* Sem o X do canto: o do template tem rótulo "Close" (em inglês, fixo em ui/dialog.tsx) e ficaria colado ao
+            título. Cancelar (56 px no toque), Esc e o toque fora fecham o diálogo. */}
+        <DialogContent showCloseButton={false}>
           {dialogo && (
             <>
               <DialogHeader>
@@ -113,7 +120,8 @@ export function AlertActions({ alerta }: { readonly alerta: Alerta }) {
                 />
                 <FieldDescription>{DIALOGO[dialogo].descricao}</FieldDescription>
               </Field>
-              <DialogFooter>
+              {/* Cancelar × Resolver são ações opostas: 16 px entre elas (docs/12 §2, item 2). */}
+              <DialogFooter className="gap-4">
                 <Button variant="outline" onClick={() => setDialogo(null)}>
                   Cancelar
                 </Button>

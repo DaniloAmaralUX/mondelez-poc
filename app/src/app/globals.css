@@ -8,6 +8,9 @@
 @import "../styles/presets/soft-pop.css";
 @import "../styles/presets/tangerine.css";
 
+/* Densidade para toque e baseline interface nativa do projeto (v0.3); não edita components/ui. */
+@import "../styles/tablet.css";
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {

@@ -20,8 +20,10 @@ export function useConcluirTarefa() {
       return;
     }
     confirmarTarefa(tarefa.id);
+    // 8 s para alcançar "Desfazer" com luva; no toque o botão cresce para 44 px pela camada (src/styles/tablet.css).
     toast.success("Tarefa concluída", {
       description: tarefa.titulo,
+      duration: 8000,
       action: { label: "Desfazer", onClick: () => desfazerConclusao(tarefa.id) },
     });
   };

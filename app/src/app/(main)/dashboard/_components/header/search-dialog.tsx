@@ -139,11 +139,18 @@ export function SearchDialog() {
       >
         <Search data-icon="inline-start" />
         Buscar
-        <kbd className="inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-medium text-[10px]">
+        {/* Atalho só faz sentido com teclado e mouse; no tablet o rótulo fica limpo. */}
+        <kbd className="pointer-fine:inline-flex hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-medium text-[10px]">
           <span className="text-xs">⌘</span>J
         </kbd>
       </Button>
-      <CommandDialog open={open} onOpenChange={handleOpenChange}>
+      {/* Título e descrição (lidos pelo leitor de tela) em pt-BR: o padrão do template é "Command Palette". */}
+      <CommandDialog
+        open={open}
+        onOpenChange={handleOpenChange}
+        title="Buscar"
+        description="Busque telas, checklists e registros."
+      >
         <Command>
           <CommandInput placeholder="Buscar telas, checklists e registros…" value={query} onValueChange={setQuery} />
           <CommandList>

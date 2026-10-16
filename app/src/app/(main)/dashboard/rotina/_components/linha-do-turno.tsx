@@ -66,7 +66,8 @@ export function LinhaDoTurno() {
                   <TimelineConnector />
                   <TimelineContent>
                     <TimelineHeader>
-                      <TimelineTime dateTime={hora.toISOString()} className="tabular-nums">
+                      {/* Tela do operador: no toque nada abaixo de 14 px (docs/12 §3.3). */}
+                      <TimelineTime dateTime={hora.toISOString()} className="toque:text-sm tabular-nums">
                         {prefixoDaHora(tarefa)}
                         {formatarHora(hora)}
                       </TimelineTime>

@@ -23,7 +23,7 @@ export function FaixaIndicador({ faixa, valor }: { faixa: NonNullable<ItemFormul
       {valor !== undefined && (
         // O trilho inteiro desliza (transform): animar `left` forçaria layout a cada quadro.
         <div
-          className="absolute inset-0 transition-transform duration-200 ease-out"
+          className="absolute inset-0 transition-transform duration-200 ease-out motion-reduce:transition-none"
           style={{ transform: `translateX(${pos(valor)}%)` }}
         >
           <div

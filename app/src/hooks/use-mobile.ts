@@ -1,6 +1,8 @@
 import * as React from "react";
 
-const MOBILE_BREAKPOINT = 768;
+// Abaixo de 1024 px (tablet em retrato, Split View) a sidebar vira Sheet e fecha ao navegar; o breakpoint `lg` do
+// Tailwind tem o mesmo limite, então CSS e JS concordam.
+const MOBILE_BREAKPOINT = 1024;
 
 export function useIsMobile() {
   const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined);

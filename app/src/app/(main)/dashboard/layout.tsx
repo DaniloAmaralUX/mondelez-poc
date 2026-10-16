@@ -14,6 +14,7 @@ import { AlertWatcher } from "./_components/alert-watcher";
 import { AccountSwitcher } from "./_components/header/account-switcher";
 import { DemoMenu } from "./_components/header/demo-menu";
 import { LayoutControls } from "./_components/header/layout-controls";
+import { LeadershipOnly } from "./_components/header/leadership-only";
 import { SearchDialog } from "./_components/header/search-dialog";
 import { SyncStatus } from "./_components/header/sync-status";
 import { ThemeSwitcher } from "./_components/header/theme-switcher";
@@ -35,6 +36,9 @@ export default async function Layout({ children }: Readonly<{ children: ReactNod
           "--sidebar-width": "calc(var(--spacing) * 68)",
         } as React.CSSProperties
       }
+      // Abaixo de 1024 px a sidebar é um Sheet (useIsMobile), mas o HTML do servidor sai com a versão fixa: escondê-la
+      // por CSS evita que o retrato mostre 272 px de sidebar até a hidratação.
+      className="max-lg:[&>[data-slot=sidebar]]:hidden"
     >
       <AppSidebar variant={variant} collapsible={collapsible} />
       <SidebarInset
@@ -43,37 +47,48 @@ export default async function Layout({ children }: Readonly<{ children: ReactNod
           "[html[data-content-layout=centered]_&>*]:w-full",
           "[html[data-content-layout=centered]_&>*]:max-w-screen-2xl",
           "peer-data-[variant=inset]:border",
-          "[--dashboard-header-height:--spacing(12)]",
+          // No toque os controles do header têm 56 px (camada de densidade): a barra passa a 64 px. A variante toque:
+          // (src/styles/tablet.css) segue a camada também com o override html[data-density], nos dois sentidos.
+          "[--dashboard-header-height:--spacing(12)] toque:[--dashboard-header-height:--spacing(16)]",
           "min-w-0 overflow-x-clip",
         )}
       >
         <header
           className={cn(
-            "flex h-12 shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12",
+            "flex h-(--dashboard-header-height) shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--dashboard-header-height)",
             // Handle sticky navbar style with conditional classes so blur, background, z-index, and rounded corners remain consistent across all SidebarVariant layouts.
             "[html[data-navbar-style=sticky]_&]:sticky [html[data-navbar-style=sticky]_&]:top-0 [html[data-navbar-style=sticky]_&]:z-50 [html[data-navbar-style=sticky]_&]:overflow-hidden [html[data-navbar-style=sticky]_&]:rounded-t-[inherit] [html[data-navbar-style=sticky]_&]:bg-background/50 [html[data-navbar-style=sticky]_&]:backdrop-blur-md",
+            // No tablet a barra fixa é opaca e sem blur (legibilidade sob luz forte e GPU modesta). Aqui fica
+            // pointer-coarse: e não toque:, porque toque: com [html[…]_&] exigiria um html dentro do outro.
+            "pointer-coarse:[html[data-navbar-style=sticky]_&]:bg-background pointer-coarse:[html[data-navbar-style=sticky]_&]:backdrop-blur-none",
           )}
         >
-          <div className="flex w-full items-center justify-between px-4 lg:px-6">
-            <div className="flex items-center gap-1 lg:gap-2">
-              <SidebarTrigger className="-ml-1" />
+          <div className="flex w-full items-center justify-between gap-3 px-4 lg:px-6">
+            <div className="flex min-w-0 items-center gap-1 toque:gap-3 lg:gap-2">
+              <SidebarTrigger className="-ml-1 shrink-0" aria-label="Mostrar ou ocultar menu" />
               <Separator
                 orientation="vertical"
                 className="mx-2 data-[orientation=vertical]:h-4 data-[orientation=vertical]:self-center"
               />
               <SearchDialog />
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex shrink-0 items-center gap-2 toque:gap-3">
               <SyncStatus />
-              <LayoutControls />
+              <LeadershipOnly>
+                <LayoutControls />
+              </LeadershipOnly>
               <ThemeSwitcher />
-              <DemoMenu />
+              <LeadershipOnly>
+                <DemoMenu />
+              </LeadershipOnly>
               <AccountSwitcher users={users} />
             </div>
           </div>
         </header>
         {/* Pages can set data-content-padding="false" to render full-bleed app layouts. */}
-        <div className="min-h-0 min-w-0 flex-1 overflow-x-hidden p-4 has-data-[content-padding=false]:p-0 md:p-6 md:has-data-[content-padding=false]:p-0">
+        {/* @container/content: as telas se adaptam à largura útil (descontada a sidebar), não ao viewport. overflow-x-clip
+            (e não hidden) para o wrapper não virar contêiner de rolagem e o sticky das barras seguir a janela. */}
+        <div className="@container/content min-h-0 min-w-0 flex-1 overflow-x-clip p-4 has-data-[content-padding=false]:p-0 md:p-6 md:has-data-[content-padding=false]:p-0">
           <SessionGate>
             <AlertWatcher />
             {children}

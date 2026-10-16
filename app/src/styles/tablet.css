@@ -1,0 +1,370 @@
+/*
+ * Densidade para toque (v0.3 tablet-first, docs/12 §3.3 e fase B).
+ *
+ * Folha do projeto. Não edita src/components/ui/** nem src/components/reui/**: aumenta os alvos de toque
+ * dos componentes do template pelo atributo data-slot, sem mudar layout, cores nem variantes do tema.
+ *
+ * Como liga
+ * - As variáveis --touch-* começam desligadas (0px) em html.
+ * - Ligam com ponteiro grosso (tablet, celular), a menos que o html tenha data-density="fine".
+ * - Ligam em qualquer aparelho com html[data-density="touch"]: override manual para demonstração e para
+ *   testar no navegador do desktop, onde o ponteiro é fino. No console:
+ *     document.documentElement.dataset.density = "touch"   // liga
+ *     document.documentElement.dataset.density = "fine"    // desliga, mesmo no tablet
+ *     delete document.documentElement.dataset.density      // volta ao automático
+ *   (No DevTools do Chrome, o modo dispositivo com toque também emula pointer: coarse.)
+ *
+ * Por que as regras ficam dentro da variante `toque`
+ * - Elas estão fora de @layer de propósito: CSS sem layer vence os utilitários do Tailwind v4, que vivem em
+ *   @layer utilities. Assim min-height/min-width/font-size daqui valem sobre h-8, size-7, md:text-sm.
+ * - Pelo mesmo motivo, com a camada desligada uma regra "min-height: 0px" ainda venceria o min-h-16 do
+ *   Textarea ou o md:text-sm dos campos no notebook. Por isso cada regra só existe sob as mesmas duas
+ *   condições das variáveis (a variante `toque` abaixo; o Tailwind gera as duas versões no build).
+ * - Altura sempre por min-height: vence o height dos utilitários sem encolher quem já é maior.
+ * - A camada é um piso. Ponto de uso que precisa de mais que o piso usa h-*, w-* ou size-* (somam com o
+ *   min-* daqui e vale o maior), nunca min-h-* ou min-w-*: o min-* desta folha, sem layer, venceria o
+ *   utilitário e o alvo voltaria a 56 px (ex.: C/NC/NA usam toque:h-16 toque:w-20 em checklist-items.tsx).
+ * - A variante também fica disponível no JSX (ex.: `h-11 toque:h-16`): é assim que o ponto de uso passa do piso
+ *   sem mudar o notebook da liderança, que mantém a densidade do template (docs/12 §3.1). Prefira-a a
+ *   `pointer-coarse:`, que não acompanha o override manual data-density. Exceção: não combine `toque:` com uma
+ *   variante arbitrária ancorada no html (`[html[data-…]_&]:`), porque os dois seletores exigiriam um html dentro
+ *   do outro; nesse caso use `pointer-coarse:`.
+ */
+
+@custom-variant toque {
+  @media (pointer: coarse) {
+    html:not([data-density="fine"]) & {
+      @slot;
+    }
+  }
+
+  html[data-density="touch"] & {
+    @slot;
+  }
+}
+
+html {
+  --touch-min-h: 0px;
+  --touch-item-h: 0px;
+  --touch-icon: 0px;
+  --touch-font-min: 0px;
+}
+
+@media (pointer: coarse) {
+  html:not([data-density="fine"]) {
+    --touch-min-h: 3.5rem;
+    --touch-item-h: 3rem;
+    --touch-icon: 1.25rem;
+    --touch-font-min: 1rem;
+  }
+}
+
+html[data-density="touch"] {
+  --touch-min-h: 3.5rem;
+  --touch-item-h: 3rem;
+  --touch-icon: 1.25rem;
+  --touch-font-min: 1rem;
+}
+
+/* ---------------------------------------------------------------------------------------------------- */
+/* Controles: 56 px de altura mínima (RNF-01; luva, braço estendido).                                    */
+/* ---------------------------------------------------------------------------------------------------- */
+
+/*
+ * Botão do template: data-slot="button", mas também data-variant + data-size. Quando o Button é gatilho
+ * de outro componente (DropdownMenuTrigger, PopoverTrigger, SheetTrigger, CollapsibleTrigger com asChild),
+ * o data-slot vira "…-trigger" e só os outros dois atributos continuam; por isso os seletores de botão
+ * usam :is(...) com os três. O mesmo vale para o menu da sidebar (data-sidebar="menu-button").
+ */
+
+:is([data-slot="button"], button[data-variant][data-size], a[data-variant][data-size]),
+[data-slot="toggle"],
+[data-slot="toggle-group-item"],
+[data-slot="select-trigger"],
+[data-slot="native-select"],
+[data-slot="input"],
+[data-slot="sidebar-input"],
+[data-slot="input-group"],
+[data-slot="number-field-group"],
+[data-slot="tabs-trigger"],
+[data-slot="pagination-link"],
+[data-slot="sidebar-trigger"],
+[data-slot="sidebar-menu-button"],
+[data-sidebar="menu-button"],
+[data-slot="alert-dialog-action"],
+[data-slot="alert-dialog-cancel"],
+[data-slot="sheet-close"],
+[data-slot="dialog-close"] {
+  @variant toque {
+    min-height: var(--touch-min-h);
+  }
+}
+
+/* Alvos só de ícone (e os ± do NumberField) ficam quadrados: largura mínima igual à altura. */
+:is([data-slot="button"], button[data-variant][data-size], a[data-variant][data-size])[data-size^="icon"],
+[data-slot="pagination-link"][data-size^="icon"],
+[data-slot="sidebar-trigger"],
+[data-slot="toggle"],
+[data-slot="toggle-group-item"],
+[data-slot="number-field-decrement"],
+[data-slot="number-field-increment"] {
+  @variant toque {
+    min-width: var(--touch-min-h);
+  }
+}
+
+/*
+ * Utilidades do header (tema, layout, demonstração, pessoa): controles secundários, 48 px no toque
+ * (docs/12 §3.3: 48 px só para secundário). O botão do menu (sidebar-trigger) é navegação e fica com 56 px.
+ * Sem isto, os que são gatilho de menu/popover ficavam com 56 e os outros com 32, desalinhados no header.
+ */
+[data-slot="sidebar-inset"]
+  > header
+  :is([data-slot="button"], button[data-variant][data-size])[data-size^="icon"]:not([data-slot="sidebar-trigger"]) {
+  @variant toque {
+    min-width: var(--touch-item-h);
+    min-height: var(--touch-item-h);
+  }
+}
+
+/* Ícone sozinho num alvo de 56 px: 20 px em vez de 16 px. Ícones com size-* explícito ficam como estão. */
+[data-slot="sidebar-trigger"] svg:not([class*="size-"]),
+[data-slot="sheet-close"] svg:not([class*="size-"]),
+[data-slot="dialog-close"] svg:not([class*="size-"]),
+[data-slot="pagination-link"][data-size^="icon"] svg:not([class*="size-"]),
+:is([data-slot="button"], button[data-variant][data-size], a[data-variant][data-size])[data-size^="icon"]
+  svg:not([class*="size-"]) {
+  @variant toque {
+    width: var(--touch-icon);
+    height: var(--touch-icon);
+  }
+}
+
+/* O campo dentro do InputGroup ocupa a altura toda (o grupo tem 1 px de borda em cima e embaixo). */
+[data-slot="input-group"] > input[data-slot="input-group-control"] {
+  @variant toque {
+    min-height: calc(var(--touch-min-h) - 2px);
+  }
+}
+
+/* Botão dentro do InputGroup: um degrau abaixo, para caber no grupo de 56 px. */
+[data-slot="input-group"] :is([data-slot="button"], button[data-variant][data-size], a[data-variant][data-size]) {
+  @variant toque {
+    min-height: var(--touch-item-h);
+  }
+}
+
+[data-slot="input-group"]
+  :is([data-slot="button"], button[data-variant][data-size], a[data-variant][data-size])[data-size^="icon"] {
+  @variant toque {
+    min-width: var(--touch-item-h);
+  }
+}
+
+/* Textarea: o template já tem min-h-16; no toque, cerca de duas linhas e meia de 16 px (80 px). */
+[data-slot="textarea"] {
+  @variant toque {
+    min-height: calc(var(--touch-min-h) + 1.5rem);
+  }
+}
+
+/* Tabs: a lista deixa de ter h-8 fixo para não cortar os gatilhos de 56 px. */
+[data-slot="tabs-list"] {
+  @variant toque {
+    height: auto;
+  }
+}
+
+/* Slots do PIN (InputOTP): 56 px nos dois eixos. */
+[data-slot="input-otp-slot"] {
+  @variant toque {
+    min-width: var(--touch-min-h);
+    min-height: var(--touch-min-h);
+  }
+}
+
+/* Fechar (X) de Sheet e Dialog: 44 px visíveis no canto, para não invadir o cabeçalho, e 48 px de área de toque
+   (elemento secundário, docs/12 §2 item 1) por um ::after 2 px além da borda. Só o X do canto (filho direto do
+   conteúdo, sempre position: absolute), para o ::after não se posicionar em outro ancestral. Fechar com texto: 56 px. */
+[data-slot="sheet-close"][data-size^="icon"],
+[data-slot="dialog-close"][data-size^="icon"] {
+  @variant toque {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+  }
+}
+
+/* O ::after fica aninhado (&::after) dentro da variante: escrito no seletor de fora, viraria :is(…::after), que é
+   inválido (pseudo-elemento não entra em :is()) e o navegador descartaria a regra. */
+[data-slot="sheet-content"] > [data-slot="sheet-close"][data-size^="icon"],
+[data-slot="dialog-content"] > [data-slot="dialog-close"][data-size^="icon"] {
+  @variant toque {
+    &::after {
+      content: "";
+      position: absolute;
+      inset: -0.125rem;
+    }
+  }
+}
+
+/* ---------------------------------------------------------------------------------------------------- */
+/* Itens de lista e menu: 48 px.                                                                         */
+/* ---------------------------------------------------------------------------------------------------- */
+
+[data-slot="dropdown-menu-item"],
+[data-slot="dropdown-menu-checkbox-item"],
+[data-slot="dropdown-menu-radio-item"],
+[data-slot="dropdown-menu-sub-trigger"],
+[data-slot="select-item"],
+[data-slot="command-item"],
+[data-slot="sidebar-menu-sub-button"],
+[data-sidebar="menu-sub-button"] {
+  @variant toque {
+    min-height: var(--touch-item-h);
+  }
+}
+
+/* ---------------------------------------------------------------------------------------------------- */
+/* Marcadores: checkbox e rádio de 24 px (a área de toque do template já se estende além da caixa).      */
+/* ---------------------------------------------------------------------------------------------------- */
+
+[data-slot="checkbox"],
+[data-slot="radio-group-item"] {
+  @variant toque {
+    min-width: 1.5rem;
+    min-height: 1.5rem;
+  }
+}
+
+/* Switch 48 × 28 com polegar de 24 px: o deslocamento do template (100% − 2 px) continua fechando certo. */
+[data-slot="switch"][data-size="default"] {
+  @variant toque {
+    min-width: 3rem;
+    min-height: 1.75rem;
+  }
+}
+
+[data-slot="switch"][data-size="default"] [data-slot="switch-thumb"] {
+  @variant toque {
+    min-width: 1.5rem;
+    min-height: 1.5rem;
+  }
+}
+
+/* ---------------------------------------------------------------------------------------------------- */
+/* Campos de texto com 16 px ou mais: evita o zoom automático do iOS sem bloquear o zoom do usuário.     */
+/* ---------------------------------------------------------------------------------------------------- */
+
+[data-slot="input"],
+[data-slot="textarea"],
+[data-slot="input-group-control"],
+[data-slot="sidebar-input"],
+[data-slot="select-trigger"],
+[data-slot="native-select"],
+[data-slot="command-input"],
+[data-slot="number-field-input"] {
+  @variant toque {
+    font-size: max(var(--touch-font-min), 1em);
+  }
+}
+
+/* ---------------------------------------------------------------------------------------------------- */
+/* Sonner. O CSS do sonner é injetado no <head> depois desta folha, então os seletores levam             */
+/* [data-sonner-toaster] na frente para ter especificidade maior que a dele.                             */
+/* ---------------------------------------------------------------------------------------------------- */
+
+[data-sonner-toaster] [data-sonner-toast][data-styled="true"] {
+  @variant toque {
+    font-size: 1rem;
+  }
+}
+
+/* Ação (ex.: "Desfazer") e cancelar: 44 px, 16 px de texto. */
+[data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-button] {
+  @variant toque {
+    min-height: 2.75rem;
+    padding-inline: 1rem;
+    font-size: 1rem;
+  }
+}
+
+/* Fechar (X) do toast, que dispensa o aviso de 8 s: 44 px visíveis (docs/12 §2 item 5 e fase B) e 48 px de área de
+   toque (elemento secundário, §2 item 1) por um ::after; o botão do sonner já é position: absolute. O círculo de 44 px
+   no canto, deslocado 35 % para fora pelo sonner, não chega ao ícone do toast. Ícone de 16 px em vez de 12 px. */
+[data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-close-button] {
+  @variant toque {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+  }
+}
+
+[data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-close-button] {
+  @variant toque {
+    &::after {
+      content: "";
+      position: absolute;
+      inset: -0.125rem;
+    }
+  }
+}
+
+[data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-close-button] svg {
+  @variant toque {
+    width: 1rem;
+    height: 1rem;
+  }
+}
+
+/* ---------------------------------------------------------------------------------------------------- */
+/* Barras fixas opacas no toque: sem backdrop-filter (GPU modesta do Tab Active5; leitura sob luz forte). */
+/* Uso: data-touch-bar="true" na barra.                                                                  */
+/* ---------------------------------------------------------------------------------------------------- */
+
+[data-touch-bar="true"] {
+  @variant toque {
+    background-color: var(--background);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------------------------------- */
+/* Baseline interface nativa (sempre ligada). Em @layer base para que utilitários como touch-none vençam.   */
+/* overscroll-behavior: none já está em globals.css.                                                     */
+/* ---------------------------------------------------------------------------------------------------- */
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  /* Sem atraso de duplo toque, sem flash cinza e sem menu de toque longo nos controles.
+     Não usa user-select: none: texto de leitura (lote, justificativa) continua copiável. Só controles: itens de
+     conteúdo (timeline-item, accordion-item, breadcrumb-item) ficam de fora, porque -webkit-touch-callout é herdado.
+     O retorno visual do toque fica a cargo do :active de cada controle (sem o flash cinza do navegador). */
+  button,
+  [role="button"],
+  a,
+  [role="menuitem"],
+  [role="menuitemcheckbox"],
+  [role="menuitemradio"],
+  [role="option"],
+  [role="tab"],
+  [data-slot$="-trigger"] {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+  }
+}
+
+/* O StatusIndicator do template pulsa (before:animate-ping) sem motion-reduce (docs/12 §3.6). Só o ping para:
+   spinners (animate-spin) continuam girando, porque um spinner parado parece travamento, e o animate-pulse dos
+   esqueletos é só opacidade. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-ping,
+  [data-slot="status-indicator"]::before {
+    animation-duration: 0.01ms;
+    animation-iteration-count: 1;
+  }
+}

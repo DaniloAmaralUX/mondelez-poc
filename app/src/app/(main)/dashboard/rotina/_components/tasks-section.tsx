@@ -80,7 +80,10 @@ export function TasksSection() {
   );
 }
 
-/** Linha inteira tocável (≥ 56 px); a ação fica explícita no fim da linha, nunca num checkbox. */
+/**
+ * Linha inteira tocável (≥ 56 px, docs/12 §3.4); a ação fica explícita no fim da linha, nunca num checkbox.
+ * active:bg-muted: retorno no toque, onde o hover não existe e o flash do navegador está desligado (tablet.css).
+ */
 function LinhaTarefa({ tarefa, agora, onConcluir }: { tarefa: TarefaInstancia; agora: Date; onConcluir: () => void }) {
   const Icone = ICONE_MODULO[tarefa.moduloSlug] ?? LayoutGrid;
   const feita = concluida(tarefa);
@@ -90,8 +93,8 @@ function LinhaTarefa({ tarefa, agora, onConcluir }: { tarefa: TarefaInstancia; a
         <Icone className="size-4" aria-hidden />
       </div>
       <div className="min-w-0 flex-1">
-        <div className="line-clamp-2 font-medium text-sm">{tarefa.titulo}</div>
-        <div className="text-muted-foreground text-xs tabular-nums">
+        <div className="line-clamp-2 font-medium text-base">{tarefa.titulo}</div>
+        <div className="text-muted-foreground text-sm tabular-nums">
           {formatarHora(tarefa.abre)}–{formatarHora(tarefa.prazo)} · {descreverPrazo(tarefa, agora)}
         </div>
       </div>
@@ -106,9 +109,10 @@ function LinhaTarefa({ tarefa, agora, onConcluir }: { tarefa: TarefaInstancia; a
       <Link
         prefetch={false}
         href={hrefDaTarefa(tarefa)}
+        // Anel de foco do template, por dentro: a lista tem overflow-hidden e cortaria um anel externo.
         className={cn(
           linha,
-          "transition-colors hover:bg-muted/50 focus-visible:bg-muted/50 focus-visible:outline-none",
+          "outline-none transition-colors hover:bg-muted/50 focus-visible:bg-muted/50 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset active:bg-muted",
         )}
       >
         {conteudo}
@@ -121,9 +125,10 @@ function LinhaTarefa({ tarefa, agora, onConcluir }: { tarefa: TarefaInstancia; a
     <div className={cn(linha, (feita || tarefa.futura) && "text-muted-foreground")}>
       {conteudo}
       {!feita && !tarefa.futura && (
+        // 40 px no notebook (v0.2); no toque a camada leva a 56 px e toque:min-w-28 alarga o alvo para a luva.
         <Button
           variant="outline"
-          className="h-10 shrink-0 transition-transform duration-150 ease-out active:scale-[0.97]"
+          className="h-10 toque:min-w-28 shrink-0 transition-transform duration-150 ease-out active:scale-[0.97]"
           onClick={onConcluir}
         >
           <Check data-icon="inline-start" />

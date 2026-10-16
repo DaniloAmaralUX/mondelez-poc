@@ -78,11 +78,12 @@ export function LayoutControls() {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button size="icon">
+        <Button size="icon" aria-label="Configurações de layout">
           <Settings />
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="end">
+      {/* Com os controles de 56 px do toque o painel cresce: rola em vez de sair da tela em paisagem. */}
+      <PopoverContent align="end" className="max-h-(--radix-popover-content-available-height) overflow-y-auto">
         <div className="flex flex-col gap-5">
           <div className="space-y-1.5">
             <h4 className="font-medium text-sm leading-none">Preferências</h4>
@@ -142,13 +143,13 @@ export function LayoutControls() {
                 onValueChange={onThemeModeChange}
               >
                 <ToggleGroupItem value="light" aria-label="Claro">
-                  Light
+                  Claro
                 </ToggleGroupItem>
                 <ToggleGroupItem value="dark" aria-label="Escuro">
-                  Dark
+                  Escuro
                 </ToggleGroupItem>
                 <ToggleGroupItem value="system" aria-label="Sistema">
-                  System
+                  Sistema
                 </ToggleGroupItem>
               </ToggleGroup>
             </div>
@@ -164,10 +165,10 @@ export function LayoutControls() {
                 onValueChange={onContentLayoutChange}
               >
                 <ToggleGroupItem value="centered" aria-label="Centralizada">
-                  Centered
+                  Centralizada
                 </ToggleGroupItem>
                 <ToggleGroupItem value="full-width" aria-label="Largura total">
-                  Full Width
+                  Largura total
                 </ToggleGroupItem>
               </ToggleGroup>
             </div>
@@ -183,10 +184,10 @@ export function LayoutControls() {
                 onValueChange={onNavbarStyleChange}
               >
                 <ToggleGroupItem value="sticky" aria-label="Fixa">
-                  Sticky
+                  Fixa
                 </ToggleGroupItem>
                 <ToggleGroupItem value="scroll" aria-label="Rola com a página">
-                  Scroll
+                  Rola com a página
                 </ToggleGroupItem>
               </ToggleGroup>
             </div>
@@ -202,13 +203,13 @@ export function LayoutControls() {
                 onValueChange={onSidebarStyleChange}
               >
                 <ToggleGroupItem value="inset" aria-label="Embutida">
-                  Inset
+                  Embutida
                 </ToggleGroupItem>
                 <ToggleGroupItem value="sidebar" aria-label="Padrão">
-                  Sidebar
+                  Padrão
                 </ToggleGroupItem>
                 <ToggleGroupItem value="floating" aria-label="Flutuante">
-                  Floating
+                  Flutuante
                 </ToggleGroupItem>
               </ToggleGroup>
             </div>
@@ -224,12 +225,17 @@ export function LayoutControls() {
                 onValueChange={onSidebarCollapseModeChange}
               >
                 <ToggleGroupItem value="icon" aria-label="Ícones">
-                  Icon
+                  Ícones
                 </ToggleGroupItem>
                 <ToggleGroupItem value="offcanvas" aria-label="Oculta">
-                  OffCanvas
+                  Oculta
                 </ToggleGroupItem>
               </ToggleGroup>
+              {/* Com toque, "Ícones" vira "Oculta" (app-sidebar.tsx): os rótulos dos ícones dependem de tooltip.
+                  pointer-coarse, e não toque:, porque a troca segue o ponteiro real, não o override data-density. */}
+              <p className="pointer-coarse:block hidden text-muted-foreground text-xs">
+                No tablet, recolhida, a barra lateral some por inteiro.
+              </p>
             </div>
 
             <Button type="button" size="sm" variant="outline" className="w-full text-xs" onClick={resetPreferences}>

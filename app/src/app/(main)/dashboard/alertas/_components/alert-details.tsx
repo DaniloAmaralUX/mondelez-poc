@@ -43,6 +43,8 @@ const ACAO_LABEL = {
 
 type AlertDetailsProps = {
   alerta: Alerta | null;
+  /** `id` do título (recebe o foco quando o detalhe substitui a lista na pilha do retrato). */
+  tituloId?: string;
 };
 
 function EmptyAlertOverview() {
@@ -62,7 +64,7 @@ function useOrigem(alerta: Alerta) {
   return { registro, pessoa };
 }
 
-function AlertOverview({ alerta }: { alerta: Alerta }) {
+function AlertOverview({ alerta, tituloId }: { alerta: Alerta; tituloId?: string }) {
   const agora = useAgora();
   const status = statusVisual(alerta);
   const { registro, pessoa } = useOrigem(alerta);
@@ -73,9 +75,18 @@ function AlertOverview({ alerta }: { alerta: Alerta }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+      {/* Container queries (@container/detalhe): o painel tem ~550 px em paisagem com a sidebar aberta e ~800 px no
+          retrato, independentemente do viewport. */}
+      <div className="flex @lg/detalhe:flex-row flex-col @lg/detalhe:items-center @lg/detalhe:justify-between @lg/detalhe:gap-4 gap-2">
         <div className="flex items-center gap-2">
-          <h1 className="font-medium text-lg tabular-nums tracking-tight sm:text-xl">#{alerta.regra}</h1>
+          <h1
+            id={tituloId}
+            tabIndex={-1}
+            className="font-medium @lg/detalhe:text-xl text-lg tabular-nums tracking-tight outline-none"
+          >
+            #{alerta.regra}
+          </h1>
+          {/* Tamanho do template no notebook; no toque a camada (src/styles/tablet.css) leva o ícone a 56 × 56 px. */}
           <Button
             variant="ghost"
             size="icon-sm"
@@ -89,7 +100,7 @@ function AlertOverview({ alerta }: { alerta: Alerta }) {
           </Button>
         </div>
 
-        <div className="flex items-center gap-2 text-xs sm:text-sm">
+        <div className="flex flex-wrap items-center gap-2 text-sm">
           <Badge variant="outline" className={cn("gap-1.5", statusBadgeClasses[status])}>
             <span className={cn("size-1.5 rounded-full bg-current", progressRingClasses[status])} />
             {STATUS_LABEL[status]}
@@ -103,7 +114,7 @@ function AlertOverview({ alerta }: { alerta: Alerta }) {
 
       <Separator />
 
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <Avatar className="size-9 after:rounded-sm">
             <AvatarFallback className="rounded-sm">{pessoa ? getInitials(pessoa.nome) : "OP"}</AvatarFallback>
@@ -112,7 +123,7 @@ function AlertOverview({ alerta }: { alerta: Alerta }) {
           <div className="flex flex-col gap-1">
             <div className="font-medium text-sm leading-none">{registro ? pessoa?.nome : "Operação do posto"}</div>
             <div className="flex items-center gap-2 text-muted-foreground">
-              <span className="text-xs tabular-nums leading-none tracking-tight">
+              <span className="text-sm tabular-nums leading-none tracking-tight">
                 {registro ? `Matrícula ${pessoa?.matricula}` : `${posto?.nome} · sem registro`}
               </span>
             </div>
@@ -124,7 +135,7 @@ function AlertOverview({ alerta }: { alerta: Alerta }) {
             <Star />
             {alerta.criticidade === "critico" ? "Crítico" : "Atenção"}
           </Badge>
-          <div className="text-muted-foreground text-xs leading-none">
+          <div className="text-muted-foreground text-sm leading-none">
             {itemCritico ? "Item de segurança ou qualidade" : "Escalona após 30 min"}
           </div>
         </div>
@@ -136,7 +147,7 @@ function AlertOverview({ alerta }: { alerta: Alerta }) {
         <div className="flex items-start justify-between gap-4">
           <h2 className="font-medium">Detalhes do alerta</h2>
 
-          <Button asChild variant="outline" size="sm">
+          <Button asChild variant="outline" size="sm" className="shrink-0">
             <Link
               prefetch={false}
               href={registro ? `/dashboard/checklist/${registro.formularioId}` : "/dashboard/tarefas"}
@@ -146,30 +157,33 @@ function AlertOverview({ alerta }: { alerta: Alerta }) {
           </Button>
         </div>
 
-        <div className="grid grid-cols-2 gap-x-4 gap-y-5 md:grid-cols-[1.35fr_1fr_1.1fr_1.15fr_1fr]">
-          <div className="col-span-2 flex flex-col gap-1 md:col-span-1 md:gap-2">
-            <div className="text-muted-foreground text-xs leading-none md:invisible md:text-sm">Alerta</div>
+        {/* 2 colunas abaixo de 672 px de painel (paisagem com a sidebar aberta), 5 acima (retrato, notebook). */}
+        <div className="grid @2xl/detalhe:grid-cols-[1.35fr_1fr_1.1fr_1.15fr_1fr] grid-cols-2 gap-x-4 gap-y-5">
+          <div className="@2xl/detalhe:col-span-1 col-span-2 flex flex-col @2xl/detalhe:gap-2 gap-1">
+            <div className="@2xl/detalhe:invisible @2xl/detalhe:text-sm text-muted-foreground text-xs leading-none">
+              Alerta
+            </div>
             <div className="text-sm leading-tight">{alerta.titulo}</div>
           </div>
 
           <div className="flex flex-col gap-2">
-            <div className="text-muted-foreground text-xs leading-none md:text-sm">Posto</div>
-            <div className="text-sm leading-none">{posto?.nome}</div>
+            <div className="@2xl/detalhe:text-sm text-muted-foreground text-xs leading-none">Posto</div>
+            <div className="text-sm leading-tight">{posto?.nome}</div>
           </div>
 
           <div className="flex flex-col gap-2">
-            <div className="text-muted-foreground text-xs leading-none md:text-sm">Equipamento</div>
-            <div className="text-sm leading-none">{equipamento?.nome ?? "—"}</div>
+            <div className="@2xl/detalhe:text-sm text-muted-foreground text-xs leading-none">Equipamento</div>
+            <div className="text-sm leading-tight">{equipamento?.nome ?? "—"}</div>
           </div>
 
           <div className="flex flex-col gap-2">
-            <div className="text-muted-foreground text-xs leading-none md:text-sm">Regra</div>
-            <div className="text-sm leading-none">{REGRA_LABEL[alerta.regra]}</div>
+            <div className="@2xl/detalhe:text-sm text-muted-foreground text-xs leading-none">Regra</div>
+            <div className="text-sm leading-tight">{REGRA_LABEL[alerta.regra]}</div>
           </div>
 
-          <div className="flex flex-col gap-2 md:text-right">
-            <div className="text-muted-foreground text-xs leading-none md:text-sm">Responsável</div>
-            <div className="text-sm leading-none">{responsavel?.nome ?? "—"}</div>
+          <div className="flex flex-col gap-2 @2xl/detalhe:text-right">
+            <div className="@2xl/detalhe:text-sm text-muted-foreground text-xs leading-none">Responsável</div>
+            <div className="text-sm leading-tight">{responsavel?.nome ?? "—"}</div>
           </div>
         </div>
       </div>
@@ -256,7 +270,11 @@ function AlertHistory({ alerta }: { alerta: Alerta }) {
   );
 }
 
-export function AlertDetails({ alerta }: AlertDetailsProps) {
+/**
+ * Lado a lado (`@4xl/content`), o painel tem a altura da tela: o conteúdo rola por dentro e as ações ficam no rodapé.
+ * Na pilha do retrato, a página rola normalmente e o rodapé de ações gruda na borda de baixo da tela.
+ */
+export function AlertDetails({ alerta, tituloId }: AlertDetailsProps) {
   if (!alerta) {
     return (
       <div className="h-full p-4">
@@ -266,13 +284,18 @@ export function AlertDetails({ alerta }: AlertDetailsProps) {
   }
 
   return (
-    <div className="grid h-full min-h-0 grid-rows-[minmax(0,1fr)_auto] overflow-hidden">
-      <div className="flex min-h-0 flex-col gap-6 overflow-auto p-4">
-        <AlertOverview alerta={alerta} />
+    <div className="@container/detalhe flex @4xl/content:h-full @4xl/content:min-h-0 flex-col @4xl/content:overflow-hidden">
+      <div className="flex @4xl/content:min-h-0 @4xl/content:flex-1 flex-col gap-6 @4xl/content:overflow-auto p-4">
+        <AlertOverview alerta={alerta} tituloId={tituloId} />
         <Separator />
         <AlertHistory alerta={alerta} />
       </div>
-      <div className="border-t bg-background/95 px-4 py-3 backdrop-blur-sm">
+      {/* data-touch-bar: opaca e sem blur no toque (src/styles/tablet.css). Com viewport-fit=cover, fica acima do
+          indicador de início do iPad no app instalado. */}
+      <div
+        data-touch-bar="true"
+        className="sticky bottom-0 z-10 shrink-0 border-t bg-background/95 px-4 pt-3 pb-[max(--spacing(3),env(safe-area-inset-bottom))] backdrop-blur-sm"
+      >
         <AlertActions alerta={alerta} />
       </div>
     </div>

@@ -1,3 +1,5 @@
+import { cn } from "cn";
+
 import { Status, StatusIndicator, StatusLabel } from "@/components/ui/status";
 import type { TarefaInstancia } from "@/domain/types";
 import { formatarHora } from "@/lib/format";
@@ -12,11 +14,14 @@ export function statusDaTarefa(tarefa: TarefaInstancia): { variante: Variante; r
   return { variante: "info", rotulo: "Aberta" };
 }
 
-/** Ponto + rótulo. Só o atraso pulsa: é o único estado que pede atenção agora. */
+/**
+ * Ponto + rótulo. Só o atraso pulsa: é o único estado que pede atenção agora (sem pulsar com
+ * prefers-reduced-motion, pela camada em src/styles/tablet.css). Texto em text-sm: tela do operador.
+ */
 export function StatusTarefa({ tarefa, className }: { readonly tarefa: TarefaInstancia; readonly className?: string }) {
   const { variante, rotulo } = statusDaTarefa(tarefa);
   return (
-    <Status variant={variante} className={className}>
+    <Status variant={variante} className={cn("text-sm", className)}>
       <StatusIndicator className={variante === "error" ? undefined : "before:hidden"} />
       <StatusLabel>{rotulo}</StatusLabel>
     </Status>

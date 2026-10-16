@@ -1,5 +1,7 @@
 "use client";
 
+import type * as React from "react";
+
 import { cn } from "cn";
 import { AnimatePresence, motion } from "motion/react";
 import { useFormContext, useWatch } from "react-hook-form";
@@ -13,6 +15,7 @@ import {
 } from "@/components/reui/number-field";
 import { FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { MIN_JUSTIFICATIVA, situacaoItem } from "@/domain/formulario-engine";
 import type { ItemFormulario, Resposta, ValorCnc } from "@/domain/types";
@@ -42,6 +45,30 @@ const OPCOES: { valor: ValorCnc; rotulo: string; aria: string; ativo: string }[]
 
 const REVELAR = { duration: 0.2, ease: [0.23, 1, 0.32, 1] } as const;
 
+/**
+ * Enter no teclado virtual faz o que a tecla diz (enterKeyHint): "next" vai para o próximo campo da lista,
+ * "done" fecha o teclado. Também evita o envio implícito do formulário no meio de uma etapa.
+ */
+function aoEnter(event: React.KeyboardEvent<HTMLInputElement>, acao: "proximo" | "concluir") {
+  if (event.key !== "Enter" || event.nativeEvent.isComposing) return;
+  event.preventDefault();
+  const atual = event.currentTarget;
+  if (acao === "proximo") {
+    // Só campos que a pessoa alcança: o NumberField (base-ui) tem um input oculto com tabIndex -1.
+    const campos = Array.from(
+      atual
+        .closest("[data-checklist-itens]")
+        ?.querySelectorAll<HTMLInputElement>('input:not([disabled]):not([type="hidden"]):not([tabindex="-1"])') ?? [],
+    );
+    const proximo = campos[campos.indexOf(atual) + 1];
+    if (proximo) {
+      proximo.focus();
+      return;
+    }
+  }
+  atual.blur();
+}
+
 export function ChecklistItems({
   itens,
   numeros,
@@ -55,7 +82,8 @@ export function ChecklistItems({
   const respostas = useWatch<ChecklistFormValues, "respostas">({ name: "respostas" }) ?? {};
 
   return (
-    <div className="flex flex-col gap-3">
+    // Container query: a linha do item se divide pela largura do painel, não do viewport (sidebar aberta ou não).
+    <div data-checklist-itens className="@container/itens flex flex-col gap-3">
       {itens.map((item) => (
         <ItemRow
           key={item.id}
@@ -89,6 +117,8 @@ function ItemRow({
       `Padrão ${item.faixa.min.toLocaleString("pt-BR")}–${item.faixa.max.toLocaleString("pt-BR")} ${item.faixa.unidade}`,
     item.critico && "item crítico",
   ].filter(Boolean);
+  const idErro = erro ? `erro-${item.id}` : undefined;
+  const idJustificativa = `justificativa-${item.id}`;
 
   return (
     <div
@@ -99,16 +129,16 @@ function ItemRow({
         erro && "border-destructive/50",
       )}
     >
-      <div className="flex flex-col gap-3 md:flex-row md:items-center">
+      <div className="flex @2xl/itens:flex-row flex-col @2xl/itens:items-center gap-3">
         <div className="flex min-w-0 flex-1 gap-3">
-          <span className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-md bg-muted text-muted-foreground text-xs tabular-nums">
+          <span className="grid size-6 shrink-0 place-items-center rounded-md bg-muted text-muted-foreground text-sm tabular-nums">
             {numero}
           </span>
           <div className="min-w-0">
-            <p className="font-medium text-sm">{item.texto}</p>
+            <p className="font-medium text-base">{item.texto}</p>
             <p
               className={cn(
-                "text-xs",
+                "text-sm",
                 situacao === "NC" ? "text-destructive" : "text-muted-foreground",
                 situacao === "C" && "text-green-700 dark:text-green-400",
               )}
@@ -118,23 +148,32 @@ function ItemRow({
           </div>
         </div>
 
-        <div className="md:shrink-0">
+        <div className="@2xl/itens:shrink-0">
           {item.tipo === "cnc" && (
             <ToggleGroup
               type="single"
               variant="outline"
               size="lg"
+              // 16 px entre C, NC e N/A: respostas opostas (docs/12 §2 item 2 e §3.3); cumpre o piso de 12 px.
+              spacing={4}
               value={resposta?.valor ?? ""}
-              onValueChange={(valor) => onChange({ ...resposta, valor: (valor || undefined) as ValorCnc | undefined })}
+              // O segundo toque não desmarca: com luva, um toque repetido não pode apagar a resposta.
+              onValueChange={(valor) => {
+                if (valor) onChange({ ...resposta, valor: valor as ValorCnc });
+              }}
               aria-label={item.texto}
               aria-invalid={erro ? true : undefined}
+              aria-describedby={idErro}
             >
+              {/* No toque, 64 × 80 px (resposta é a ação primária); no notebook, os 44 px da v0.2 (docs/12 §3.1).
+                  toque:w-20, não toque:min-w-20: o min-width da camada de toque (src/styles/tablet.css, sem layer)
+                  venceria um min-w-* e voltaria a 56 px. */}
               {OPCOES.map((opcao) => (
                 <ToggleGroupItem
                   key={opcao.valor}
                   value={opcao.valor}
                   aria-label={opcao.aria}
-                  className={cn("h-11 min-w-14 font-medium", opcao.ativo)}
+                  className={cn("h-11 toque:h-16 toque:w-20 min-w-14 font-medium text-base", opcao.ativo)}
                 >
                   {opcao.rotulo}
                 </ToggleGroupItem>
@@ -143,14 +182,27 @@ function ItemRow({
           )}
 
           {item.tipo === "numero" && item.faixa && (
-            <CampoCenterline item={item} faixa={item.faixa} resposta={resposta} erro={erro} onChange={onChange} />
+            <CampoCenterline
+              item={item}
+              faixa={item.faixa}
+              resposta={resposta}
+              erro={erro}
+              idErro={idErro}
+              onChange={onChange}
+            />
           )}
 
           {item.tipo === "texto" && (
             <Input
-              className="h-11 md:w-64"
+              className="h-11 @2xl/itens:w-64"
               aria-label={item.texto}
               aria-invalid={erro ? true : undefined}
+              aria-describedby={idErro}
+              autoCapitalize="characters"
+              autoCorrect="off"
+              spellCheck={false}
+              enterKeyHint="next"
+              onKeyDown={(e) => aoEnter(e, "proximo")}
               value={resposta?.texto ?? ""}
               onChange={(e) => onChange({ ...resposta, texto: e.target.value })}
             />
@@ -166,20 +218,28 @@ function ItemRow({
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={REVELAR}
-            className="overflow-hidden"
+            // -m-1/p-1: o overflow-hidden da animação não corta o anel de foco do campo.
+            className="-m-1 overflow-hidden"
           >
-            <Input
-              className="h-11"
-              aria-label={`Justificativa: ${item.texto}`}
-              aria-invalid={erro ? true : undefined}
-              placeholder={`O que está fora do padrão? (mínimo ${MIN_JUSTIFICATIVA} caracteres)`}
-              value={resposta?.justificativa ?? ""}
-              onChange={(e) => onChange({ ...resposta, justificativa: e.target.value })}
-            />
+            <div className="flex flex-col gap-2 p-1">
+              <Label htmlFor={idJustificativa}>Justificativa</Label>
+              <Input
+                id={idJustificativa}
+                className="h-11"
+                aria-label={`Justificativa: ${item.texto}`}
+                aria-invalid={erro ? true : undefined}
+                aria-describedby={idErro}
+                enterKeyHint="done"
+                onKeyDown={(e) => aoEnter(e, "concluir")}
+                placeholder={`O que está fora do padrão? (mínimo ${MIN_JUSTIFICATIVA} caracteres)`}
+                value={resposta?.justificativa ?? ""}
+                onChange={(e) => onChange({ ...resposta, justificativa: e.target.value })}
+              />
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
-      {erro && <FieldError>{erro}</FieldError>}
+      {erro && <FieldError id={idErro}>{erro}</FieldError>}
     </div>
   );
 }
@@ -190,12 +250,14 @@ function CampoCenterline({
   faixa,
   resposta,
   erro,
+  idErro,
   onChange,
 }: {
   item: ItemFormulario;
   faixa: NonNullable<ItemFormulario["faixa"]>;
   resposta: Resposta | undefined;
   erro: string | undefined;
+  idErro: string | undefined;
   onChange: (resposta: Resposta) => void;
 }) {
   const span = faixa.max - faixa.min;
@@ -204,7 +266,7 @@ function CampoCenterline({
   const valor = resposta?.numero;
 
   return (
-    <div className="flex w-full flex-col gap-2 md:w-56">
+    <div className="flex @2xl/itens:w-56 w-full flex-col gap-2">
       <NumberField
         size="lg"
         value={valor ?? null}
@@ -229,13 +291,13 @@ function CampoCenterline({
           }}
         >
           <NumberFieldDecrement className="px-3.5" aria-label={`Diminuir ${item.texto}`} />
-          <NumberFieldInput placeholder={meio.toLocaleString("pt-BR")} inputMode="decimal" />
+          <NumberFieldInput placeholder={meio.toLocaleString("pt-BR")} inputMode="decimal" aria-describedby={idErro} />
           <NumberFieldIncrement className="px-3.5" aria-label={`Aumentar ${item.texto}`} />
         </NumberFieldGroup>
       </NumberField>
       <div className="flex items-center gap-2">
         <FaixaIndicador faixa={faixa} valor={valor} />
-        <span className="shrink-0 text-muted-foreground text-xs">{faixa.unidade}</span>
+        <span className="shrink-0 text-muted-foreground text-sm">{faixa.unidade}</span>
       </div>
     </div>
   );

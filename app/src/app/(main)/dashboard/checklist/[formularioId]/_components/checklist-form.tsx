@@ -108,13 +108,15 @@ export function ChecklistStepper({
           const completa = !ehRevisar && Object.keys(errosDa(e.itens)).length === 0;
           return (
             <StepperItem key={e.value} value={e.value} completed={completa}>
-              <StepperTrigger className="min-h-11">
+              {/* 44 px no notebook (v0.2); 56 px no toque. A camada de densidade não cobre o stepper-trigger, então o
+                  piso vem daqui (toque:, que acompanha o override data-density). */}
+              <StepperTrigger className="min-h-11 toque:min-h-14">
                 <StepperIndicator>
                   {(estado) => (estado === "completed" ? <Check className="size-3.5" aria-hidden /> : posicao + 1)}
                 </StepperIndicator>
                 <div className="flex flex-col items-start gap-0.5 text-left">
                   <StepperTitle>{e.titulo}</StepperTitle>
-                  <StepperDescription className="tabular-nums">
+                  <StepperDescription className="text-sm tabular-nums">
                     {ehRevisar ? `${resumo.respondidos}/${resumo.total} itens` : `${respondidos}/${e.itens.length}`}
                   </StepperDescription>
                 </div>
@@ -140,14 +142,25 @@ export function ChecklistStepper({
         <ChecklistPreview formulario={formulario} valores={valores} tarefa={tarefa} registro={registro} />
       </StepperContent>
 
-      {/* Barra fixa: progresso e próxima ação sempre visíveis no tablet (UI Audit, prioridade 1). */}
-      <div className="sticky bottom-3 z-10 flex items-center gap-3 rounded-xl border bg-background/95 px-4 py-3 shadow-sm backdrop-blur-sm">
+      {/* Barra fixa: progresso e próxima ação sempre visíveis no tablet (UI Audit, prioridade 1).
+          data-touch-bar: opaca e sem blur no toque (src/styles/tablet.css). Com viewport-fit=cover, a barra
+          fica acima do indicador de início do iPad (safe area) no app instalado.
+          Alturas: 44 px no notebook (v0.2); no toque a camada leva Restantes conformes e Voltar a 56 px, e
+          Próximo/Registrar vão a 64 px por toque:h-16 (docs/12 §2 item 1 e §3.1). */}
+      <div
+        data-touch-bar="true"
+        className="sticky bottom-[max(--spacing(3),env(safe-area-inset-bottom))] z-10 flex items-center gap-3 rounded-xl border bg-background/95 px-4 py-3 shadow-sm backdrop-blur-sm"
+      >
         <div className="hidden min-w-0 flex-1 flex-col gap-1.5 sm:flex">
-          <span className="truncate text-muted-foreground text-xs tabular-nums">
+          <span className="truncate text-muted-foreground text-sm tabular-nums">
             {resumo.respondidos} de {resumo.total} respondidos
             {resumo.naoConformes > 0 && ` · ${resumo.naoConformes} não conforme${resumo.naoConformes > 1 ? "s" : ""}`}
           </span>
-          <Progress value={(resumo.respondidos / resumo.total) * 100} className="h-1.5 max-w-60" />
+          <Progress
+            value={(resumo.respondidos / resumo.total) * 100}
+            aria-label="Itens respondidos"
+            className="h-1.5 max-w-60"
+          />
         </div>
         {!somenteLeitura && etapa !== ETAPA_REVISAR && (
           <Button
@@ -161,7 +174,8 @@ export function ChecklistStepper({
             <span className="hidden sm:inline">Restantes</span> conformes
           </Button>
         )}
-        <div className="ml-auto flex items-center gap-2">
+        {/* Voltar × Próximo são ações opostas: 16 px entre elas (docs/12 §2, item 2). */}
+        <div className="ml-auto flex items-center gap-4">
           {/* Navegação própria: o StepperNext/Prev do registry só habilita depois de um segundo render. */}
           <Button
             type="button"
@@ -175,7 +189,7 @@ export function ChecklistStepper({
           </Button>
           {etapa === ETAPA_REVISAR ? (
             !somenteLeitura && (
-              <Button type="submit" className={cn("h-11 px-5", PRESSAO)}>
+              <Button type="submit" className={cn("h-11 toque:h-16 px-5 toque:px-6 toque:text-base", PRESSAO)}>
                 <Send data-icon="inline-start" />
                 Registrar
               </Button>
@@ -183,7 +197,7 @@ export function ChecklistStepper({
           ) : (
             <Button
               type="button"
-              className={cn("h-11 px-5", PRESSAO)}
+              className={cn("h-11 toque:h-16 px-5 toque:px-6 toque:text-base", PRESSAO)}
               onClick={() => {
                 if (onValidate(etapa, "next") === true) onEtapaChange(valoresEtapas[indice + 1] ?? etapa);
               }}
@@ -214,7 +228,7 @@ function ResumoDaRevisao({ formulario, valores }: { formulario: Formulario; valo
         ].map((c) => (
           <div key={c.rotulo} className="rounded-lg bg-muted/50 p-3">
             <div className="text-2xl tabular-nums tracking-tight">{c.valor}</div>
-            <div className="text-muted-foreground text-xs">{c.rotulo}</div>
+            <div className="text-muted-foreground text-sm">{c.rotulo}</div>
           </div>
         ))}
       </div>

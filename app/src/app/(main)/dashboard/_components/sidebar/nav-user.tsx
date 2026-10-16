@@ -19,6 +19,8 @@ import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/c
 import { getInitials } from "@/lib/utils";
 import { useSessionStore } from "@/stores/session/session-store";
 
+import { useFecharSidebarMovel } from "./nav-main";
+
 export function NavUser({
   user,
 }: {
@@ -29,6 +31,7 @@ export function NavUser({
   };
 }) {
   const { isMobile } = useSidebar();
+  const fecharSidebar = useFecharSidebarMovel();
   const router = useRouter();
   const sair = useSessionStore((s) => s.sair);
 
@@ -78,13 +81,13 @@ export function NavUser({
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem asChild>
-                <Link prefetch={false} href="/dashboard/rotina">
+                <Link prefetch={false} href="/dashboard/rotina" onClick={fecharSidebar}>
                   <ListChecks />
                   Minha Rotina
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link prefetch={false} href="/dashboard/alertas">
+                <Link prefetch={false} href="/dashboard/alertas" onClick={fecharSidebar}>
                   <Bell />
                   Alertas
                 </Link>

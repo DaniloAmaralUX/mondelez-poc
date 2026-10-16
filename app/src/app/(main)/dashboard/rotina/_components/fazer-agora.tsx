@@ -95,14 +95,19 @@ export function FazerAgora() {
           </p>
         </div>
         {temTela(proxima) ? (
-          <Button asChild size="lg" className={cn("h-11 px-5 text-base", PRESSAO)}>
+          // 44 px no notebook (v0.2); 64 px no toque: ação primária do operador (docs/12 §2 item 1 e §3.1).
+          <Button asChild size="lg" className={cn("h-11 toque:h-16 px-5 toque:px-6 text-base", PRESSAO)}>
             <Link prefetch={false} href={hrefDaTarefa(proxima)}>
               Registrar
               <ArrowRight data-icon="inline-end" />
             </Link>
           </Button>
         ) : (
-          <Button size="lg" className={cn("h-11 px-5 text-base", PRESSAO)} onClick={() => concluir(proxima)}>
+          <Button
+            size="lg"
+            className={cn("h-11 toque:h-16 px-5 toque:px-6 text-base", PRESSAO)}
+            onClick={() => concluir(proxima)}
+          >
             <Check data-icon="inline-start" />
             Concluir
           </Button>

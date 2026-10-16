@@ -12,19 +12,16 @@ export function ChecklistNotes() {
     <section className="flex flex-col gap-4">
       <h2 className="font-medium tracking-tight">Observações</h2>
 
+      {/* Rótulo e descrição no text-sm do template: tela do operador, nada em text-xs (docs/12 §3.3). */}
       <Field className="gap-1">
-        <FieldLabel className="text-xs" htmlFor="observacao">
-          Observação geral
-        </FieldLabel>
+        <FieldLabel htmlFor="observacao">Observação geral</FieldLabel>
         <Textarea
           id="observacao"
           rows={3}
           placeholder="Algo que a supervisão precisa saber?"
           {...register("observacao")}
         />
-        <FieldDescription className="text-xs">
-          Opcional. Vai junto com o registro e com o alerta, se houver.
-        </FieldDescription>
+        <FieldDescription>Opcional. Vai junto com o registro e com o alerta, se houver.</FieldDescription>
       </Field>
     </section>
   );
