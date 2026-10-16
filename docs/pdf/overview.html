@@ -1,0 +1,102 @@
+<section class="chapter ov" id="visao-geral">
+  <p class="kicker">Visão geral em poucas páginas</p>
+  <h1>O projeto de relance</h1>
+  <p class="thesis">Um sistema de rotina que diz a cada pessoa da linha o que fazer agora, registra em poucos toques, detecta o desvio sozinho e entrega à liderança o turno consolidado, sem papel.</p>
+  <p class="small">Protótipo web na Vercel · piloto na linha Bis 2, posto Embalagem, Loeschpack 2/4/5 · detalhes nos capítulos 01 a 06.</p>
+
+  <h2>Mapa do job: o turno</h2>
+  <div class="grid steps">
+    <div class="step"><div class="n">1</div><div class="t">Assumir</div><ul><li>Troca de turno (ler)</li><li>Plano de produção</li><li>Agenda</li><li>Nível de risco</li></ul></div>
+    <div class="step"><div class="n">2</div><div class="t">Preparar</div><ul><li>Pré-partida HSE</li><li>PPLI &amp; Centerlining</li><li>Manutenção autônoma</li></ul></div>
+    <div class="step"><div class="n">3</div><div class="t">Produzir</div><ul><li>Hora x Hora</li><li>Sobrepeso / refugo</li><li>Rastreabilidade PA</li></ul></div>
+    <div class="step"><div class="n">4</div><div class="t">Desviar</div><ul><li>MTBF (1 toque)</li><li>NC em checklist</li><li>Book de defeitos</li><li>IT / LPP</li></ul></div>
+    <div class="step"><div class="n">5</div><div class="t">Tratar</div><ul><li>Alertas</li><li>Ação registrada</li><li>Teams / e-mail</li></ul></div>
+    <div class="step"><div class="n">6</div><div class="t">Encerrar</div><ul><li>Troca de turno (escrever)</li><li>Relatório do turno</li></ul></div>
+    <div class="step"><div class="n">7</div><div class="t">Analisar</div><ul><li>Relatório por linha</li><li>Histórico</li><li>Tendências</li></ul></div>
+  </div>
+
+  <h2>Personas</h2>
+  <div class="grid personas">
+    <div class="card"><div class="role">Operação</div><h3>Alberto Forte</h3><p>Operador de Embalagem, 1º turno, tablet do posto, de luva. Quer saber o que falta e registrar em 2 toques.</p><div class="q">"Se não é na hora, é invenção."</div></div>
+    <div class="card"><div class="role">Supervisão</div><h3>Renata Lins</h3><p>4 linhas BIS, 40 pessoas. Quer ver o desvio agora, com responsável, e chegar na passagem com o turno fechado.</p><div class="q">"Preciso saber onde ir agora."</div></div>
+    <div class="card"><div class="role">Gerência</div><h3>Marcos Tavares</h3><p>Fábrica de Chocolate, 3 turnos. Quer o relatório do turno pronto, alertas críticos no Teams e auditoria em minutos.</p><div class="q">"O número chega quando só serve para explicar."</div></div>
+    <div class="card"><div class="role">Especialista</div><h3>Juliana Prado</h3><p>Dona dos padrões: PPLI, centerlining, book, IT. Quer publicar a versão certa no ponto de uso e ver NCs do domínio.</p><div class="q">"Não sei qual versão está na máquina."</div></div>
+    <div class="card"><div class="role">Assistência</div><h3>Carlos Nunes</h3><p>Escala, agenda, plano de produção do Excel, cadastros. Quer importar e publicar em um passo.</p><div class="q">"Hoje eu imprimo e colo no mural."</div></div>
+  </div>
+
+  <h2>MoSCoW do protótipo</h2>
+  <div class="grid moscow">
+    <div class="card col must"><h3>Must</h3><ul>
+      <li>Login matrícula + PIN; contexto Chocolate → Bis 2 → Embalagem</li>
+      <li>Minha Rotina do turno (prazos, estados, criticidade)</li>
+      <li>Motor de formulários; NC exige justificativa</li>
+      <li>PPLI &amp; Centerlining</li>
+      <li>Hora x Hora (ton, GE, farol, gráfico)</li>
+      <li>MTBF por toque, Pareto</li>
+      <li>Alertas: criticidade, responsável, idade, tratar</li>
+      <li>Troca de turno pré-preenchida com aceite</li>
+      <li>Relatório do turno BIS 1–4</li>
+      <li>3 personas, rastreabilidade, indicador de sync</li>
+      <li>Painel de demo (persona, relógio, rede, reset)</li>
+      <li>Design para luva, landscape e portrait</li>
+    </ul></div>
+    <div class="card col should"><h3>Should</h3><ul>
+      <li>Plano de produção + import Excel</li>
+      <li>Book de defeitos, IT / LPP</li>
+      <li>Escala, Agenda e recados</li>
+      <li>Rastreabilidade de PA com foto</li>
+      <li>Pré-partida HSE + nível de risco</li>
+      <li>Sobrepeso, Limpeza semanal, Man. autônoma (genéricos)</li>
+      <li>Pedido de ajuda contextual</li>
+      <li>Dashboard gerencial, histórico com filtros</li>
+      <li>Estado compartilhado p/ demo em 2 dispositivos</li>
+    </ul></div>
+    <div class="card col could"><h3>Could</h3><ul>
+      <li>Tendências e recorrência</li>
+      <li>Troubleshooting por tipo de falha</li>
+      <li>Gamificação ("turno 100 %")</li>
+      <li>PWA instalável</li>
+      <li>PDF do relatório</li>
+      <li>Admin de rotinas pela UI</li>
+    </ul></div>
+    <div class="card col wont"><h3>Won't</h3><ul>
+      <li>SSO, Teams, EQCMS, PowerApps, SAP reais</li>
+      <li>APK, MDM, Ionic</li>
+      <li>Backend NestJS on-prem</li>
+      <li>Retenção 10 anos, certificações</li>
+      <li>WhatsApp, multi-idioma</li>
+    </ul></div>
+  </div>
+
+  <h2>Stack do protótipo</h2>
+  <div class="grid stack">
+    <div class="card"><h3>UI</h3><p>Next.js 16 App Router · React 19 · TypeScript · Tailwind v4 com tokens em @theme · shadcn/ui · lucide · Recharts · react-hook-form + zod</p><span class="tag">alvos ≥ 56 px · corpo ≥ 16 px · AA</span></div>
+    <div class="card"><h3>Domínio (TS puro)</h3><p>RoutineEngine · FormEngine · AlertEngine · KpiEngine (GE, ton/h, MTBF) · ShiftReport · Clock injetável</p><span class="tag">Vitest · sem dependência de Next</span></div>
+    <div class="card"><h3>Dados e deploy</h3><p>Zustand + IndexedDB offline-first atrás de Repository · seed da Bis 2 · Vercel com preview por PR · opcional Neon + Drizzle</p><span class="tag">portável: standalone + Docker</span></div>
+  </div>
+
+  <h2>Motor de alertas: regras iniciais</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Regra</th><th>Gatilho</th><th>Criticidade</th><th>Para quem</th></tr></thead>
+    <tbody>
+      <tr><td>A-ATRASO</td><td>Tarefa obrigatória vence sem conclusão</td><td><span class="crit a">Atenção</span>, <span class="crit c">Crítico</span> após 30 min</td><td>Supervisor; responsável = operador do posto</td></tr>
+      <tr><td>A-NC</td><td>Item não conforme em checklist</td><td><span class="crit c">Crítico</span> se segurança/qualidade</td><td>Supervisor + Especialista</td></tr>
+      <tr><td>A-GE</td><td>GE acumulado &lt; 70 % após 3 h</td><td><span class="crit a">Atenção</span></td><td>Supervisor, Gerente</td></tr>
+      <tr><td>A-META</td><td>Produção &lt; meta − 1,3 t</td><td><span class="crit a">Atenção</span></td><td>Supervisor</td></tr>
+      <tr><td>A-MTBF</td><td>MTBF do turno abaixo do limiar</td><td><span class="crit i">Info</span></td><td>Especialista</td></tr>
+      <tr><td>A-REPET</td><td>≥ 3 falhas do mesmo tipo no turno</td><td><span class="crit a">Atenção</span></td><td>Supervisor, Especialista</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>Ordem de construção</h2>
+  <div class="grid timeline">
+    <div class="inc"><b>I1</b>Scaffold, tokens, shell tablet, seed, login, contexto, Minha Rotina<span><br>link vivo na Vercel</span></div>
+    <div class="inc"><b>I2</b>Motor de formulários, PPLI, motor e painel de alertas, painel de demo<span><br>NC e atraso viram alerta</span></div>
+    <div class="inc"><b>I3</b>Hora x Hora, MTBF, KPIs do turno<span><br>farol e gráficos</span></div>
+    <div class="inc"><b>I4</b>Troca de turno, Relatório do turno, persona Gerente<span><br>ciclo fechado</span></div>
+    <div class="inc s"><b>I5</b>Should: plano + import, book, IT, escala, agenda, foto, HSE, genéricos<span><br>catálogo completo</span></div>
+    <div class="inc s"><b>I6</b>Luva, contraste, vazios, offline, testes, Playwright<span><br>pronto p/ usuários</span></div>
+  </div>
+
+  <div class="note"><b>Pontos a validar com a Mondelez na Etapa 1:</b> definição oficial de GE/OEE, limiares de alerta, lista final de perfis, nome do módulo de rastreabilidade (PA × matéria-prima), identidade visual.</div>
+</section>

@@ -1,0 +1,15 @@
+{
+  "name": "mondelez-docs-pdf",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Gera docs/Guia-do-Projeto-Mondelez.pdf a partir dos markdowns de docs/",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "devDependencies": {
+    "marked": "^15.0.0",
+    "pdfjs-dist": "^4.10.38",
+    "puppeteer-core": "^24.0.0"
+  }
+}
