@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { cn } from "cn";
-import { BadgeCheck, Bell, Check, CreditCard, LogOut } from "lucide-react";
+import { Bell, Check, ListChecks, LogOut, MapPin } from "lucide-react";
+import { toast } from "sonner";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -15,6 +17,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { getInitials } from "@/lib/utils";
+import { useSessionStore } from "@/stores/session/session-store";
 
 export function AccountSwitcher({
   users,
@@ -27,7 +30,23 @@ export function AccountSwitcher({
     readonly role: string;
   }>;
 }) {
-  const [activeUser, setActiveUser] = useState(users[0]);
+  const router = useRouter();
+  const usuarioId = useSessionStore((s) => s.usuarioId);
+  const entrarComo = useSessionStore((s) => s.entrarComo);
+  const sair = useSessionStore((s) => s.sair);
+  const activeUser = users.find((user) => user.id === usuarioId);
+
+  // Demonstração (RF-13): troca de pessoa no tablet compartilhado sem sair do posto.
+  const setActiveUser = (user: (typeof users)[number]) => {
+    if (user.id === usuarioId) return;
+    entrarComo(user.id);
+    toast(`Agora com ${user.name}`, { description: user.role });
+  };
+
+  const encerrar = () => {
+    sair();
+    router.replace("/auth/login");
+  };
 
   if (!activeUser) {
     return null;
@@ -71,23 +90,27 @@ export function AccountSwitcher({
         ))}
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem>
-            <BadgeCheck />
-            Account
+          <DropdownMenuItem asChild>
+            <Link prefetch={false} href="/dashboard/rotina">
+              <ListChecks />
+              Minha Rotina
+            </Link>
           </DropdownMenuItem>
-          <DropdownMenuItem>
-            <CreditCard />
-            Billing
+          <DropdownMenuItem asChild>
+            <Link prefetch={false} href="/dashboard/alertas">
+              <Bell />
+              Alertas
+            </Link>
           </DropdownMenuItem>
-          <DropdownMenuItem>
-            <Bell />
-            Notifications
+          <DropdownMenuItem onSelect={encerrar}>
+            <MapPin />
+            Trocar posto
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>
+        <DropdownMenuItem onSelect={encerrar}>
           <LogOut />
-          Log out
+          Sair
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

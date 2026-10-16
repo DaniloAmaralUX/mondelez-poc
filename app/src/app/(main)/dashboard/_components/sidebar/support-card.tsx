@@ -1,36 +1,23 @@
-import Link from "next/link";
+"use client";
 
-import { siX } from "simple-icons";
-
-import { SimpleIcon } from "@/components/simple-icon";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { localRepository } from "@/data/repository";
+import { turnoAtual } from "@/domain/turno";
+import { useAgora, useSessionHydrated, useSessionStore } from "@/stores/session/session-store";
 
 export function SupportCard() {
+  const contexto = useSessionStore((s) => s.contexto);
+  const hydrated = useSessionHydrated();
+  const agora = useAgora();
+  const { linha, posto } = contexto ? localRepository.descreverContexto(contexto) : {};
+
   return (
     <Card size="sm" className="overflow-hidden shadow-none group-data-[collapsible=icon]:hidden">
       <CardHeader className="min-w-0 px-4">
-        <CardTitle className="truncate text-sm">Have something in mind?</CardTitle>
+        <CardTitle className="truncate text-sm">Precisa de ajuda?</CardTitle>
         <CardDescription className="line-clamp-3">
-          Suggest a feature or discuss custom work with me on&nbsp;
-          <Link
-            href="https://x.com/arhamkhnz"
-            target="_blank"
-            rel="noreferrer"
-            aria-label="Reach out on X"
-            className="inline-flex items-center text-foreground"
-          >
-            <SimpleIcon icon={siX} aria-hidden className="size-3 fill-foreground" />
-          </Link>
-          &nbsp;or by{" "}
-          <Link
-            href="https://github.com/arhamkhnz#want-to-connect"
-            target="_blank"
-            rel="noreferrer"
-            className="text-foreground hover:underline"
-          >
-            email
-          </Link>
-          .
+          Chame a supervisão {hydrated ? `do ${turnoAtual(agora).numero}º turno` : "do turno"}
+          {linha && posto ? ` na ${linha.nome} · ${posto.nome}` : ""} ou use o pedido de ajuda no Teams.
         </CardDescription>
       </CardHeader>
     </Card>

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { cn } from "cn";
-import { ChevronRight, MailIcon, PlusCircleIcon } from "lucide-react";
+import { Bell, ChevronRight, PlusCircleIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -28,6 +28,9 @@ import {
   SidebarMenuSubItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { proximaTarefa } from "@/domain/routine-engine";
+import { useMinhasTarefas } from "@/hooks/use-turno";
+import { hrefDaTarefa } from "@/lib/rotas";
 import type {
   NavBadge,
   NavGroup,
@@ -84,6 +87,7 @@ function hasSubItems(item: NavMainItem): item is NavMainParentItem {
 
 export function NavMain({ items }: NavMainProps) {
   const path = usePathname();
+  const proxima = proximaTarefa(useMinhasTarefas());
 
   const isItemActive = (item: NavMainItem) => {
     if (hasSubItems(item)) {
@@ -108,19 +112,25 @@ export function NavMain({ items }: NavMainProps) {
           <SidebarMenu>
             <SidebarMenuItem className="flex items-center gap-2">
               <SidebarMenuButton
-                tooltip="Quick Create"
+                asChild
+                tooltip="Registrar agora"
                 className="min-w-8 bg-primary text-primary-foreground duration-200 ease-linear hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground"
               >
-                <PlusCircleIcon />
-                <span>Quick Create</span>
+                <Link prefetch={false} href={proxima ? hrefDaTarefa(proxima) : "/dashboard/rotina"}>
+                  <PlusCircleIcon />
+                  <span>Registrar agora</span>
+                </Link>
               </SidebarMenuButton>
               <Button
+                asChild
                 size="icon"
                 className="h-9 w-9 shrink-0 group-data-[collapsible=icon]:opacity-0"
                 variant="outline"
               >
-                <MailIcon />
-                <span className="sr-only">Inbox</span>
+                <Link prefetch={false} href="/dashboard/alertas">
+                  <Bell />
+                  <span className="sr-only">Alertas</span>
+                </Link>
               </Button>
             </SidebarMenuItem>
           </SidebarMenu>
@@ -295,6 +305,8 @@ function NavCollapsibleItem({ item, isActive, defaultOpen, isSubItemActive }: Na
   );
 }
 
+const NAV_BADGE_LABEL: Record<NavBadge, string> = { new: "novo", soon: "em breve" };
+
 function NavItemBadge({ badge }: { badge?: NavBadge }) {
   if (!badge) {
     return null;
@@ -309,7 +321,7 @@ function NavItemBadge({ badge }: { badge?: NavBadge }) {
         badge === "soon" && "border-muted-foreground text-muted-foreground",
       )}
     >
-      {badge}
+      {NAV_BADGE_LABEL[badge]}
     </SidebarMenuBadge>
   );
 }

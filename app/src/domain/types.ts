@@ -160,6 +160,14 @@ export interface Registro {
   dispositivoId: string;
   syncStatus: SyncStatus;
   naoConformes: number;
+  observacao?: string;
+}
+
+/** Checklist em preenchimento, salvo no tablet a cada resposta. */
+export interface Rascunho {
+  respostas: Record<string, Resposta>;
+  equipamentoId?: string;
+  observacao: string;
 }
 
 // Alertas -------------------------------------------------------------------------------------------

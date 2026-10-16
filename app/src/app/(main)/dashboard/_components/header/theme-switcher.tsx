@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { usePreferencesStore } from "@/stores/preferences/preferences-provider";
 
 const THEME_CYCLE = ["light", "dark", "system"] as const;
+const TEMA_LABEL = { light: "claro", dark: "escuro", system: "do sistema" } as const;
 
 export function ThemeSwitcher() {
   const { themeMode, setPreference } = usePreferencesStore(
@@ -24,7 +25,7 @@ export function ThemeSwitcher() {
   };
 
   return (
-    <Button size="icon" onClick={cycleTheme} aria-label={`Current theme: ${themeMode}. Click to cycle themes`}>
+    <Button size="icon" onClick={cycleTheme} aria-label={`Tema atual: ${TEMA_LABEL[themeMode]}. Toque para trocar`}>
       {/* SYSTEM */}
       <Monitor className="hidden [html[data-theme-mode=system]_&]:block" />
 

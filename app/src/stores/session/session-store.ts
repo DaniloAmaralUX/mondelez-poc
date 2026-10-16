@@ -14,6 +14,7 @@ import type {
   Conclusao,
   Contexto,
   Formulario,
+  Rascunho,
   Registro,
   Resposta,
   TarefaInstancia,
@@ -45,14 +46,16 @@ interface SessionState {
   registros: Record<string, Registro>;
   /** Ações da liderança sobre cada alerta. */
   tratamentos: Record<string, AcaoAlerta[]>;
+  rascunhos: Record<string, Rascunho>;
 
   entrar: (matricula: string, pin: string, contexto: Contexto) => ResultadoLogin;
   entrarComo: (usuarioId: string) => void;
   sair: () => void;
+  salvarRascunho: (tarefaId: string, rascunho: Rascunho) => void;
   registrarChecklist: (input: {
     tarefa: TarefaInstancia;
     formulario: Formulario;
-    respostas: Record<string, Resposta>;
+    rascunho: Rascunho;
   }) => Registro | undefined;
   confirmarTarefa: (tarefaId: string) => void;
   tratarAlerta: (alertaId: string, tipo: AcaoAlerta["tipo"], texto: string) => void;
@@ -86,6 +89,7 @@ function estadoInicialDemo(realAgora: number = Date.now()) {
     conclusoes,
     registros: {} as Record<string, Registro>,
     tratamentos: {} as Record<string, AcaoAlerta[]>,
+    rascunhos: {} as Record<string, Rascunho>,
     rede: "online" as const,
   };
 }
@@ -130,7 +134,10 @@ export const useSessionStore = create<SessionState>()(
           deleteClientCookie(SESSION_COOKIE);
         },
 
-        registrarChecklist: ({ tarefa, formulario, respostas }) => {
+        salvarRascunho: (tarefaId, rascunho) => setState((s) => ({ rascunhos: { ...s.rascunhos, [tarefaId]: rascunho } })),
+
+        registrarChecklist: ({ tarefa, formulario, rascunho }) => {
+          const { respostas } = rascunho;
           const { usuarioId, contexto } = getState();
           if (!usuarioId || !contexto) return undefined;
 
@@ -145,15 +152,17 @@ export const useSessionStore = create<SessionState>()(
             criadoEm: criadoEm.toISOString(),
             turnoChave: chaveTurno(turnoAtual(criadoEm)),
             postoId: contexto.postoId,
-            equipamentoId: tarefa.equipamentoId,
+            equipamentoId: rascunho.equipamentoId ?? tarefa.equipamentoId,
             usuarioId,
             dispositivoId: DISPOSITIVO_ID,
             syncStatus: "local",
             naoConformes: resumo.naoConformes,
+            observacao: rascunho.observacao.trim() || undefined,
           };
 
           setState((s) => ({
             registros: { ...s.registros, [registro.id]: registro },
+            rascunhos: Object.fromEntries(Object.entries(s.rascunhos).filter(([id]) => id !== tarefa.id)),
             conclusoes: {
               ...s.conclusoes,
               [tarefa.id]: {
@@ -203,7 +212,7 @@ export const useSessionStore = create<SessionState>()(
       name: "rotinas-sessao",
       version: 2,
       storage: createJSONStorage(() => idbStorage),
-      partialize: ({ usuarioId, contexto, relogio, rede, conclusoes, registros, tratamentos }) => ({
+      partialize: ({ usuarioId, contexto, relogio, rede, conclusoes, registros, tratamentos, rascunhos }) => ({
         usuarioId,
         contexto,
         relogio,
@@ -211,6 +220,7 @@ export const useSessionStore = create<SessionState>()(
         conclusoes,
         registros,
         tratamentos,
+        rascunhos,
       }),
       // Versões antigas do estado salvo não têm registros nem alertas: recomeça a demo.
       migrate: () => ({ usuarioId: null, contexto: CONTEXTO_PADRAO, ...estadoInicialDemo() }),
