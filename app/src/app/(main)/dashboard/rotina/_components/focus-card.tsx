@@ -26,7 +26,9 @@ export function FocusCard() {
       <CardContent>
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between gap-4">
-            <div className="text-3xl tabular-nums tracking-tight">{restante(turno.fim.getTime() - agora.getTime())}</div>
+            <div className="text-3xl tabular-nums tracking-tight">
+              {restante(turno.fim.getTime() - agora.getTime())}
+            </div>
             <Button className="min-w-24" disabled>
               Passar turno
             </Button>

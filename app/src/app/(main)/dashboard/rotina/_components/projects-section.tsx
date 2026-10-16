@@ -29,7 +29,8 @@ interface Rotina {
 }
 
 function descreverFrequencia(f: Frequencia, total: number) {
-  if (f.tipo === "hora") return f.aCadaHoras === 1 ? `A cada hora · ${total} no turno` : `A cada ${f.aCadaHoras} h · ${total} no turno`;
+  if (f.tipo === "hora")
+    return f.aCadaHoras === 1 ? `A cada hora · ${total} no turno` : `A cada ${f.aCadaHoras} h · ${total} no turno`;
   if (f.tipo === "semanal") return "Uma vez por semana";
   return "Uma vez por turno";
 }

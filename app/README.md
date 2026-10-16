@@ -1,146 +1,44 @@
-# Next.js Admin Template with TypeScript & Shadcn UI
+# app · Protótipo funcional (v0)
 
-**Studio Admin** - Includes multiple dashboards, authentication layouts, customizable theme presets, and more.
+Protótipo web de Gestão de Rotinas Operacionais sobre o template **Studio Admin** (Next.js 16, shadcn/ui), usado 1:1: mesmo shell, telas e componentes. O único ajuste visual é o tema **Linear** (`src/styles/presets/linear.css`, padrão do app, fonte Inter). O README original do template está em `README.template.md`.
 
-<img src="https://github.com/arhamkhnz/next-shadcn-admin-dashboard/blob/main/media/dashboard.png?version=5" alt="Dashboard Screenshot">
+Fonte de verdade de produto: `../docs/`. Mapa de cada parte do escopo para a tela do template: `../docs/10-mapa-do-template.md`.
 
-Most admin templates I found, free or paid, felt cluttered, outdated, or too rigid. I built this as a cleaner alternative with features often missing in others, such as theme toggling and layout controls, while keeping the design modern, minimal, and flexible.
+## Rodar
 
-> **View demo:** [studio admin](https://studio-admin.arhamkhnz.com)
-
-> [!NOTE]
-> Looking for the Base UI version? Check out [next-shadcn-admin-dashboard-baseui](https://github.com/arhamkhnz/next-shadcn-admin-dashboard-baseui).
->
-> Looking for the React Aria version? Check out [arhamkhnz/next-shadcn-admin-dashboard-aria](https://github.com/arhamkhnz/next-shadcn-admin-dashboard-aria).
->
-> Looking for the TanStack Start version? Check out [tanstack-shadcn-admin-dashboard](https://github.com/arhamkhnz/tanstack-shadcn-admin-dashboard).
-
-> [!TIP]
-> I’m also working on Nuxt.js and Svelte versions of this dashboard. They’ll be live soon.
-
-## Features
-
-- Built with Next.js 16, TypeScript, Tailwind CSS v4, and Shadcn UI  
-- Responsive and mobile-friendly  
-- Customizable theme presets (light/dark modes with color schemes like Tangerine, Brutalist, and more)  
-- Flexible layouts (collapsible sidebar, variable content widths)  
-- Authentication flows and screens  
-- Prebuilt dashboards (Default, CRM, Finance, Analytics, Productivity) plus legacy variants  
-- Role-Based Access Control (RBAC) with config-driven UI and multi-tenant support *(planned)*  
-
-> [!NOTE]
-> The default dashboard uses the **shadcn neutral** theme.  
-> It also includes additional color presets inspired by [Tweakcn](https://tweakcn.com):  
->
-> - Tangerine  
-> - Neo Brutalism  
-> - Soft Pop  
->
-> You can create more presets by following the same structure as the existing ones.
-
-> Looking for the **Next.js 15** version?  
-> Check out the [`archive/next15`](https://github.com/arhamkhnz/next-shadcn-admin-dashboard/tree/archive/next15) branch.  
-> This branch contains the setup prior to upgrading to Next 16 and the React Compiler.
-
-> Looking for the **Next.js 14 + Tailwind CSS v3** version?  
-> Check out the [`archive/next14-tailwindv3`](https://github.com/arhamkhnz/next-shadcn-admin-dashboard/tree/archive/next14-tailwindv3) branch.  
-> It has a different color theme and is not actively maintained, but I try to keep it updated with major changes.  
-
-## Tech Stack
-
-- **Framework**: Next.js 16 (App Router), TypeScript, Tailwind CSS v4  
-- **UI Components**: Shadcn UI  
-- **Validation**: Zod  
-- **Forms & State Management**: React Hook Form, Zustand  
-- **Tables & Data Handling**: TanStack Table  
-- **Tooling & DX**: Biome, Husky  
-
-## Screens
-
-### Available
-- Default Dashboard  
-- CRM Dashboard  
-- Finance Dashboard  
-- Analytics Dashboard  
-- Productivity Dashboard  
-- E-commerce Dashboard  
-- Academy Dashboard  
-- Logistics Dashboard  
-- Infrastructure Dashboard  
-- File Manager  
-- Patient Monitoring  
-- Chat Page  
-- Email Page  
-- Profile  
-- Users Management  
-- Roles Management  
-- Kanban Board  
-- Tasks Page  
-- Invoice Page  
-- Calendar Page  
-- Authentication (4 screens)  
-- Legacy: Default v1, CRM v1, Finance v1, Analytics v1
-
-### Planned
-I’ve added all the planned screens. Feel free to open an issue for requesting something specific.
-
-## Colocation File System Architecture
-
-This project follows a **colocation-based architecture** each feature keeps its own pages, components, and logic inside its route folder.  
-Shared UI, hooks, and configuration live at the top level, making the codebase modular, scalable, and easier to maintain as the app grows.
-
-For a full breakdown of the structure with examples, see the [Next Colocation Template](https://github.com/arhamkhnz/next-colocation-template).
-
-## Getting Started
-
-You can run this project locally, or deploy it instantly with Vercel.
-
-### Deploy with Vercel
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Farhamkhnz%2Fnext-shadcn-admin-dashboard)
-
-_Deploy your own copy with one click._
-
-### Run locally
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/arhamkhnz/next-shadcn-admin-dashboard.git
-   ```
-   
-2. **Navigate into the project**
-   ```bash
-    cd next-shadcn-admin-dashboard
-   ```
-   
-3. **Install dependencies**
-   ```bash
-    npm install
-   ```
-
-4. **Start the development server**
-   ```bash
-   npm run dev
-   ```
-
-Your app will be running at [http://localhost:3000](http://localhost:3000)
-
-### Formatting and Linting
-
-Format, lint, and organize imports
 ```bash
-npx @biomejs/biome check --write
+npm install
+npm run dev        # http://localhost:3000
+npm test           # domínio (Vitest)
+npm run typecheck
+npm run build
 ```
-> For more information on available rules, fixes, and CLI options, refer to the [Biome documentation](https://biomejs.dev/).
 
----
+## Demonstração
 
-> [!IMPORTANT]  
-> This project is updated frequently. If you’re working from a fork or an older clone, pull the latest changes before syncing. Some updates may include breaking changes.
+1. Login (`/auth/login`): matrícula `104233` (Alberto, operação), PIN `1234`, linha Bis 2, posto Embalagem. A liderança entra por "Entrar com SSO corporativo" (simulado).
+2. O relógio da demo começa às 07:40 do 1º turno e anda em tempo real. O botão de relógio no header avança 15 min, 1 h ou vai ao fim do turno, simula falta de rede e reseta os dados.
+3. Minha Rotina → "Registrar agora" abre o PPLI. Marque um item como NC, justifique e registre.
+4. Troque para Renata Lins (avatar no header) → Alertas: o alerta A-NC aparece; assuma e resolva.
+5. Avance o relógio: tarefas vencidas viram A-ATRASO, e crítico depois de 30 min.
 
----
+## O que a v0 cobre
 
-Contributions are welcome. Feel free to open issues, feature requests, or start a discussion.
+| Escopo | Tela do template |
+|---|---|
+| Login por matrícula + PIN e posto; SSO simulado | Login v2 |
+| Minha Rotina do turno | Productivity |
+| Checklists com C/NC/NA, centerline com faixa, justificativa de NC e prévia do registro | Invoice |
+| Alertas A-ATRASO e A-NC com ciclo aberto → em tratamento → resolvido | Logistics |
+| Tarefas do posto no turno | Tasks |
+| Troca de pessoa, painel da demonstração, busca, ajuda | Shell do template (header e sidebar) |
 
+Itens do menu com "em breve" (Hora x Hora, MTBF, Relatório do turno, Troca de turno, Agenda, Documentos, Usuários, Perfis) já têm tela do template definida no doc 10.
 
-**Happy Vibe Coding!**
+## Arquitetura
+
+- Domínio puro e testado: `src/domain/` (turnos, motor de rotina, motor de formulários, motor de alertas).
+- Dados: `src/data/seed.ts` e `src/data/repository.ts`.
+- Estado do tablet: `src/stores/session/` (Zustand + IndexedDB), relógio injetável em `src/lib/clock.ts`.
+- Login simulado protegido por `src/proxy.ts` (cookie `rotinas_sessao`).
+- Telas do template originais continuam no código como referência, fora do menu.

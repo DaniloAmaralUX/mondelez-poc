@@ -27,7 +27,9 @@ export function ChecklistItems({
 }) {
   const { getValues, setValue } = useFormContext<ChecklistFormValues>();
   const respostas = useWatch<ChecklistFormValues, "respostas">({ name: "respostas" }) ?? {};
-  const restantes = itens.filter((item) => item.tipo === "cnc" && situacaoItem(item, respostas[item.id]) === "pendente");
+  const restantes = itens.filter(
+    (item) => item.tipo === "cnc" && situacaoItem(item, respostas[item.id]) === "pendente",
+  );
 
   function marcarRestantesConformes() {
     const atuais = getValues("respostas") ?? {};
@@ -40,7 +42,13 @@ export function ChecklistItems({
     <section className="flex flex-col gap-4">
       <div className="flex items-center justify-between gap-3">
         <h2 className="font-medium tracking-tight">Itens do checklist</h2>
-        <Button type="button" variant="ghost" size="sm" onClick={marcarRestantesConformes} disabled={restantes.length === 0}>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={marcarRestantesConformes}
+          disabled={restantes.length === 0}
+        >
           <CheckCheck data-icon="inline-start" />
           Restantes conformes
         </Button>
@@ -87,7 +95,8 @@ function ItemRow({
   const situacao = situacaoItem(item, resposta);
   const pedeJustificativa = situacao === "NC";
   const detalhes = [
-    item.faixa && `Padrão ${item.faixa.min.toLocaleString("pt-BR")}–${item.faixa.max.toLocaleString("pt-BR")} ${item.faixa.unidade}`,
+    item.faixa &&
+      `Padrão ${item.faixa.min.toLocaleString("pt-BR")}–${item.faixa.max.toLocaleString("pt-BR")} ${item.faixa.unidade}`,
     item.critico && "item crítico",
   ].filter(Boolean);
 

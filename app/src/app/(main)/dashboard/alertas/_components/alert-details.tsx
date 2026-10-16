@@ -22,8 +22,8 @@ import { formatarHora } from "@/lib/format";
 import { getInitials } from "@/lib/utils";
 import { useAgora, useSessionStore, useUsuarioAtual } from "@/stores/session/session-store";
 
-import { progressRingClasses, STATUS_LABEL, statusBadgeClasses, statusVisual } from "./alerta-estilos";
 import { AlertTimelineMap } from "./alert-timeline-map";
+import { progressRingClasses, STATUS_LABEL, statusBadgeClasses, statusVisual } from "./alerta-estilos";
 import { idadeDoAlerta } from "./idade";
 
 const REGRA_LABEL = { "A-ATRASO": "A-ATRASO · RN-01", "A-NC": "A-NC · RN-02" } as const;

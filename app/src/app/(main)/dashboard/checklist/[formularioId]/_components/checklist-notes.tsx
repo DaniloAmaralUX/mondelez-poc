@@ -16,8 +16,15 @@ export function ChecklistNotes() {
         <FieldLabel className="text-xs" htmlFor="observacao">
           Observação geral
         </FieldLabel>
-        <Textarea id="observacao" rows={3} placeholder="Algo que a supervisão precisa saber?" {...register("observacao")} />
-        <FieldDescription className="text-xs">Opcional. Vai junto com o registro e com o alerta, se houver.</FieldDescription>
+        <Textarea
+          id="observacao"
+          rows={3}
+          placeholder="Algo que a supervisão precisa saber?"
+          {...register("observacao")}
+        />
+        <FieldDescription className="text-xs">
+          Opcional. Vai junto com o registro e com o alerta, se houver.
+        </FieldDescription>
       </Field>
     </section>
   );

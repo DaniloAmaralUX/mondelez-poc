@@ -1,7 +1,7 @@
 const THEME_MODE_OPTIONS = [
-  { label: "Light", value: "light" },
-  { label: "Dark", value: "dark" },
-  { label: "System", value: "system" },
+  { label: "Claro", value: "light" },
+  { label: "Escuro", value: "dark" },
+  { label: "Sistema", value: "system" },
 ] as const;
 
 export const THEME_MODE_VALUES = THEME_MODE_OPTIONS.map((o) => o.value);

@@ -9,7 +9,8 @@ import { concluida } from "@/domain/routine-engine";
 import { useMinhasTarefas } from "@/hooks/use-turno";
 
 function mensagem(atrasadas: number, pendentes: number) {
-  if (atrasadas > 0) return `${atrasadas} ${atrasadas === 1 ? "tarefa atrasada gerou" : "tarefas atrasadas geraram"} alerta para a supervisão.`;
+  if (atrasadas > 0)
+    return `${atrasadas} ${atrasadas === 1 ? "tarefa atrasada gerou" : "tarefas atrasadas geraram"} alerta para a supervisão.`;
   if (pendentes === 0) return "Turno em dia. Nenhuma pendência para passar.";
   return "Tudo no prazo. Siga a próxima tarefa.";
 }

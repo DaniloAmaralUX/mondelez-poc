@@ -75,7 +75,7 @@ function ChecklistEditor({
       : (rascunho ?? { ...RASCUNHO_VAZIO, equipamentoId: tarefa?.equipamentoId }),
   });
   const valores = useWatch({ control: form.control }) as ChecklistFormValues;
-  const erros = tentouEnviar ? validarRespostas(formulario, valores.respostas ?? {}) : {};
+  const erros = tentouEnviar ? validarRespostas(formulario, valores.respostas) : {};
 
   // Cada resposta fica salva no tablet (RF-07): nada se perde se a pessoa sair da tela.
   React.useEffect(() => {
@@ -102,9 +102,12 @@ function ChecklistEditor({
     if (!novo) return;
 
     if (novo.naoConformes > 0) {
-      toast.warning(`Registrado com ${novo.naoConformes} ${novo.naoConformes === 1 ? "não conformidade" : "não conformidades"}`, {
-        description: "Alerta enviado à supervisão e à especialista.",
-      });
+      toast.warning(
+        `Registrado com ${novo.naoConformes} ${novo.naoConformes === 1 ? "não conformidade" : "não conformidades"}`,
+        {
+          description: "Alerta enviado à supervisão e à especialista.",
+        },
+      );
     } else {
       toast.success("Checklist registrado", { description: formulario.titulo });
     }
@@ -145,12 +148,7 @@ function ChecklistEditor({
 
         <AvisoDoModo modo={modo} tarefa={tarefa} registro={registro} perfilOperacao={usuario?.perfil === "operacao"} />
 
-        <form
-          id="checklist-form"
-          className="grid gap-5 xl:grid-cols-2"
-          noValidate
-          onSubmit={form.handleSubmit(enviar)}
-        >
+        <form id="checklist-form" className="grid gap-5 xl:grid-cols-2" noValidate onSubmit={form.handleSubmit(enviar)}>
           <ChecklistForm formulario={formulario} tarefa={tarefa} erros={erros} somenteLeitura={modo !== "preencher"} />
           <ChecklistPreview formulario={formulario} valores={valores} tarefa={tarefa} registro={registro} />
         </form>
@@ -177,7 +175,8 @@ function AvisoDoModo({
         {registro.naoConformes > 0 ? <TriangleAlert /> : <CircleCheck />}
         <AlertTitle>
           Registrado às {formatarHora(new Date(registro.criadoEm))} por {autor?.nome}
-          {registro.naoConformes > 0 && ` · ${registro.naoConformes} não conforme${registro.naoConformes > 1 ? "s" : ""}`}
+          {registro.naoConformes > 0 &&
+            ` · ${registro.naoConformes} não conforme${registro.naoConformes > 1 ? "s" : ""}`}
         </AlertTitle>
         <AlertDescription>
           {registro.syncStatus === "sincronizado"

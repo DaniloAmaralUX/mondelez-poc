@@ -351,7 +351,13 @@ export const formularios: Formulario[] = [
     titulo: "Pré-partida de segurança · Loeschpack 4",
     versao: 2,
     itens: [
-      { id: "protecoes", grupo: "Proteções", texto: "Proteções fixas instaladas e travadas", tipo: "cnc", critico: true },
+      {
+        id: "protecoes",
+        grupo: "Proteções",
+        texto: "Proteções fixas instaladas e travadas",
+        tipo: "cnc",
+        critico: true,
+      },
       { id: "emergencia", grupo: "Proteções", texto: "Botões de emergência testados", tipo: "cnc", critico: true },
       { id: "cortina", grupo: "Proteções", texto: "Cortina de luz interrompe o ciclo", tipo: "cnc", critico: true },
       { id: "area", grupo: "Área", texto: "Área livre de obstruções e piso seco", tipo: "cnc" },
@@ -385,7 +391,13 @@ export const formularios: Formulario[] = [
         critico: true,
         faixa: { min: 180, max: 190, unidade: "°C" },
       },
-      { id: "pressao", grupo: "Centerline", texto: "Pressão de ar", tipo: "numero", faixa: { min: 5.5, max: 6.5, unidade: "bar" } },
+      {
+        id: "pressao",
+        grupo: "Centerline",
+        texto: "Pressão de ar",
+        tipo: "numero",
+        faixa: { min: 5.5, max: 6.5, unidade: "bar" },
+      },
       {
         id: "velocidade",
         grupo: "Centerline",
@@ -453,9 +465,21 @@ export const recados: Recado[] = [
     diasAtras: 0,
     tipo: "agenda",
   },
-  { id: "r2", titulo: "Nova embalagem do Bis 2 chega na próxima semana", autor: "Marcos Tavares", diasAtras: 0, tipo: "recado" },
+  {
+    id: "r2",
+    titulo: "Nova embalagem do Bis 2 chega na próxima semana",
+    autor: "Marcos Tavares",
+    diasAtras: 0,
+    tipo: "recado",
+  },
   { id: "r3", titulo: "DDS de segunda: uso de luva anticorte", autor: "Renata Lins", diasAtras: 1, tipo: "recado" },
-  { id: "r4", titulo: "Visita da qualidade corporativa na quinta", autor: "Carlos Mendes", diasAtras: 3, tipo: "agenda" },
+  {
+    id: "r4",
+    titulo: "Visita da qualidade corporativa na quinta",
+    autor: "Carlos Mendes",
+    diasAtras: 3,
+    tipo: "agenda",
+  },
 ];
 
 /** Passagem do turno anterior (exemplo dos mockups da Mondelez). */

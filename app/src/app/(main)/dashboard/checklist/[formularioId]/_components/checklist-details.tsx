@@ -6,7 +6,13 @@ import type { Formulario, TarefaInstancia } from "@/domain/types";
 import { formatarHora } from "@/lib/format";
 
 /** Dados da tarefa que o checklist conclui: referência, abertura e prazo da janela. */
-export function ChecklistDetails({ tarefa, formulario }: { tarefa: TarefaInstancia | undefined; formulario: Formulario }) {
+export function ChecklistDetails({
+  tarefa,
+  formulario,
+}: {
+  tarefa: TarefaInstancia | undefined;
+  formulario: Formulario;
+}) {
   const janela = tarefa
     ? [
         { id: "abertura", label: "Abre às", value: formatarHora(tarefa.abre) },

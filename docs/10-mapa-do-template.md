@@ -22,9 +22,9 @@ Cada parte do nosso escopo reaproveita a tela do template com a função mais pr
 
 | Escopo (doc 05) | Tela do template | Rota | Versão |
 |---|---|---|---|
-| Login por matrícula + PIN e posto | Auth · Login v1 | `/auth/login` | v0 |
+| Login por matrícula + PIN e posto; SSO simulado da liderança | Auth · Login v2 | `/auth/login` | v0 |
 | Minha Rotina do turno (RF-03) | Productivity | `/dashboard/rotina` | v0 |
-| Execução de checklist: PPLI e Centerlining, pré-partida, manutenção autônoma, limpeza semanal, rastreabilidade (RF-04, RN-02) | Invoice (formulário com itens + prévia do documento) | `/dashboard/checklist/[tarefa]` | v0 |
+| Execução de checklist: PPLI e Centerlining, pré-partida, manutenção autônoma, limpeza semanal, rastreabilidade (RF-04, RN-02) | Invoice (formulário com itens + prévia do documento) | `/dashboard/checklist/[formulario]` | v0 |
 | Alertas (RM-09, RN-01, RN-02) | Logistics (lista + detalhe) | `/dashboard/alertas` | v0 |
 | Tarefas do posto no turno (visão da liderança) | Tasks (tabela com filtros) | `/dashboard/tarefas` | v0 |
 | Hora x Hora (RM-10) | Analytics | `/dashboard/hora-x-hora` | próxima |

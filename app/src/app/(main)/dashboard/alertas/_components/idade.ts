@@ -1,7 +1,6 @@
+import { ESCALONAMENTO_ATRASO_MIN } from "@/domain/alert-engine";
 import type { Alerta } from "@/domain/types";
 import { formatarDuracao } from "@/lib/format";
-
-import { ESCALONAMENTO_ATRASO_MIN } from "@/domain/alert-engine";
 
 /** Fim do ciclo: a última ação de encerramento, ou agora. */
 export function fimDoAlerta(alerta: Alerta, agora: Date): Date {

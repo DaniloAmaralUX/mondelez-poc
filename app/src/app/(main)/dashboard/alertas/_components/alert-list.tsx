@@ -79,7 +79,9 @@ function AlertCard({ alerta, active, onSelectAlert, agora }: AlertCardProps) {
 
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
-          <div className="grid size-7 place-items-center rounded-xs text-xs outline">{linha?.nome.replace(/\D/g, "")}</div>
+          <div className="grid size-7 place-items-center rounded-xs text-xs outline">
+            {linha?.nome.replace(/\D/g, "")}
+          </div>
           <div className="flex flex-col gap-0.5">
             <div className="font-medium text-xs leading-none">{linha?.nome},</div>
             <div className="text-muted-foreground text-xs">{posto?.nome}</div>
@@ -118,7 +120,9 @@ function AlertCard({ alerta, active, onSelectAlert, agora }: AlertCardProps) {
           <div className="text-muted-foreground text-xs leading-none">Idade</div>
           <div className="text-sm tabular-nums tracking-tight">
             {idadeDoAlerta(alerta, agora)}
-            <span className="ml-1 font-normal text-muted-foreground text-xs">desde {formatarHora(alerta.criadoEm)}</span>
+            <span className="ml-1 font-normal text-muted-foreground text-xs">
+              desde {formatarHora(alerta.criadoEm)}
+            </span>
           </div>
         </div>
       </div>

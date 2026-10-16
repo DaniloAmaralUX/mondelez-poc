@@ -40,7 +40,9 @@ export function EquipmentSelector() {
               <FieldLabel className="text-xs">Equipamento do posto</FieldLabel>
               <Select value={field.value ?? ""} onValueChange={field.onChange} disabled={doPosto.length === 0}>
                 <SelectTrigger className="w-full data-[size=default]:h-auto">
-                  <SelectValue placeholder={doPosto.length ? "Escolha o equipamento" : "Posto sem equipamentos cadastrados"}>
+                  <SelectValue
+                    placeholder={doPosto.length ? "Escolha o equipamento" : "Posto sem equipamentos cadastrados"}
+                  >
                     {selecionado && (
                       <div className="flex items-center gap-1.5">
                         <Avatar className="after:rounded-md">

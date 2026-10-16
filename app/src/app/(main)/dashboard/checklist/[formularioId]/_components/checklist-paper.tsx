@@ -19,7 +19,7 @@ export function ChecklistPaper({ formulario, valores, tarefa, registro }: Checkl
   const autor = registro ? localRepository.usuario(registro.usuarioId) : usuarioAtual;
   const { planta, linha, posto } = contexto ? localRepository.descreverContexto(contexto) : {};
   const equipamento = valores.equipamentoId ? localRepository.equipamento(valores.equipamentoId) : undefined;
-  const respostas = valores.respostas ?? {};
+  const respostas = valores.respostas;
   const resumo = resumirRespostas(formulario, respostas);
   const quando = registro ? new Date(registro.criadoEm) : undefined;
   const turno = tarefa ? turnoAtual(tarefa.abre) : undefined;
@@ -101,7 +101,9 @@ export function ChecklistPaper({ formulario, valores, tarefa, registro }: Checkl
                   )}
                 </span>
                 <span className="text-right">
-                  {item.faixa ? `${item.faixa.min.toLocaleString("pt-BR")}–${item.faixa.max.toLocaleString("pt-BR")} ${item.faixa.unidade}` : "—"}
+                  {item.faixa
+                    ? `${item.faixa.min.toLocaleString("pt-BR")}–${item.faixa.max.toLocaleString("pt-BR")} ${item.faixa.unidade}`
+                    : "—"}
                 </span>
                 <span className="text-right">{descreverResposta(item, resposta)}</span>
                 <span className="text-right font-semibold">{SITUACAO[situacao]}</span>

@@ -16,7 +16,6 @@ import type {
   Formulario,
   Rascunho,
   Registro,
-  Resposta,
   TarefaInstancia,
   Usuario,
 } from "@/domain/types";
@@ -134,7 +133,8 @@ export const useSessionStore = create<SessionState>()(
           deleteClientCookie(SESSION_COOKIE);
         },
 
-        salvarRascunho: (tarefaId, rascunho) => setState((s) => ({ rascunhos: { ...s.rascunhos, [tarefaId]: rascunho } })),
+        salvarRascunho: (tarefaId, rascunho) =>
+          setState((s) => ({ rascunhos: { ...s.rascunhos, [tarefaId]: rascunho } })),
 
         registrarChecklist: ({ tarefa, formulario, rascunho }) => {
           const { respostas } = rascunho;
@@ -188,7 +188,9 @@ export const useSessionStore = create<SessionState>()(
           const { usuarioId } = getState();
           if (!usuarioId) return;
           const acao: AcaoAlerta = { tipo, texto, usuarioId, em: agora().toISOString() };
-          setState((s) => ({ tratamentos: { ...s.tratamentos, [alertaId]: [...(s.tratamentos[alertaId] ?? []), acao] } }));
+          setState((s) => ({
+            tratamentos: { ...s.tratamentos, [alertaId]: [...(s.tratamentos[alertaId] ?? []), acao] },
+          }));
         },
 
         avancarRelogio: (minutos) => setState((s) => ({ relogio: avancar(s.relogio, minutos) })),
