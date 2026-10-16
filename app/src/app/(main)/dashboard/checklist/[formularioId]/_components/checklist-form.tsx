@@ -101,7 +101,7 @@ export function ChecklistStepper({
 
   return (
     <Stepper value={etapa} onValueChange={onEtapaChange} onValidate={onValidate} className="flex flex-col gap-5">
-      <StepperList className="overflow-x-auto pb-1">
+      <StepperList className="no-scrollbar overflow-x-auto">
         {[...etapas, { value: ETAPA_REVISAR, titulo: "Revisar", itens: formulario.itens }].map((e, posicao) => {
           const ehRevisar = e.value === ETAPA_REVISAR;
           const respondidos = e.itens.filter((item) => situacaoItem(item, respostas[item.id]) !== "pendente").length;
@@ -141,7 +141,7 @@ export function ChecklistStepper({
       </StepperContent>
 
       {/* Barra fixa: progresso e próxima ação sempre visíveis no tablet (UI Audit, prioridade 1). */}
-      <div className="sticky bottom-0 z-10 -mx-4 flex items-center gap-3 border-t bg-background/95 px-4 py-3 backdrop-blur-sm md:-mx-6 md:px-6">
+      <div className="sticky bottom-3 z-10 flex items-center gap-3 rounded-xl border bg-background/95 px-4 py-3 shadow-sm backdrop-blur-sm">
         <div className="hidden min-w-0 flex-1 flex-col gap-1.5 sm:flex">
           <span className="truncate text-muted-foreground text-xs tabular-nums">
             {resumo.respondidos} de {resumo.total} respondidos

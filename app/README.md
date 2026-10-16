@@ -1,4 +1,4 @@
-# app · Protótipo funcional (v0)
+# app · Protótipo funcional (v0.2)
 
 Protótipo web de Gestão de Rotinas Operacionais sobre o template **Studio Admin** (Next.js 16, shadcn/ui), usado 1:1: mesmo shell, telas e componentes. O único ajuste visual é o tema **Linear** (`src/styles/presets/linear.css`, padrão do app, fonte Inter). O README original do template está em `README.template.md`.
 
@@ -34,6 +34,16 @@ npm run build
 | Troca de pessoa, painel da demonstração, busca, ajuda | Shell do template (header e sidebar) |
 
 Itens do menu com "em breve" (Hora x Hora, MTBF, Relatório do turno, Troca de turno, Agenda, Documentos, Usuários, Perfis) já têm tela do template definida no doc 10.
+
+## v0.2
+
+A v0.2 troca componentes e layouts onde o template não servia ao chão de fábrica, com base na auditoria UI Audit da v0 (`../docs/auditorias/`) e nas guias de Emil Kowalski (lista de bibliotecas de Emil Kowalski, design engineering de Emil Kowalski, oportunidades de movimento). Decisões em `../docs/11-v0.2-componentes-e-layout.md`.
+
+- Minha Rotina: "Fazer agora" em destaque, lista de tarefas tocável com "Desfazer", linha do turno em timeline.
+- Checklist: etapas por grupo com revisão final, barra fixa com progresso, C/NC/NA de 44 px, centerline com −/+ e régua da faixa.
+- Alertas: histórico em timeline, barra de ações fixa, contagem no menu e aviso de alerta novo para a liderança.
+- Shell: estado de envio sempre visível, PIN em 4 dígitos com envio automático, telas futuras agrupadas no menu.
+- Novas dependências: `motion`, `@number-flow/react`; componentes `@diceui/timeline`, `@diceui/stepper`, `@diceui/status` e `@reui/number-field` via CLI do shadcn.
 
 ## Arquitetura
 

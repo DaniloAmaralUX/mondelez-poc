@@ -58,7 +58,12 @@ export function AccountSwitcher({
     <DropdownMenu>
       {/* Gatilho focável e com nome acessível: o Avatar sozinho não recebia teclado (UI Audit, acessibilidade). */}
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="size-8 rounded-lg p-0" aria-label={`Trocar pessoa (agora: ${activeUser.name})`}>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-8 rounded-lg p-0"
+          aria-label={`Trocar pessoa (agora: ${activeUser.name})`}
+        >
           <Avatar className="size-8 rounded-lg">
             <AvatarImage src={activeUser.avatar || undefined} alt="" />
             <AvatarFallback>{getInitials(activeUser.name)}</AvatarFallback>
