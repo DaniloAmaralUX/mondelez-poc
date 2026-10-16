@@ -24,7 +24,8 @@ export function QuickActions() {
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
         {quickActions.map((action) => (
           <Button key={action.label} variant="outline" className="justify-start" asChild>
-            <Link prefetch={false} href={action.href}>
+            {/* prefetch: Alertas e Tarefas em cache para a liderança navegar sem rede (lib/rotas.ts). */}
+            <Link prefetch href={action.href}>
               <action.icon data-icon="inline-start" />
               <span className="truncate">{action.label}</span>
             </Link>

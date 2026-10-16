@@ -23,7 +23,8 @@ export function TarefasDoPosto() {
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <h2 className="text-3xl tracking-tight">Tarefas do posto</h2>
+        {/* h1 da tela (UI Audit 10.5: a tela começava em h2). */}
+        <h1 className="text-3xl tracking-tight">Tarefas do posto</h1>
         <p className="text-muted-foreground">
           {linha?.nome} · {posto?.nome} · {turno.numero}º turno, das {formatarHora(turno.inicio)} às{" "}
           {formatarHora(turno.fim)}
@@ -43,7 +44,7 @@ export function TarefasDoPosto() {
           { rotulo: "Feitas", n: tarefas.filter((t) => t.estado === "feita").length, variante: "success" as const },
           { rotulo: "Mais tarde", n: tarefas.filter((t) => t.futura).length, variante: "default" as const },
         ].map((c) => (
-          <Status key={c.rotulo} variant={c.variante}>
+          <Status key={c.rotulo} variant={c.variante} className="toque:text-sm">
             <StatusIndicator className={c.variante === "error" && c.n > 0 ? undefined : "before:hidden"} />
             <StatusLabel className="tabular-nums">
               {c.n} {c.rotulo.toLowerCase()}

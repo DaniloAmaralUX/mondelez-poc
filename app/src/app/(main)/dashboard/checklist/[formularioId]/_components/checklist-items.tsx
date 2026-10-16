@@ -13,9 +13,8 @@ import {
   NumberFieldIncrement,
   NumberFieldInput,
 } from "@/components/reui/number-field";
-import { FieldError } from "@/components/ui/field";
+import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { MIN_JUSTIFICATIVA, situacaoItem } from "@/domain/formulario-engine";
 import type { ItemFormulario, Resposta, ValorCnc } from "@/domain/types";
@@ -119,13 +118,16 @@ function ItemRow({
   ].filter(Boolean);
   const idErro = erro ? `erro-${item.id}` : undefined;
   const idJustificativa = `justificativa-${item.id}`;
+  const idAjudaJustificativa = `justificativa-ajuda-${item.id}`;
 
   return (
+    // Um item por cartão. scroll-mt: abaixo do header do dashboard (64 px no toque); scroll-mb: acima da barra fixa
+    // (64 px de ação + 24 de respiro + 12 da borda), para o item que recebe foco ou é rolado até a vista não ficar sob ela.
     <div
       id={`item-${item.id}`}
       data-invalid={erro ? true : undefined}
       className={cn(
-        "flex scroll-mt-24 flex-col gap-3 rounded-xl border bg-card p-3 transition-colors",
+        "flex scroll-mt-24 scroll-mb-36 flex-col gap-3 rounded-xl border bg-card p-3 transition-colors",
         erro && "border-destructive/50",
       )}
     >
@@ -135,7 +137,8 @@ function ItemRow({
             {numero}
           </span>
           <div className="min-w-0">
-            <p className="font-medium text-base">{item.texto}</p>
+            {/* Lido a um braço de distância no tablet: 18 px no toque (docs/12 §3.3), 16 px no notebook. */}
+            <p className="font-medium text-base toque:text-lg">{item.texto}</p>
             <p
               className={cn(
                 "text-sm",
@@ -221,21 +224,26 @@ function ItemRow({
             // -m-1/p-1: o overflow-hidden da animação não corta o anel de foco do campo.
             className="-m-1 overflow-hidden"
           >
-            <div className="flex flex-col gap-2 p-1">
-              <Label htmlFor={idJustificativa}>Justificativa</Label>
+            {/* Rótulo visível e a regra numa descrição (o placeholder some ao digitar). "done" fecha o teclado. */}
+            <Field className="gap-2 p-1" data-invalid={erro ? true : undefined}>
+              <FieldLabel htmlFor={idJustificativa}>Justificativa</FieldLabel>
               <Input
                 id={idJustificativa}
                 className="h-11"
                 aria-label={`Justificativa: ${item.texto}`}
                 aria-invalid={erro ? true : undefined}
-                aria-describedby={idErro}
+                aria-describedby={[idAjudaJustificativa, idErro].filter(Boolean).join(" ")}
                 enterKeyHint="done"
+                autoComplete="off"
                 onKeyDown={(e) => aoEnter(e, "concluir")}
-                placeholder={`O que está fora do padrão? (mínimo ${MIN_JUSTIFICATIVA} caracteres)`}
+                placeholder="O que está fora do padrão?"
                 value={resposta?.justificativa ?? ""}
                 onChange={(e) => onChange({ ...resposta, justificativa: e.target.value })}
               />
-            </div>
+              <FieldDescription id={idAjudaJustificativa}>
+                Mínimo de {MIN_JUSTIFICATIVA} caracteres. Vai para a supervisão junto com o alerta.
+              </FieldDescription>
+            </Field>
           </motion.div>
         )}
       </AnimatePresence>
@@ -244,7 +252,22 @@ function ItemRow({
   );
 }
 
-/** Centerline com −/+ grandes e régua da faixa; −/+ num campo vazio começam do meio do padrão. */
+const SELETOR_PASSO = '[data-slot="number-field-increment"],[data-slot="number-field-decrement"]';
+
+/** Soma de passos sem resíduo de ponto flutuante (5,5 + 0,1 = 5,6, não 5,6000000000000005). */
+function arredondar(valor: number, passo: number) {
+  const casas = passo < 1 ? 10 : 1;
+  return Math.round(valor * casas) / casas;
+}
+
+/**
+ * Centerline com −/+ grandes e régua da faixa; −/+ num campo vazio começam do meio do padrão.
+ *
+ * Um toque, um passo. O NumberField do base-ui repete o passo enquanto o botão fica pressionado (começa em 400 ms e
+ * repete a cada 60 ms, também no toque); com luva, um toque demorado vira vários graus. Aqui o toque nos −/+ é tratado
+ * antes do componente (captura do pointerdown): aplica um passo e não deixa a repetição começar. O clique sem ponteiro
+ * (leitor de tela) continua com o próprio componente, que também dá um passo. Teclado: setas no campo, como antes.
+ */
 function CampoCenterline({
   item,
   faixa,
@@ -280,14 +303,14 @@ function CampoCenterline({
           className="h-11"
           aria-invalid={erro ? true : undefined}
           onPointerDownCapture={(event) => {
-            const alvo = (event.target as HTMLElement).closest(
-              '[data-slot="number-field-increment"],[data-slot="number-field-decrement"]',
-            );
-            if (valor === undefined && alvo) {
-              event.preventDefault();
-              event.stopPropagation();
-              onChange({ ...resposta, numero: meio });
-            }
+            if (event.button !== 0) return;
+            const alvo = (event.target as HTMLElement).closest<HTMLElement>(SELETOR_PASSO);
+            // :disabled cobre o fieldset desabilitado dos modos registrado e consulta.
+            if (!alvo || alvo.matches(":disabled") || alvo.getAttribute("aria-disabled") === "true") return;
+            event.preventDefault();
+            event.stopPropagation();
+            const sentido = alvo.dataset.slot === "number-field-increment" ? 1 : -1;
+            onChange({ ...resposta, numero: valor === undefined ? meio : arredondar(valor + sentido * passo, passo) });
           }}
         >
           <NumberFieldDecrement className="px-3.5" aria-label={`Diminuir ${item.texto}`} />

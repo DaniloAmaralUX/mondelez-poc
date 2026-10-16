@@ -32,7 +32,7 @@ import {
 } from "@/components/ui/sidebar";
 import { proximaTarefa } from "@/domain/routine-engine";
 import { useAlertas, useMinhasTarefas } from "@/hooks/use-turno";
-import { hrefDaTarefa } from "@/lib/rotas";
+import { hrefDaTarefa, prefetchDaRota } from "@/lib/rotas";
 import type {
   NavBadge,
   NavGroup,
@@ -139,11 +139,8 @@ export function NavMain({ items }: NavMainProps) {
                 tooltip="Registrar agora"
                 className="min-w-8 toque:gap-3 bg-primary text-primary-foreground duration-200 ease-linear hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground"
               >
-                <Link
-                  prefetch={false}
-                  href={proxima ? hrefDaTarefa(proxima) : "/dashboard/rotina"}
-                  onClick={fecharSidebar}
-                >
+                {/* prefetch: rota do operador em cache para abrir sem rede (lib/rotas.ts). */}
+                <Link prefetch href={proxima ? hrefDaTarefa(proxima) : "/dashboard/rotina"} onClick={fecharSidebar}>
                   <PlusCircleIcon />
                   <span>Registrar agora</span>
                 </Link>
@@ -156,7 +153,7 @@ export function NavMain({ items }: NavMainProps) {
                 className="h-9 w-9 shrink-0 group-data-[collapsible=icon]:hidden"
                 variant="outline"
               >
-                <Link prefetch={false} href="/dashboard/alertas" className="relative" onClick={fecharSidebar}>
+                <Link prefetch href="/dashboard/alertas" className="relative" onClick={fecharSidebar}>
                   <Bell />
                   <span className="sr-only">
                     Alertas{alertasAbertos > 0 ? `: ${alertasAbertos} sem resolução` : ""}
@@ -238,7 +235,7 @@ function NavLinkItem({ item, contagem, isActive, showIconFallback }: NavLinkItem
     <SidebarMenuItem>
       <SidebarMenuButton asChild aria-disabled={item.disabled} tooltip={item.title} isActive={isActive}>
         <Link
-          prefetch={false}
+          prefetch={prefetchDaRota(item)}
           href={item.url}
           target={item.newTab ? "_blank" : undefined}
           rel={item.newTab ? "noreferrer" : undefined}
@@ -290,7 +287,7 @@ function NavDropdownItem({ item, isActive, isSubItemActive }: NavDropdownItemPro
               return (
                 <DropdownMenuItem key={subItem.id} asChild disabled={subItem.disabled}>
                   <Link
-                    prefetch={false}
+                    prefetch={prefetchDaRota(subItem)}
                     href={subItem.url}
                     target={subItem.newTab ? "_blank" : undefined}
                     rel={subItem.newTab ? "noreferrer" : undefined}
@@ -340,7 +337,7 @@ function NavCollapsibleItem({ item, isActive, defaultOpen, isSubItemActive }: Na
                     isActive={isSubItemActive(subItem.url)}
                   >
                     <Link
-                      prefetch={false}
+                      prefetch={prefetchDaRota(subItem)}
                       href={subItem.url}
                       target={subItem.newTab ? "_blank" : undefined}
                       rel={subItem.newTab ? "noreferrer" : undefined}

@@ -14,6 +14,7 @@ import { Status, StatusIndicator, StatusLabel } from "@/components/ui/status";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { localRepository } from "@/data/repository";
 import type { Alerta, EstadoAlerta } from "@/domain/types";
+import { useModoToque } from "@/hooks/use-modo-toque";
 import { formatarHora } from "@/lib/format";
 import { ICONE_MODULO } from "@/lib/modulo-icones";
 import { getInitials } from "@/lib/utils";
@@ -81,15 +82,16 @@ function AlertCard({ alerta, active, explicito = true, onSelectAlert, agora }: A
       <div className="flex items-center justify-between gap-3">
         <div>#{alerta.regra}</div>
 
-        <Status variant={STATUS_VARIANTE[status]}>
+        <Status variant={STATUS_VARIANTE[status]} className="toque:text-sm">
           <StatusIndicator className={status === "critico" ? undefined : "before:hidden"} />
           <StatusLabel>{STATUS_LABEL[status]}</StatusLabel>
         </Status>
       </div>
 
+      {/* No toque, nada de leitura abaixo de 14 px (docs/12 §3.3): rótulos e marcas passam de text-xs a text-sm. */}
       <div className="flex items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-1.5">
-          <div className="grid size-7 shrink-0 place-items-center rounded-xs text-xs outline">
+          <div className="grid size-7 toque:size-8 shrink-0 place-items-center rounded-xs text-xs toque:text-sm outline">
             {linha?.nome.replace(/\D/g, "")}
           </div>
           <div className="flex min-w-0 flex-col gap-0.5">
@@ -103,7 +105,7 @@ function AlertCard({ alerta, active, explicito = true, onSelectAlert, agora }: A
             <div className="font-medium text-sm leading-none">Responsável,</div>
             <div className="truncate text-muted-foreground text-sm">{responsavel?.nome ?? "ninguém assumiu"}</div>
           </div>
-          <div className="grid size-7 shrink-0 place-items-center rounded-xs text-xs outline">
+          <div className="grid size-7 toque:size-8 shrink-0 place-items-center rounded-xs text-xs toque:text-sm outline">
             {responsavel ? getInitials(responsavel.nome) : "—"}
           </div>
         </div>
@@ -123,11 +125,11 @@ function AlertCard({ alerta, active, explicito = true, onSelectAlert, agora }: A
 
       <div className="flex items-center justify-between gap-4">
         <div className="min-w-0">
-          <div className="text-muted-foreground text-xs leading-none">Alerta</div>
+          <div className="text-muted-foreground text-xs toque:text-sm leading-none">Alerta</div>
           <div className="truncate text-sm tracking-tight">{alerta.titulo}</div>
         </div>
         <div className="shrink-0 text-right">
-          <div className="text-muted-foreground text-xs leading-none">Idade</div>
+          <div className="text-muted-foreground text-xs toque:text-sm leading-none">Idade</div>
           <div className="text-sm tabular-nums tracking-tight">
             {idadeDoAlerta(alerta, agora)}
             <span className="ml-1 font-normal text-muted-foreground text-sm">
@@ -142,6 +144,9 @@ function AlertCard({ alerta, active, explicito = true, onSelectAlert, agora }: A
 
 export function AlertList({ alertas, selectedAlertId, selecaoExplicita, onSelectAlert }: AlertListProps) {
   const agora = useAgora();
+  // A lista só monta depois de carregar a sessão (SessionGate): já nasce com o ponteiro do aparelho, sem trocar de
+  // variante depois da hidratação.
+  const toque = useModoToque();
   const filtrosAjudaId = React.useId();
   const [filtro, setFiltro] = React.useState<Filtro>("todos");
   const [busca, setBusca] = React.useState("");
@@ -152,9 +157,14 @@ export function AlertList({ alertas, selectedAlertId, selecaoExplicita, onSelect
   );
 
   return (
-    <Card className="h-full rounded-none ring-0">
+    // @container/lista: as abas decidem o arranjo pela largura da própria lista (360 px ao lado do detalhe, a tela
+    // inteira na pilha do retrato), não pelo viewport.
+    <Card className="@container/lista h-full rounded-none ring-0">
       <CardHeader>
-        <CardTitle className="font-normal text-xl">Alertas</CardTitle>
+        {/* h1 da tela (UI Audit 10.5): a lista é a entrada de Alertas; o detalhe tem o próprio título. */}
+        <CardTitle className="font-normal text-xl">
+          <h1>Alertas</h1>
+        </CardTitle>
         {/* Botão desabilitado sem explicação não serve no toque (não há tooltip): o motivo fica escrito, como em Recados. */}
         <CardDescription id={filtrosAjudaId}>Filtros: em breve.</CardDescription>
         <CardAction>
@@ -163,21 +173,44 @@ export function AlertList({ alertas, selectedAlertId, selecaoExplicita, onSelect
           </Button>
         </CardAction>
       </CardHeader>
-      <CardContent className="flex flex-1 flex-col gap-4 overflow-hidden px-0">
-        <Tabs value={filtro} onValueChange={(value) => setFiltro(value as Filtro)}>
-          {/* Na lista de 360 px (ou com texto ampliado) as abas quebram linha em vez de ficarem cortadas pela borda do
-              card: rolar abas para o lado não serve com luva. Se couberem, a linha é a mesma do template. */}
-          <TabsList
-            className="w-full flex-wrap gap-y-2 border-b px-4 group-data-horizontal/tabs:h-auto group-data-horizontal/tabs:min-h-8"
-            variant="line"
-          >
-            {FILTROS.map((f) => (
-              // min-h-6: a mesma altura que o h-8 da lista dava ao gatilho no template (no toque, a camada dá 56 px).
-              <TabsTrigger key={f.value} className="min-h-6 text-xs" value={f.value}>
-                {f.label} ({contagem(f.value)})
-              </TabsTrigger>
-            ))}
-          </TabsList>
+      <CardContent className="flex flex-1 flex-col gap-3 overflow-hidden px-0">
+        <Tabs
+          value={filtro}
+          onValueChange={(value) => setFiltro(value as Filtro)}
+          className={toque ? "px-4" : undefined}
+        >
+          {toque ? (
+            // Toque: abas em grade, sem quebra nem rolagem lateral: 2 × 2 na lista estreita (360 px na paisagem,
+            // Split View) e uma linha de 4 a partir de 672 px de lista (retrato). Na grade o sublinhado da variante
+            // "line" ficaria solto entre as linhas; a variante padrão do template (segmentado) marca a aba ativa em
+            // qualquer arranjo. 56 px por aba (camada de densidade) e 12 px entre elas nas duas direções (docs/12 §2
+            // item 2); h-auto deixa o rótulo quebrar com texto ampliado, sem cortar a contagem.
+            <TabsList className="grid w-full @2xl/lista:grid-cols-4 grid-cols-2 gap-3 group-data-horizontal/tabs:h-auto">
+              {FILTROS.map((f) => (
+                <TabsTrigger
+                  key={f.value}
+                  className="h-auto min-h-7 whitespace-normal py-1 text-center tabular-nums"
+                  value={f.value}
+                >
+                  {f.label} ({contagem(f.value)})
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          ) : (
+            // Notebook (ponteiro fino): a linha do template, como na v0.2 (docs/12 §3.1: o notebook mantém a
+            // densidade). Se não couber, quebra linha em vez de ficar cortada pela borda do card.
+            <TabsList
+              className="w-full flex-wrap gap-y-2 border-b px-4 group-data-horizontal/tabs:h-auto group-data-horizontal/tabs:min-h-8"
+              variant="line"
+            >
+              {FILTROS.map((f) => (
+                // min-h-6: a mesma altura que o h-8 da lista dava ao gatilho no template.
+                <TabsTrigger key={f.value} className="min-h-6 text-xs tabular-nums" value={f.value}>
+                  {f.label} ({contagem(f.value)})
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          )}
         </Tabs>
 
         <div className="px-4">
@@ -186,6 +219,8 @@ export function AlertList({ alertas, selectedAlertId, selecaoExplicita, onSelect
               className="h-8"
               aria-label="Buscar alertas"
               placeholder="Buscar alertas..."
+              enterKeyHint="search"
+              autoComplete="off"
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
             />
@@ -204,9 +239,11 @@ export function AlertList({ alertas, selectedAlertId, selecaoExplicita, onSelect
                 {alertas.length === 0 ? "Nenhum alerta neste turno." : "Nenhum alerta neste filtro."}
               </div>
             )}
-            {visiveis.map((alerta) => (
+            {visiveis.map((alerta, indice) => (
               // Reordenação por estado e criticidade desliza em vez de pular (oportunidades de movimento, item 4).
-              <motion.div key={alerta.id} layout="position" transition={REORDENAR}>
+              // layoutDependency: o motion só mede quando a posição do card na lista muda (estado, filtro, alerta novo),
+              // e não a cada virada de minuto do relógio, que re-renderiza a lista inteira (docs/12 §3.6).
+              <motion.div key={alerta.id} layout="position" layoutDependency={indice} transition={REORDENAR}>
                 <AlertCard
                   active={alerta.id === selectedAlertId}
                   explicito={selecaoExplicita}

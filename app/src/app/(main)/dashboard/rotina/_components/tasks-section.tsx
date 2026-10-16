@@ -65,11 +65,24 @@ export function TasksSection() {
       </div>
 
       <div className="overflow-hidden rounded-xl border bg-background shadow-xs">
-        <ul className="divide-y">
+        {/* Movimento só no que muda (docs/12 §3.6, GPU modesta do Tab Active5):
+            - layoutDependency: cada linha só é medida quando a posição dela na lista muda; a virada do minuto
+              re-renderiza a lista inteira (prazo "vence em") e, sem isso, o motion mediria todas as linhas a cada tick.
+            - mode="popLayout": a linha concluída sai do fluxo na hora (some com opacidade e escala) e as de baixo sobem
+              no mesmo render em que o índice delas muda, então a medição acontece quando precisa. O ul é relative
+              porque o popLayout posiciona a linha que sai em relação a ele.
+            - Com prefers-reduced-motion o MotionConfig do app desliga escala e deslocamento; fica só a opacidade. */}
+        <ul className="relative divide-y">
           {items.length === 0 && <li className="p-4 text-muted-foreground text-sm">{VAZIO[filtro]}</li>}
-          <AnimatePresence initial={false}>
-            {items.map((tarefa) => (
-              <motion.li key={tarefa.id} layout="position" exit={{ opacity: 0, scale: 0.98 }} transition={SAIDA}>
+          <AnimatePresence initial={false} mode="popLayout">
+            {items.map((tarefa, indice) => (
+              <motion.li
+                key={tarefa.id}
+                layout="position"
+                layoutDependency={indice}
+                exit={{ opacity: 0, scale: 0.98 }}
+                transition={SAIDA}
+              >
                 <LinhaTarefa tarefa={tarefa} agora={agora} onConcluir={() => concluir(tarefa)} />
               </motion.li>
             ))}
@@ -107,7 +120,8 @@ function LinhaTarefa({ tarefa, agora, onConcluir }: { tarefa: TarefaInstancia; a
   if (!feita && !tarefa.futura && temTela(tarefa)) {
     return (
       <Link
-        prefetch={false}
+        // prefetch: o checklist abre sem rede (lib/rotas.ts).
+        prefetch
         href={hrefDaTarefa(tarefa)}
         // Anel de foco do template, por dentro: a lista tem overflow-hidden e cortaria um anel externo.
         className={cn(

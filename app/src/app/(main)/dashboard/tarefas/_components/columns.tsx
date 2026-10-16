@@ -28,6 +28,22 @@ const statusStyles: Record<string, string> = {
   feita: "border-green-500/20 bg-green-500/10 text-green-700 dark:text-green-300",
 };
 
+/** Situação da tarefa no Badge do template: a mesma na coluna da tabela e na lista de linhas do retrato. */
+export function SituacaoBadge({ value, className }: { readonly value: string; readonly className?: string }) {
+  const status = statuses.find((s) => s.value === value);
+  if (!status) return null;
+
+  return (
+    <Badge
+      className={cn("gap-1.5 rounded-sm border font-medium", statusStyles[status.value], className)}
+      variant="outline"
+    >
+      {status.icon && <status.icon className="size-4" aria-hidden />}
+      {status.label}
+    </Badge>
+  );
+}
+
 function SortIcon({ sortDirection }: { sortDirection: false | "asc" | "desc" }) {
   if (sortDirection === "desc") {
     return <ArrowDown data-icon="inline-end" />;
@@ -80,37 +96,38 @@ export const columns: ColumnDef<DataTableFeatures, Task>[] = [
     accessorKey: "title",
     header: ({ column }) => <TitleColumnHeader column={column} />,
     cell: ({ row }) => {
-      const label = labels.find((label) => label.value === row.original.label);
-
-      return (
-        <div className="flex min-w-0 items-center gap-2">
+      const task = row.original;
+      const label = labels.find((label) => label.value === task.label);
+      const conteudo = (
+        <>
           {label && (
             <Badge className="rounded-sm bg-transparent" variant="outline">
               {label.label}
             </Badge>
           )}
           <span className="max-w-lg truncate font-medium text-sm">{row.getValue("title")}</span>
-        </div>
+        </>
+      );
+
+      if (task.futura) return <div className="flex min-w-0 items-center gap-2">{conteudo}</div>;
+
+      // A linha inteira abre a tarefa (tasks.tsx); este link é o caminho do teclado e do leitor de tela.
+      // prefetch: o checklist abre sem rede (lib/rotas.ts).
+      return (
+        <Link
+          prefetch
+          href={task.href}
+          className="flex min-w-0 items-center gap-2 rounded-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+        >
+          {conteudo}
+        </Link>
       );
     },
   },
   {
     accessorKey: "status",
     header: "Situação",
-    cell: ({ row }) => {
-      const status = statuses.find((status) => status.value === row.getValue("status"));
-
-      if (!status) {
-        return null;
-      }
-
-      return (
-        <Badge className={cn("gap-1.5 rounded-sm border font-medium", statusStyles[status.value])} variant="outline">
-          {status.icon && <status.icon className="size-4" />}
-          {status.label}
-        </Badge>
-      );
-    },
+    cell: ({ row }) => <SituacaoBadge value={row.getValue("status")} />,
     filterFn: (row, id, value) => {
       return value.includes(row.getValue(id));
     },
@@ -152,12 +169,12 @@ export const columns: ColumnDef<DataTableFeatures, Task>[] = [
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-40">
               <DropdownMenuItem asChild disabled={task.futura}>
-                <Link prefetch={false} href={task.href}>
+                <Link prefetch={!task.futura} href={task.href}>
                   Abrir
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link prefetch={false} href="/dashboard/alertas">
+                <Link prefetch href="/dashboard/alertas">
                   Ver alertas
                 </Link>
               </DropdownMenuItem>

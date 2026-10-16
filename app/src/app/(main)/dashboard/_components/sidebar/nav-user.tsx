@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { Bell, EllipsisVertical, ListChecks, LogOut, MapPin } from "lucide-react";
+import { toast } from "sonner";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -36,6 +37,8 @@ export function NavUser({
   const sair = useSessionStore((s) => s.sair);
 
   function encerrar() {
+    // Avisos com "Desfazer" da pessoa que sai não ficam no login para quem chega (o Toaster é do layout raiz).
+    toast.dismiss();
     sair();
     router.replace("/auth/login");
   }
@@ -80,14 +83,15 @@ export function NavUser({
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
+              {/* prefetch: rotas do operador e da liderança em cache para navegar sem rede (lib/rotas.ts). */}
               <DropdownMenuItem asChild>
-                <Link prefetch={false} href="/dashboard/rotina" onClick={fecharSidebar}>
+                <Link prefetch href="/dashboard/rotina" onClick={fecharSidebar}>
                   <ListChecks />
                   Minha Rotina
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link prefetch={false} href="/dashboard/alertas" onClick={fecharSidebar}>
+                <Link prefetch href="/dashboard/alertas" onClick={fecharSidebar}>
                   <Bell />
                   Alertas
                 </Link>

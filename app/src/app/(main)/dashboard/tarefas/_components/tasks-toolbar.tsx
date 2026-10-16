@@ -38,11 +38,16 @@ export function TasksToolbar<TData extends RowData>({ table }: TasksToolbarProps
     .filter((column) => typeof column.accessorFn !== "undefined" && column.getCanHide());
   const hiddenColumns = hideableColumns.filter((column) => !column.getIsVisible());
 
+  // Arranjo pela largura do card (@container/tarefas em tasks.tsx), como a troca tabela/lista. No toque, 12 px entre os
+  // controles de 56 px (camada de densidade, docs/12 §2 item 2); o filtro de texto tem 56 px e 16 px de fonte.
   return (
-    <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-      <div className="flex flex-1 flex-wrap items-center gap-2">
+    <div className="flex @4xl/tarefas:flex-row flex-col @4xl/tarefas:items-center @4xl/tarefas:justify-between gap-3">
+      <div className="flex flex-1 flex-wrap items-center gap-2 toque:gap-3">
         <Input
+          aria-label="Filtrar tarefas"
           placeholder="Filtrar tarefas..."
+          enterKeyHint="search"
+          autoComplete="off"
           value={searchValue}
           onChange={(event) => {
             table.getColumn("title")?.setFilterValue(event.target.value);
@@ -65,13 +70,14 @@ export function TasksToolbar<TData extends RowData>({ table }: TasksToolbarProps
           </Button>
         )}
       </div>
-      <div className="flex justify-end">
+      {/* "Colunas" aparece junto com a tabela (896 px de card ou mais): na lista de linhas não há colunas a esconder. */}
+      <div className="@4xl/tarefas:flex hidden justify-end">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
               variant="outline"
               size="sm"
-              className={cn("ml-auto hidden lg:flex", hiddenColumns.length > 0 && "bg-muted text-foreground")}
+              className={cn("ml-auto", hiddenColumns.length > 0 && "bg-muted text-foreground")}
             >
               <Settings2 data-icon="inline-start" />
               Colunas

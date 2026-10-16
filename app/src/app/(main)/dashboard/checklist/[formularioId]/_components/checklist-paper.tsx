@@ -3,6 +3,7 @@
 import { localRepository } from "@/data/repository";
 import { descreverResposta, resumirRespostas, situacaoItem } from "@/domain/formulario-engine";
 import { turnoAtual } from "@/domain/turno";
+import type { SyncStatus } from "@/domain/types";
 import { formatarDia, formatarHora } from "@/lib/format";
 import { useSessionStore, useUsuarioAtual } from "@/stores/session/session-store";
 
@@ -10,7 +11,13 @@ import type { ChecklistPaperProps } from "./checklist-preview";
 import { PAPER_HEIGHT, PAPER_WIDTH } from "./data";
 
 const SITUACAO = { pendente: "—", C: "C", NC: "NC", NA: "N/A" } as const;
-const SYNC = { local: "Salvo no tablet", enviando: "Enviando", sincronizado: "Sincronizado" } as const;
+const SYNC: Record<SyncStatus, string> = {
+  pendente: "Salvo no tablet",
+  local: "Aguardando envio",
+  enviando: "Enviando",
+  sincronizado: "Sincronizado",
+  erro: "Envio falhou · nova tentativa",
+};
 
 /** Documento do registro: o que fica guardado, com a rastreabilidade exigida (doc 02 §5). */
 export function ChecklistPaper({ formulario, valores, tarefa, registro }: ChecklistPaperProps) {

@@ -1,19 +1,24 @@
 "use client";
 
-import * as React from "react";
-
-import { Download, Printer } from "lucide-react";
+import { Download, FileText, Printer } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { ButtonGroup } from "@/components/ui/button-group";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import type { Formulario, Registro, TarefaInstancia } from "@/domain/types";
 
 import { ChecklistPaper } from "./checklist-paper";
-import { type ChecklistFormValues, PAPER_HEIGHT, PAPER_SCALE, PAPER_WIDTH } from "./data";
+import type { ChecklistFormValues } from "./data";
 import { PrintChecklist } from "./print-checklist";
-import { useVisibleCenterPosition } from "./use-visible-center-position";
 
-function handlePrint() {
+function imprimir() {
   window.print();
 }
 
@@ -24,57 +29,71 @@ export interface ChecklistPaperProps {
   registro: Registro | undefined;
 }
 
+/**
+ * Documento do registro atrás de "Ver documento" (docs/12 §3.4, auditoria §1.10): em vez da prévia reduzida na revisão
+ * (escala ≤ 0,6, texto de ~7 px no tablet em paisagem), um Sheet em tela cheia com o papel em escala 1 e rolagem nos
+ * dois eixos. Imprimir e Baixar PDF ficam junto do documento.
+ *
+ * O `PrintChecklist` (cópia do papel que só aparece na impressão) fica montado aqui fora do Sheet, uma vez só: assim
+ * imprimir funciona com o Sheet aberto e a impressão não sai em duas páginas.
+ */
 export function ChecklistPreview(props: ChecklistPaperProps) {
-  const previewBodyRef = React.useRef<HTMLDivElement>(null);
-  const paperLayout = useVisibleCenterPosition(previewBodyRef, {
-    height: PAPER_HEIGHT,
-    maxScale: PAPER_SCALE,
-    width: PAPER_WIDTH,
-  });
+  const titulo = props.registro ? "Documento do registro" : "Prévia do documento";
 
   return (
     <>
       <PrintChecklist {...props} />
-      <div className="flex flex-col rounded-xl border bg-card">
-        <div className="flex items-center justify-between px-4 py-4">
-          <h2 className="font-medium text-lg">Prévia do registro</h2>
-          <ButtonGroup>
-            <Button type="button" variant="outline" onClick={handlePrint}>
-              <Printer data-icon="inline-start" />
-              Imprimir
-            </Button>
-            <Button type="button" variant="outline" onClick={handlePrint}>
-              <Download data-icon="inline-start" />
-              Baixar PDF
-            </Button>
-          </ButtonGroup>
+      <section className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-card p-4">
+        <div className="flex min-w-0 flex-col gap-0.5">
+          <h2 className="font-medium tracking-tight">{titulo}</h2>
+          <p className="text-muted-foreground text-sm">
+            {props.registro
+              ? "O que ficou guardado, com responsável, posto e horário."
+              : "Como o registro vai ficar, com responsável, posto e horário."}
+          </p>
         </div>
-
-        <div
-          ref={previewBodyRef}
-          className="@container/preview relative min-h-[calc(100svh-15rem)] flex-1 rounded-b-xl bg-stone-200 p-4 dark:bg-stone-800"
-        >
-          {paperLayout === null ? (
-            <div className="absolute inset-0 grid place-items-center text-muted-foreground text-sm">
-              Carregando prévia
-            </div>
-          ) : null}
-          <div
-            style={{
-              height: paperLayout ? PAPER_HEIGHT * paperLayout.scale : PAPER_HEIGHT * PAPER_SCALE,
-              top: paperLayout?.top ?? "50%",
-              transform: paperLayout === null ? "translate(-50%, -50%)" : "translateX(-50%)",
-              width: paperLayout ? PAPER_WIDTH * paperLayout.scale : PAPER_WIDTH * PAPER_SCALE,
-            }}
-            className="absolute left-1/2 opacity-0 data-[ready=true]:opacity-100"
-            data-ready={paperLayout !== null}
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button type="button" variant="outline">
+              <FileText data-icon="inline-start" />
+              Ver documento
+            </Button>
+          </SheetTrigger>
+          {/* Tela cheia: largura toda em qualquer tamanho (o template limita o lado direito a max-w-sm). Fechar próprio
+              com texto, 56 px no toque, no lugar do X de 28 px do canto. */}
+          <SheetContent
+            side="right"
+            showCloseButton={false}
+            className="gap-0 data-[side=right]:w-full data-[side=right]:sm:max-w-none"
           >
-            <div style={{ transform: `scale(${paperLayout?.scale ?? PAPER_SCALE})` }} className="origin-top-left">
-              <ChecklistPaper {...props} />
+            <SheetHeader className="flex-row flex-wrap items-center justify-between gap-3 border-b px-4 pt-[max(--spacing(3),env(safe-area-inset-top))] pb-3">
+              <div className="flex min-w-0 flex-col gap-0.5">
+                <SheetTitle>{titulo}</SheetTitle>
+                <SheetDescription className="truncate">{props.formulario.titulo}</SheetDescription>
+              </div>
+              <div className="flex flex-wrap items-center gap-3">
+                <Button type="button" variant="outline" onClick={imprimir}>
+                  <Printer data-icon="inline-start" />
+                  Imprimir
+                </Button>
+                <Button type="button" variant="outline" onClick={imprimir}>
+                  <Download data-icon="inline-start" />
+                  Baixar PDF
+                </Button>
+                <SheetClose asChild>
+                  <Button type="button">Fechar</Button>
+                </SheetClose>
+              </div>
+            </SheetHeader>
+            {/* Papel em escala 1 (816 × 1056 px): no retrato e no Split View rola também na horizontal, só aqui dentro. */}
+            <div className="min-h-0 flex-1 overflow-auto overscroll-contain bg-stone-200 p-4 pb-[max(--spacing(4),env(safe-area-inset-bottom))] dark:bg-stone-800">
+              <div className="mx-auto w-fit shadow-sm">
+                <ChecklistPaper {...props} />
+              </div>
             </div>
-          </div>
-        </div>
-      </div>
+          </SheetContent>
+        </Sheet>
+      </section>
     </>
   );
 }

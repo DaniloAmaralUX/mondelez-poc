@@ -14,10 +14,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
-import type { Alerta } from "@/domain/types";
-import { useSessionStore, useUsuarioAtual } from "@/stores/session/session-store";
+import type { AcaoAlerta, Alerta } from "@/domain/types";
+import { JANELA_DESFAZER_MS, useSessionStore, useUsuarioAtual } from "@/stores/session/session-store";
 
 type Acao = "acao" | "resolver";
 
@@ -39,14 +39,32 @@ const DIALOGO: Record<Acao, { titulo: string; descricao: string; botao: string; 
 const PRESSAO = "transition-transform duration-150 ease-out active:scale-[0.97]";
 
 /**
+ * Teclado físico e ponteiro fino (notebook da liderança): o cursor já pode ir para o campo ao abrir o diálogo. No
+ * tablet, não: o teclado virtual subiria junto e cobriria metade da tela antes de a pessoa ler o que vai registrar.
+ * Lido na hora do toque, nunca no render (sem divergência de hidratação).
+ */
+function abreComTecladoFisico() {
+  if (document.documentElement.dataset.density === "touch") return false;
+  return window.matchMedia("(pointer: fine)").matches;
+}
+
+/**
  * Ações de tratamento sempre visíveis no rodapé do detalhe (UI Audit: estavam a dois toques).
- * Assumir é um toque; registrar ação e resolver pedem o texto que vai para o histórico.
+ * Assumir é um toque; registrar ação e resolver pedem o texto que vai para o histórico. Nenhuma pede confirmação:
+ * todas mostram "Desfazer" por 10 s (docs/12 §2 item 5).
  */
 export function AlertActions({ alerta }: { readonly alerta: Alerta }) {
   const usuario = useUsuarioAtual();
   const tratarAlerta = useSessionStore((s) => s.tratarAlerta);
+  const desfazerTratamento = useSessionStore((s) => s.desfazerTratamento);
   const [dialogo, setDialogo] = React.useState<Acao | null>(null);
   const [texto, setTexto] = React.useState("");
+  const [erro, setErro] = React.useState<string | null>(null);
+  const tituloRef = React.useRef<HTMLHeadingElement>(null);
+  const campoRef = React.useRef<HTMLTextAreaElement>(null);
+  const campoId = React.useId();
+  const ajudaId = React.useId();
+  const erroId = React.useId();
   const podeTratar = usuario !== undefined && usuario.perfil !== "operacao";
 
   if (alerta.estado === "resolvido") {
@@ -59,11 +77,50 @@ export function AlertActions({ alerta }: { readonly alerta: Alerta }) {
     );
   }
 
-  function confirmar() {
-    if (!dialogo || !texto.trim()) return;
-    tratarAlerta(alerta.id, dialogo, texto.trim());
-    toast.success(DIALOGO[dialogo].sucesso, { description: alerta.titulo });
+  /**
+   * Registra e oferece "Desfazer". O desfazer tira a última ação da pessoa neste alerta, então só age se ela ainda for
+   * a que este aviso anunciou (mesmo tipo e mesmo texto): se outra ação veio depois (ex.: assumiu e já registrou uma
+   * ação, ou registrou duas ações seguidas), avisa em vez de apagar a errada.
+   */
+  function registrar(tipo: AcaoAlerta["tipo"], textoDaAcao: string, aviso: string) {
+    tratarAlerta(alerta.id, tipo, textoDaAcao);
+    toast.success(aviso, {
+      description: alerta.titulo,
+      duration: JANELA_DESFAZER_MS,
+      action: {
+        label: "Desfazer",
+        onClick: () => {
+          const { tratamentos, usuarioId } = useSessionStore.getState();
+          const ultima = (tratamentos[alerta.id] ?? []).filter((a) => a.usuarioId === usuarioId).at(-1);
+          if (ultima?.tipo !== tipo || ultima.texto !== textoDaAcao) {
+            toast.warning("Não deu para desfazer", { description: "Outra ação foi registrada depois desta." });
+            return;
+          }
+          desfazerTratamento(alerta.id);
+        },
+      },
+    });
+  }
+
+  function abrir(acao: Acao) {
     setTexto("");
+    setErro(null);
+    setDialogo(acao);
+  }
+
+  // Valida no envio (docs/12 §2 item 12): o botão nunca fica desabilitado; sem texto, o erro aparece junto do campo e o
+  // foco vai para ele.
+  function confirmar() {
+    if (!dialogo) return;
+    const valor = texto.trim();
+    if (!valor) {
+      setErro("Escreva o que foi feito antes de continuar.");
+      campoRef.current?.focus();
+      return;
+    }
+    registrar(dialogo, valor, DIALOGO[dialogo].sucesso);
+    setTexto("");
+    setErro(null);
     setDialogo(null);
   }
 
@@ -76,22 +133,19 @@ export function AlertActions({ alerta }: { readonly alerta: Alerta }) {
           <Button
             variant="outline"
             className={`h-11 ${PRESSAO}`}
-            onClick={() => {
-              tratarAlerta(alerta.id, "assumir", "Assumiu o tratamento.");
-              toast.success("Alerta assumido", { description: alerta.titulo });
-            }}
+            onClick={() => registrar("assumir", "Assumiu o tratamento.", "Você assumiu o alerta")}
           >
             <Hand data-icon="inline-start" />
             Assumir
           </Button>
         )}
-        <Button variant="outline" className={`h-11 ${PRESSAO}`} onClick={() => setDialogo("acao")}>
+        <Button variant="outline" className={`h-11 ${PRESSAO}`} onClick={() => abrir("acao")}>
           <MessageSquareText data-icon="inline-start" />
           Registrar ação
         </Button>
         <Button
           className={`h-11 toque:h-16 px-5 toque:px-6 toque:text-base ${PRESSAO}`}
-          onClick={() => setDialogo("resolver")}
+          onClick={() => abrir("resolver")}
         >
           <CheckCircle2 data-icon="inline-start" />
           Resolver
@@ -100,32 +154,56 @@ export function AlertActions({ alerta }: { readonly alerta: Alerta }) {
 
       <Dialog open={dialogo !== null} onOpenChange={(aberto) => !aberto && setDialogo(null)}>
         {/* Sem o X do canto: o do template tem rótulo "Close" (em inglês, fixo em ui/dialog.tsx) e ficaria colado ao
-            título. Cancelar (56 px no toque), Esc e o toque fora fecham o diálogo. */}
-        <DialogContent showCloseButton={false}>
+            título. Cancelar (56 px no toque), Esc e o toque fora fecham o diálogo.
+            No toque o diálogo fica ancorado no topo (8 %), e não no centro: com o teclado virtual aberto (metade de
+            baixo da tela, ainda mais em paisagem) o campo e os botões continuam visíveis. É o Dialog do template
+            reposicionado, em vez de um Sheet inferior, porque um Sheet de baixo é empurrado ou coberto pelo teclado no
+            iPad (o iOS não redimensiona a página). Mais largo no toque para a luva (sm:max-w-sm → sm:max-w-lg). */}
+        <DialogContent
+          showCloseButton={false}
+          className="toque:top-[8%] toque:translate-y-0 toque:sm:max-w-lg"
+          onOpenAutoFocus={(event) => {
+            if (abreComTecladoFisico()) return;
+            // Foco no título: o leitor de tela anuncia o diálogo e o teclado virtual só sobe quando a pessoa tocar no
+            // campo.
+            event.preventDefault();
+            tituloRef.current?.focus();
+          }}
+        >
           {dialogo && (
             <>
               <DialogHeader>
-                <DialogTitle>{DIALOGO[dialogo].titulo}</DialogTitle>
+                <DialogTitle ref={tituloRef} tabIndex={-1} className="outline-none">
+                  {DIALOGO[dialogo].titulo}
+                </DialogTitle>
                 <DialogDescription>{alerta.titulo}</DialogDescription>
               </DialogHeader>
-              <Field className="gap-1.5">
-                <FieldLabel htmlFor="texto-acao">Ação tomada</FieldLabel>
+              <Field className="gap-1.5" data-invalid={erro ? true : undefined}>
+                <FieldLabel htmlFor={campoId}>Ação tomada</FieldLabel>
                 <Textarea
-                  id="texto-acao"
+                  ref={campoRef}
+                  id={campoId}
                   rows={3}
-                  autoFocus
                   value={texto}
-                  onChange={(e) => setTexto(e.target.value)}
+                  onChange={(e) => {
+                    setTexto(e.target.value);
+                    if (erro) setErro(null);
+                  }}
                   placeholder="Ex.: mordente limpo e temperatura conferida com o operador."
+                  autoComplete="off"
+                  aria-invalid={erro ? true : undefined}
+                  aria-describedby={erro ? `${ajudaId} ${erroId}` : ajudaId}
                 />
-                <FieldDescription>{DIALOGO[dialogo].descricao}</FieldDescription>
+                <FieldDescription id={ajudaId}>{DIALOGO[dialogo].descricao}</FieldDescription>
+                {erro && <FieldError id={erroId}>{erro}</FieldError>}
               </Field>
-              {/* Cancelar × Resolver são ações opostas: 16 px entre elas (docs/12 §2, item 2). */}
-              <DialogFooter className="gap-4">
+              {/* Cancelar × Resolver são ações opostas: 16 px entre elas (docs/12 §2, item 2). A ação primária do
+                  diálogo tem 64 px no toque, como Resolver no rodapé do detalhe (docs/12 §5 item 1). */}
+              <DialogFooter className="gap-4 sm:items-center">
                 <Button variant="outline" onClick={() => setDialogo(null)}>
                   Cancelar
                 </Button>
-                <Button onClick={confirmar} disabled={!texto.trim()}>
+                <Button className="toque:h-16 toque:px-6 toque:text-base" onClick={confirmar}>
                   {DIALOGO[dialogo].botao}
                 </Button>
               </DialogFooter>

@@ -19,7 +19,10 @@ import { localRepository } from "@/data/repository";
 import { primeiroNome } from "@/lib/format";
 import { useSessionStore } from "@/stores/session/session-store";
 
-/** Liderança entra pelo diretório corporativo (RF-01). No protótipo o SSO é simulado: escolhe-se a pessoa. */
+/**
+ * Liderança entra pelo diretório corporativo (RF-01). No protótipo o SSO é simulado: escolhe-se a pessoa, sem PIN.
+ * Por isso só aparece com a demonstração ligada (`APP_CONFIG.demo.enabled`, ver login/page.tsx).
+ */
 export function SsoButton({ className, ...props }: React.ComponentProps<typeof Button>) {
   const router = useRouter();
   const entrarComo = useSessionStore((s) => s.entrarComo);
@@ -47,7 +50,7 @@ export function SsoButton({ className, ...props }: React.ComponentProps<typeof B
             >
               <div className="grid min-w-0 flex-1 text-left leading-tight">
                 <span className="truncate">{u.nome}</span>
-                <span className="truncate text-muted-foreground text-xs">{u.cargo}</span>
+                <span className="truncate text-muted-foreground text-xs toque:text-sm">{u.cargo}</span>
               </div>
             </DropdownMenuItem>
           ))}

@@ -83,7 +83,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
-              <Link prefetch={false} href="/dashboard/rotina" onClick={fecharSidebar}>
+              {/* prefetch: Minha Rotina em cache para voltar a ela sem rede (lib/rotas.ts). */}
+              <Link prefetch href="/dashboard/rotina" onClick={fecharSidebar}>
                 <Command />
                 <span className="font-semibold text-base">{APP_CONFIG.name}</span>
               </Link>

@@ -18,6 +18,8 @@ import { LeadershipOnly } from "./_components/header/leadership-only";
 import { SearchDialog } from "./_components/header/search-dialog";
 import { SyncStatus } from "./_components/header/sync-status";
 import { ThemeSwitcher } from "./_components/header/theme-switcher";
+import { BloqueioAutomatico, LockScreen } from "./_components/lock-screen";
+import { Plataforma } from "./_components/plataforma";
 import { SessionGate } from "./_components/session-gate";
 
 export default async function Layout({ children }: Readonly<{ children: ReactNode }>) {
@@ -78,9 +80,8 @@ export default async function Layout({ children }: Readonly<{ children: ReactNod
                 <LayoutControls />
               </LeadershipOnly>
               <ThemeSwitcher />
-              <LeadershipOnly>
-                <DemoMenu />
-              </LeadershipOnly>
+              {/* Só com APP_CONFIG.demo.enabled (o próprio menu confere). */}
+              <DemoMenu />
               <AccountSwitcher users={users} />
             </div>
           </div>
@@ -95,6 +96,11 @@ export default async function Layout({ children }: Readonly<{ children: ReactNod
           </SessionGate>
         </div>
       </SidebarInset>
+      {/* Serviços do tablet, sem interface: rede, sincronização, Wake Lock, abas (Plataforma) e bloqueio automático.
+          A tela "Quem está no posto?" fica fora do SessionGate: o conteúdo dele fica inerte enquanto ela está aberta. */}
+      <Plataforma />
+      <BloqueioAutomatico />
+      <LockScreen />
     </SidebarProvider>
   );
 }

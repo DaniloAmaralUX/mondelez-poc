@@ -1,70 +1,35 @@
 "use client";
 
-import { useMemo } from "react";
-
-import { localRepository } from "@/data/repository";
-import { gerarAlertas } from "@/domain/alert-engine";
-import { gerarTarefas } from "@/domain/routine-engine";
-import { turnoAtual } from "@/domain/turno";
 import type { Alerta, Perfil, TarefaInstancia } from "@/domain/types";
+import { alertasDaLinha, tarefasDoTurno } from "@/lib/sessao/derivacao";
 import { useAgora, useSessionStore, useUsuarioAtual } from "@/stores/session/session-store";
 
-/** Tarefas do turno atual para um posto e um perfil. */
+const SEM_TAREFAS: TarefaInstancia[] = [];
+const SEM_ALERTAS: Alerta[] = [];
+
+/**
+ * Tarefas do turno atual para um posto e um perfil. Derivação única: todos os componentes que pedem o mesmo posto e
+ * perfil no mesmo minuto recebem o mesmo array (cache em `lib/sessao/derivacao`).
+ */
 export function useTarefas(postoId: string | undefined, perfil: Perfil | undefined): TarefaInstancia[] {
   const conclusoes = useSessionStore((s) => s.conclusoes);
   const agora = useAgora();
-
-  return useMemo(
-    () =>
-      postoId && perfil
-        ? gerarTarefas({
-            templates: localRepository.templates(),
-            postoId,
-            perfil,
-            turno: turnoAtual(agora),
-            agora,
-            conclusoes,
-          })
-        : [],
-    [postoId, perfil, agora, conclusoes],
-  );
+  return postoId && perfil ? tarefasDoTurno(postoId, perfil, agora, conclusoes) : SEM_TAREFAS;
 }
 
 /** Minha Rotina: tarefas da pessoa logada no posto do tablet. */
-export function useMinhasTarefas() {
+export function useMinhasTarefas(): TarefaInstancia[] {
   const usuario = useUsuarioAtual();
   const contexto = useSessionStore((s) => s.contexto);
   return useTarefas(contexto?.postoId, usuario?.perfil);
 }
 
-/** Alertas dos postos da linha do tablet (RN-01, RN-02). */
+/** Alertas dos postos da linha do tablet (RN-01, RN-02), calculados uma vez por minuto e por mudança de estado. */
 export function useAlertas(): Alerta[] {
-  const contexto = useSessionStore((s) => s.contexto);
+  const linhaId = useSessionStore((s) => s.contexto?.linhaId);
   const conclusoes = useSessionStore((s) => s.conclusoes);
   const registros = useSessionStore((s) => s.registros);
   const tratamentos = useSessionStore((s) => s.tratamentos);
   const agora = useAgora();
-
-  return useMemo(() => {
-    if (!contexto) return [];
-    const turno = turnoAtual(agora);
-    const tarefas = localRepository.postos(contexto.linhaId).flatMap((posto) =>
-      gerarTarefas({
-        templates: localRepository.templates(),
-        postoId: posto.id,
-        perfil: "operacao",
-        turno,
-        agora,
-        conclusoes,
-      }).map((tarefa) => ({ postoId: posto.id, tarefa })),
-    );
-
-    return gerarAlertas({
-      tarefas,
-      registros: Object.values(registros),
-      formularios: localRepository.formulariosPorId(),
-      tratamentos,
-      agora,
-    });
-  }, [contexto, conclusoes, registros, tratamentos, agora]);
+  return linhaId ? alertasDaLinha(linhaId, agora, conclusoes, registros, tratamentos) : SEM_ALERTAS;
 }

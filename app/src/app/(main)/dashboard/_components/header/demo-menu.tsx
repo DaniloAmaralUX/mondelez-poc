@@ -27,19 +27,30 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { APP_CONFIG } from "@/config/app-config";
 import { turnoAtual } from "@/domain/turno";
 import { formatarHora } from "@/lib/format";
 import { useAgora, useSessionHydrated, useSessionStore } from "@/stores/session/session-store";
 
-/** Painel de demonstração (RF-13), no lugar do menu de repositórios do template. */
+/**
+ * Painel de demonstração (RF-13), no lugar do menu de repositórios do template. Só existe com a demonstração ligada
+ * (`APP_CONFIG.demo.enabled`, padrão); com `NEXT_PUBLIC_DEMO=false` some para todos os perfis.
+ */
 export function DemoMenu() {
+  if (!APP_CONFIG.demo.enabled) return null;
+  return <PainelDaDemonstracao />;
+}
+
+function PainelDaDemonstracao() {
   // O relógio simulado só existe no cliente: o rótulo com horário espera o estado do tablet.
   const hydrated = useSessionHydrated();
-  const agora = useAgora(5_000);
-  const rede = useSessionStore((s) => s.rede);
+  const agora = useAgora();
+  const redeNavegador = useSessionStore((s) => s.redeNavegador);
+  const simularSemRede = useSessionStore((s) => s.simularSemRede);
   const avancarRelogio = useSessionStore((s) => s.avancarRelogio);
   const irParaFimDoTurno = useSessionStore((s) => s.irParaFimDoTurno);
   const alternarRede = useSessionStore((s) => s.alternarRede);
+  const bloquear = useSessionStore((s) => s.bloquear);
   const resetarDemo = useSessionStore((s) => s.resetarDemo);
   const turno = turnoAtual(agora);
   const [confirmarReset, setConfirmarReset] = useState(false);
@@ -55,7 +66,7 @@ export function DemoMenu() {
             <Clock />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuContent align="end" className="w-60">
           <DropdownMenuGroup>
             <DropdownMenuLabel>
               Relógio da demonstração
@@ -67,10 +78,25 @@ export function DemoMenu() {
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <DropdownMenuLabel>Rede do tablet</DropdownMenuLabel>
-            <DropdownMenuCheckboxItem checked={rede === "offline"} onCheckedChange={alternarRede}>
+            {/* A rede real do aparelho manda; a simulação só desliga por cima dela (nunca liga uma rede que não existe). */}
+            <DropdownMenuLabel>
+              Rede do tablet
+              <DropdownMenuShortcut>{redeNavegador === "online" ? "Conectado" : "Sem rede"}</DropdownMenuShortcut>
+            </DropdownMenuLabel>
+            <DropdownMenuCheckboxItem
+              checked={simularSemRede}
+              onCheckedChange={(marcado) => {
+                if (marcado !== simularSemRede) alternarRede();
+              }}
+            >
               Simular sem rede
             </DropdownMenuCheckboxItem>
+          </DropdownMenuGroup>
+          <DropdownMenuSeparator />
+          <DropdownMenuGroup>
+            <DropdownMenuLabel>Tablet compartilhado</DropdownMenuLabel>
+            {/* Mostra o bloqueio por inatividade sem esperar 5 min parado. */}
+            <DropdownMenuItem onSelect={() => bloquear("inatividade")}>Simular 5 min parado</DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuItem variant="destructive" onSelect={() => setConfirmarReset(true)}>

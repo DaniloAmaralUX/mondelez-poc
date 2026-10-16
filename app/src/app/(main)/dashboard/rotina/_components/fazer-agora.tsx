@@ -97,7 +97,8 @@ export function FazerAgora() {
         {temTela(proxima) ? (
           // 44 px no notebook (v0.2); 64 px no toque: ação primária do operador (docs/12 §2 item 1 e §3.1).
           <Button asChild size="lg" className={cn("h-11 toque:h-16 px-5 toque:px-6 text-base", PRESSAO)}>
-            <Link prefetch={false} href={hrefDaTarefa(proxima)}>
+            {/* prefetch: a tela de registro abre mesmo com a rede caindo (lib/rotas.ts). */}
+            <Link prefetch href={hrefDaTarefa(proxima)}>
               Registrar
               <ArrowRight data-icon="inline-end" />
             </Link>

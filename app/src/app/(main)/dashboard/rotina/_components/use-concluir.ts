@@ -6,9 +6,13 @@ import { toast } from "sonner";
 
 import type { TarefaInstancia } from "@/domain/types";
 import { hrefDaTarefa } from "@/lib/rotas";
-import { useSessionStore } from "@/stores/session/session-store";
+import { JANELA_DESFAZER_MS, useSessionStore } from "@/stores/session/session-store";
 
-/** Tarefas com formulário abrem a tela de registro; as demais concluem na hora, com "Desfazer". */
+/**
+ * Tarefas com formulário abrem a tela de registro; as demais concluem na hora, sem confirmação, com "Desfazer" por
+ * 10 s (a mesma janela do registro de checklist, docs/12 §2 item 5). No toque o botão do aviso tem 44 px e 16 px de
+ * texto pela camada de densidade (src/styles/tablet.css).
+ */
 export function useConcluirTarefa() {
   const router = useRouter();
   const confirmarTarefa = useSessionStore((s) => s.confirmarTarefa);
@@ -20,10 +24,9 @@ export function useConcluirTarefa() {
       return;
     }
     confirmarTarefa(tarefa.id);
-    // 8 s para alcançar "Desfazer" com luva; no toque o botão cresce para 44 px pela camada (src/styles/tablet.css).
-    toast.success("Tarefa concluída", {
+    toast.success("Concluída", {
       description: tarefa.titulo,
-      duration: 8000,
+      duration: JANELA_DESFAZER_MS,
       action: { label: "Desfazer", onClick: () => desfazerConclusao(tarefa.id) },
     });
   };

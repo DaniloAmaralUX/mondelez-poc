@@ -144,15 +144,27 @@ export function SearchDialog() {
           <span className="text-xs">⌘</span>J
         </kbd>
       </Button>
-      {/* Título e descrição (lidos pelo leitor de tela) em pt-BR: o padrão do template é "Command Palette". */}
+      {/* Título e descrição (lidos pelo leitor de tela) em pt-BR: o padrão do template é "Command Palette".
+          No toque o campo abre o teclado na hora: o diálogo sobe do terço da tela para o topo (8 %), e a lista de
+          resultados fica acima do teclado também em paisagem. Itens de 48 px e campo de 16 px vêm da camada de
+          densidade (src/styles/tablet.css, command-item e command-input). */}
       <CommandDialog
         open={open}
         onOpenChange={handleOpenChange}
         title="Buscar"
         description="Busque telas, checklists e registros."
+        className="toque:top-[8%]"
       >
         <Command>
-          <CommandInput placeholder="Buscar telas, checklists e registros…" value={query} onValueChange={setQuery} />
+          {/* toque:self-stretch: o campo ocupa a altura toda do grupo de 56 px, e não só a linha do texto (luva). */}
+          <CommandInput
+            className="toque:self-stretch"
+            placeholder="Buscar telas, checklists e registros…"
+            value={query}
+            onValueChange={setQuery}
+            enterKeyHint="go"
+            autoComplete="off"
+          />
           <CommandList>
             <CommandEmpty>Nada encontrado.</CommandEmpty>
             {query ? renderGroups(searchItems) : renderGroups(recommendations)}

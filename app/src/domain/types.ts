@@ -144,7 +144,15 @@ export interface Resposta {
   justificativa?: string;
 }
 
-export type SyncStatus = "local" | "enviando" | "sincronizado";
+/**
+ * Estado de envio do registro na fila do tablet (RF-07):
+ * - `pendente`: acabou de ser registrado, ainda na janela de desfazer (10 s); não entrou na fila.
+ * - `local`: na fila, aguardando rede.
+ * - `enviando`: envio em curso.
+ * - `sincronizado`: recebido pelo servidor.
+ * - `erro`: o envio falhou (a rede caiu no meio); volta a ser enviado sozinho e por "Tentar de novo".
+ */
+export type SyncStatus = "pendente" | "local" | "enviando" | "sincronizado" | "erro";
 
 export interface Registro {
   id: string;
@@ -168,6 +176,13 @@ export interface Rascunho {
   respostas: Record<string, Resposta>;
   equipamentoId?: string;
   observacao: string;
+  /**
+   * Quem começou o preenchimento (usuarioId). O store preenche na primeira gravação e preserva depois; todo
+   * rascunho salvo no tablet tem autor. Opcional aqui porque o formulário edita só os valores.
+   */
+  iniciadoPor?: string;
+  /** Quando o preenchimento começou (ISO, horário simulado). Mesma regra de `iniciadoPor`. */
+  iniciadoEm?: string;
 }
 
 // Alertas -------------------------------------------------------------------------------------------

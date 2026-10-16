@@ -28,7 +28,8 @@ export default function Layout({ children }: Readonly<{ children: ReactNode }>) 
             </div>
           </div>
         </div>
-        <div className="relative order-1 flex h-full">{children}</div>
+        {/* A coluna do formulário rola sozinha (o painel roxo fica parado): em paisagem, o teclado do PIN passa da altura. */}
+        <div className="relative order-1 flex h-full min-h-0 overflow-y-auto">{children}</div>
       </div>
     </main>
   );

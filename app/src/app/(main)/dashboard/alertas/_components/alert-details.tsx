@@ -148,10 +148,8 @@ function AlertOverview({ alerta, tituloId }: { alerta: Alerta; tituloId?: string
           <h2 className="font-medium">Detalhes do alerta</h2>
 
           <Button asChild variant="outline" size="sm" className="shrink-0">
-            <Link
-              prefetch={false}
-              href={registro ? `/dashboard/checklist/${registro.formularioId}` : "/dashboard/tarefas"}
-            >
+            {/* prefetch: o registro abre mesmo com a rede caindo no meio da linha (lib/rotas.ts). */}
+            <Link prefetch href={registro ? `/dashboard/checklist/${registro.formularioId}` : "/dashboard/tarefas"}>
               {registro ? "Abrir o registro" : "Ver tarefas do posto"}
             </Link>
           </Button>
@@ -160,29 +158,33 @@ function AlertOverview({ alerta, tituloId }: { alerta: Alerta; tituloId?: string
         {/* 2 colunas abaixo de 672 px de painel (paisagem com a sidebar aberta), 5 acima (retrato, notebook). */}
         <div className="grid @2xl/detalhe:grid-cols-[1.35fr_1fr_1.1fr_1.15fr_1fr] grid-cols-2 gap-x-4 gap-y-5">
           <div className="@2xl/detalhe:col-span-1 col-span-2 flex flex-col @2xl/detalhe:gap-2 gap-1">
-            <div className="@2xl/detalhe:invisible @2xl/detalhe:text-sm text-muted-foreground text-xs leading-none">
+            <div className="@2xl/detalhe:invisible @2xl/detalhe:text-sm text-muted-foreground text-xs toque:text-sm leading-none">
               Alerta
             </div>
             <div className="text-sm leading-tight">{alerta.titulo}</div>
           </div>
 
           <div className="flex flex-col gap-2">
-            <div className="@2xl/detalhe:text-sm text-muted-foreground text-xs leading-none">Posto</div>
+            <div className="@2xl/detalhe:text-sm text-muted-foreground text-xs toque:text-sm leading-none">Posto</div>
             <div className="text-sm leading-tight">{posto?.nome}</div>
           </div>
 
           <div className="flex flex-col gap-2">
-            <div className="@2xl/detalhe:text-sm text-muted-foreground text-xs leading-none">Equipamento</div>
+            <div className="@2xl/detalhe:text-sm text-muted-foreground text-xs toque:text-sm leading-none">
+              Equipamento
+            </div>
             <div className="text-sm leading-tight">{equipamento?.nome ?? "—"}</div>
           </div>
 
           <div className="flex flex-col gap-2">
-            <div className="@2xl/detalhe:text-sm text-muted-foreground text-xs leading-none">Regra</div>
+            <div className="@2xl/detalhe:text-sm text-muted-foreground text-xs toque:text-sm leading-none">Regra</div>
             <div className="text-sm leading-tight">{REGRA_LABEL[alerta.regra]}</div>
           </div>
 
           <div className="flex flex-col gap-2 @2xl/detalhe:text-right">
-            <div className="@2xl/detalhe:text-sm text-muted-foreground text-xs leading-none">Responsável</div>
+            <div className="@2xl/detalhe:text-sm text-muted-foreground text-xs toque:text-sm leading-none">
+              Responsável
+            </div>
             <div className="text-sm leading-tight">{responsavel?.nome ?? "—"}</div>
           </div>
         </div>
@@ -253,7 +255,7 @@ function AlertHistory({ alerta }: { alerta: Alerta }) {
             <TimelineConnector />
             <TimelineContent>
               <TimelineHeader>
-                <TimelineTime dateTime={evento.em.toISOString()} className="tabular-nums">
+                <TimelineTime dateTime={evento.em.toISOString()} className="toque:text-sm tabular-nums">
                   {formatarHora(evento.em)}
                 </TimelineTime>
                 <TimelineTitle>{evento.titulo}</TimelineTitle>

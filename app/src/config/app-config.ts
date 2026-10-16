@@ -25,6 +25,10 @@ export const APP_CONFIG = {
     /** `--primary-foreground`: oklch(0.969 0.016 293.756) (violet-50). */
     primaryForeground: "#f5f3ff",
   },
-  /** Painel de demonstração e controles de layout para todos os perfis; `NEXT_PUBLIC_DEMO=false` os deixa só com a liderança. */
+  /**
+   * Demonstração ligada (padrão): dica de login, SSO simulado e painel de demonstração para todos os perfis, e controles
+   * de layout para todos. `NEXT_PUBLIC_DEMO=false` tira a dica, o SSO e o painel, e deixa os controles de layout só com
+   * a liderança.
+   */
   demo: { enabled: process.env.NEXT_PUBLIC_DEMO !== "false" },
 };

@@ -1,25 +1,28 @@
 "use client";
 
+import { useRef, useState } from "react";
+
 import { useRouter } from "next/navigation";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { REGEXP_ONLY_DIGITS } from "input-otp";
+import { cn } from "cn";
+import { Check } from "lucide-react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import { PinPad } from "@/components/pin-pad";
 import { Button } from "@/components/ui/button";
-import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { Field, FieldError, FieldGroup, FieldLabel, FieldLegend, FieldSet } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { localRepository } from "@/data/repository";
 import { primeiroNome } from "@/lib/format";
-import { useSessionStore } from "@/stores/session/session-store";
+import { useSessionHydrated, useSessionStore } from "@/stores/session/session-store";
 
 const PLANTA_ID = "chocolate";
+const TAMANHO_MATRICULA = 6;
 const TAMANHO_PIN = 4;
-const SLOTS_PIN = Array.from({ length: TAMANHO_PIN }, (_, i) => i);
 
 const formSchema = z.object({
   matricula: z.string().regex(/^\d{6}$/, { message: "A matrícula tem 6 números." }),
@@ -30,23 +33,54 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
+/**
+ * Escolha grande para luva (docs/12 §3.4), no lugar do Select de 32 px: 56 px no toque pela camada de densidade, 12 px
+ * entre as opções (spacing 3), quebra em linhas quando não cabe. A escolhida se lê de longe: borda e fundo da cor
+ * primária e um ✓ (não só a cor), no mesmo padrão das respostas C/NC do checklist.
+ */
+const OPCAO =
+  "min-w-0 flex-1 basis-16 toque:text-base data-[state=on]:border-primary/40 data-[state=on]:bg-primary/10 data-[state=on]:text-primary";
+
+function apenasDigitos(texto: string, tamanho: number) {
+  return texto.replace(/\D/g, "").slice(0, tamanho);
+}
+
 export function LoginForm() {
   const router = useRouter();
-  const contextoDoTablet = useSessionStore((s) => s.contexto);
+  const hidratado = useSessionHydrated();
+  const contexto = useSessionStore((s) => s.contexto);
   const entrar = useSessionStore((s) => s.entrar);
+  const pinPadRef = useRef<HTMLFieldSetElement | null>(null);
+  const [entrando, setEntrando] = useState(false);
 
+  const posto = { linhaId: contexto?.linhaId ?? "", postoId: contexto?.postoId ?? "" };
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      matricula: "",
-      pin: "",
-      linhaId: contextoDoTablet?.linhaId ?? "",
-      postoId: contextoDoTablet?.postoId ?? "",
-    },
+    defaultValues: { matricula: "", pin: "", ...posto },
+    // O posto lembrado pelo tablet vem do IndexedDB, depois da hidratação (antes vale o padrão do store, igual ao HTML
+    // do servidor). Ao chegar, preenche Linha e Posto; o que a pessoa já digitou ou escolheu fica (keepDirtyValues).
+    values: hidratado ? { matricula: "", pin: "", ...posto } : undefined,
+    resetOptions: { keepDirtyValues: true },
   });
 
   const linhaId = form.watch("linhaId");
+  const postoId = form.watch("postoId");
   const postos = linhaId ? localRepository.postos(linhaId) : [];
+  // O PIN entra sozinho no último número, e com o teclado de 64 px Linha e Posto podem ficar abaixo da dobra (paisagem):
+  // o posto escolhido aparece junto do PIN, para ninguém entrar no posto errado sem ver.
+  const linhaNome = localRepository.linhas(PLANTA_ID).find((l) => l.id === linhaId)?.nome;
+  const postoNome = postos.find((p) => p.id === postoId)?.nome;
+  const postoEscolhido =
+    linhaNome && postoNome
+      ? `Entrando em ${linhaNome} · ${postoNome}. Para trocar, escolha abaixo antes do último número.`
+      : undefined;
+
+  /** Troca de linha mantém o mesmo tipo de posto (Embalagem → Embalagem), se existir na linha nova. */
+  function escolherLinha(novaLinhaId: string) {
+    const postoAtual = localRepository.posto(form.getValues("postoId"));
+    const equivalente = localRepository.postos(novaLinhaId).find((p) => p.nome === postoAtual?.nome);
+    form.setValue("postoId", equivalente?.id ?? "", { shouldDirty: true, shouldValidate: form.formState.isSubmitted });
+  }
 
   function onSubmit(data: FormValues) {
     const resultado = entrar(data.matricula, data.pin, {
@@ -56,17 +90,24 @@ export function LoginForm() {
     });
 
     if (!resultado.ok) {
+      // Errou a matrícula ou o PIN: o PIN é digitado de novo (aparelho compartilhado, ninguém herda um PIN pela metade).
+      form.setValue("pin", "");
       form.setError(resultado.campo, { message: resultado.erro }, { shouldFocus: true });
-      if (resultado.campo === "pin") form.setValue("pin", "");
       return;
     }
 
+    setEntrando(true);
     toast(`Bom turno, ${primeiroNome(resultado.usuario.nome)}`, { description: resultado.usuario.cargo });
     router.replace("/dashboard/rotina");
   }
 
+  // PIN completo com outro campo inválido (ex.: matrícula curta): limpa o PIN e o foco vai ao primeiro erro.
+  const enviar = form.handleSubmit(onSubmit, (erros) => {
+    if (!erros.pin) form.setValue("pin", "");
+  });
+
   return (
-    <form noValidate onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4">
+    <form noValidate onSubmit={enviar} className="flex flex-col gap-4">
       <FieldGroup className="gap-4">
         <Controller
           control={form.control}
@@ -77,112 +118,135 @@ export function LoginForm() {
               <Input
                 {...field}
                 id="login-matricula"
+                // Aparelho compartilhado: sem sugestão de matrícula de outra pessoa (docs/pesquisa auditoria §5.2).
+                autoComplete="off"
+                autoCorrect="off"
+                spellCheck={false}
                 inputMode="numeric"
-                autoComplete="username"
-                placeholder="104233"
-                maxLength={6}
+                enterKeyHint="next"
+                placeholder="6 números do crachá"
+                maxLength={TAMANHO_MATRICULA}
                 aria-invalid={fieldState.invalid}
+                aria-describedby={fieldState.invalid ? "login-matricula-erro" : undefined}
+                onChange={(evento) => {
+                  const matricula = apenasDigitos(evento.target.value, TAMANHO_MATRICULA);
+                  const completou = matricula.length === TAMANHO_MATRICULA && field.value.length < TAMANHO_MATRICULA;
+                  field.onChange(matricula);
+                  // 6 números: o foco vai para o PIN e o teclado do sistema fecha (o PIN é digitado na tela).
+                  if (completou) pinPadRef.current?.focus();
+                }}
+                onKeyDown={(evento) => {
+                  // "Próximo" do teclado leva ao PIN em vez de enviar o formulário pela metade.
+                  if (evento.key !== "Enter") return;
+                  evento.preventDefault();
+                  pinPadRef.current?.focus();
+                }}
               />
-              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+              {fieldState.invalid && <FieldError id="login-matricula-erro" errors={[fieldState.error]} />}
             </Field>
           )}
         />
+
         <Controller
           control={form.control}
           name="pin"
           render={({ field, fieldState }) => (
-            <Field className="gap-1.5" data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="login-pin">PIN</FieldLabel>
-              <InputOTP
-                id="login-pin"
-                ref={field.ref}
-                name={field.name}
-                value={field.value}
-                onChange={field.onChange}
-                onBlur={field.onBlur}
-                maxLength={TAMANHO_PIN}
-                inputMode="numeric"
-                pattern={REGEXP_ONLY_DIGITS}
-                autoComplete="current-password"
-                // PIN completo envia sozinho: menos um toque no tablet compartilhado.
-                onComplete={() => form.handleSubmit(onSubmit)()}
-                aria-invalid={fieldState.invalid}
-                containerClassName="w-full"
-              >
-                <InputOTPGroup className="w-full">
-                  {SLOTS_PIN.map((index) => (
-                    <InputOTPSlot
-                      key={index}
-                      index={index}
-                      aria-invalid={fieldState.invalid}
-                      className="h-11 flex-1 text-lg [-webkit-text-security:disc]"
-                    />
-                  ))}
-                </InputOTPGroup>
-              </InputOTP>
-              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-            </Field>
+            <PinPad
+              ref={(elemento) => {
+                field.ref(elemento);
+                pinPadRef.current = elemento;
+              }}
+              rotulo="PIN"
+              descricao={postoEscolhido}
+              valor={field.value}
+              onValorChange={(pin) => {
+                field.onChange(pin);
+                if (fieldState.error) form.clearErrors("pin");
+              }}
+              tamanho={TAMANHO_PIN}
+              // PIN completo envia sozinho: menos um toque no tablet compartilhado.
+              onComplete={() => void enviar()}
+              erro={fieldState.error?.message}
+              desabilitado={entrando}
+            />
           )}
         />
-        <div className="grid grid-cols-2 gap-4">
-          <Controller
-            control={form.control}
-            name="linhaId"
-            render={({ field, fieldState }) => (
-              <Field className="gap-1.5" data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="login-linha">Linha</FieldLabel>
-                <Select
+
+        <Controller
+          control={form.control}
+          name="linhaId"
+          render={({ field, fieldState }) => (
+            <FieldSet className="gap-1.5">
+              <FieldLegend variant="label" className="mb-0">
+                Linha
+              </FieldLegend>
+              <ToggleGroup
+                ref={field.ref}
+                type="single"
+                variant="outline"
+                spacing={3}
+                value={field.value}
+                // Sem desmarcar no segundo toque: com luva, um toque repetido não pode apagar a escolha.
+                onValueChange={(valor) => {
+                  if (!valor) return;
+                  field.onChange(valor);
+                  escolherLinha(valor);
+                }}
+                aria-describedby={fieldState.invalid ? "login-linha-erro" : undefined}
+                className="w-full flex-wrap"
+              >
+                {localRepository.linhas(PLANTA_ID).map((linha) => (
+                  <ToggleGroupItem key={linha.id} value={linha.id} className={OPCAO}>
+                    <Check aria-hidden="true" className="hidden group-data-[state=on]/toggle:block" />
+                    {linha.nome}
+                  </ToggleGroupItem>
+                ))}
+              </ToggleGroup>
+              {fieldState.invalid && <FieldError id="login-linha-erro" errors={[fieldState.error]} />}
+            </FieldSet>
+          )}
+        />
+
+        <Controller
+          control={form.control}
+          name="postoId"
+          render={({ field, fieldState }) => (
+            <FieldSet className="gap-1.5">
+              <FieldLegend variant="label" className="mb-0">
+                Posto
+              </FieldLegend>
+              {postos.length > 0 ? (
+                <ToggleGroup
+                  ref={field.ref}
+                  type="single"
+                  variant="outline"
+                  spacing={3}
                   value={field.value}
-                  onValueChange={(value) => {
-                    field.onChange(value);
-                    form.setValue("postoId", "");
+                  onValueChange={(valor) => {
+                    if (valor) field.onChange(valor);
                   }}
+                  aria-describedby={fieldState.invalid ? "login-posto-erro" : undefined}
+                  className="w-full flex-wrap"
                 >
-                  <SelectTrigger id="login-linha" className="w-full" aria-invalid={fieldState.invalid}>
-                    <SelectValue placeholder="Linha" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      {localRepository.linhas(PLANTA_ID).map((linha) => (
-                        <SelectItem key={linha.id} value={linha.id}>
-                          {linha.nome}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-                {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-              </Field>
-            )}
-          />
-          <Controller
-            control={form.control}
-            name="postoId"
-            render={({ field, fieldState }) => (
-              <Field className="gap-1.5" data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="login-posto">Posto</FieldLabel>
-                <Select value={field.value} onValueChange={field.onChange} disabled={!linhaId}>
-                  <SelectTrigger id="login-posto" className="w-full" aria-invalid={fieldState.invalid}>
-                    <SelectValue placeholder="Posto" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      {postos.map((posto) => (
-                        <SelectItem key={posto.id} value={posto.id}>
-                          {posto.nome}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-                {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-              </Field>
-            )}
-          />
-        </div>
+                  {postos.map((p) => (
+                    <ToggleGroupItem key={p.id} value={p.id} className={OPCAO}>
+                      <Check aria-hidden="true" className="hidden group-data-[state=on]/toggle:block" />
+                      {p.nome}
+                    </ToggleGroupItem>
+                  ))}
+                </ToggleGroup>
+              ) : (
+                <p className={cn("text-muted-foreground text-sm", fieldState.invalid && "sr-only")}>
+                  Escolha a linha para ver os postos.
+                </p>
+              )}
+              {fieldState.invalid && <FieldError id="login-posto-erro" errors={[fieldState.error]} />}
+            </FieldSet>
+          )}
+        />
       </FieldGroup>
-      <Button className="w-full" type="submit">
-        Entrar
+      <Button className="w-full" type="submit" disabled={entrando}>
+        {entrando ? "Entrando…" : "Entrar"}
       </Button>
     </form>
   );
