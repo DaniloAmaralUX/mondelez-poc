@@ -71,14 +71,14 @@ export function TasksSection() {
         </Select>
       </div>
 
-      <div className="overflow-hidden rounded-xl border bg-background shadow-xs">
+      <div className="overflow-hidden rounded-xl bg-card shadow-sm ring-1 ring-foreground/5">
         {/* Movimento só no que muda (docs/12 §3.6, GPU modesta do Tab Active5):
             - layoutDependency: cada linha só é medida quando a posição dela na lista muda; a virada do minuto
               re-renderiza a lista inteira (prazo "vence em") e, sem isso, o motion mediria todas as linhas a cada tick.
             - mode="popLayout": a linha concluída sai do fluxo na hora (some com opacidade e escala) e as de baixo sobem
               no mesmo render em que o índice delas muda, então a medição acontece quando precisa. O ul é relative
               porque o popLayout posiciona a linha que sai em relação a ele.
-            - bg-background nas linhas: a linha que se move é opaca e pinta por cima. A que sobe cobre a que sai, e a
+            - bg-card nas linhas: a linha que se move é opaca e pinta por cima. A que sobe cobre a que sai, e a
               que desce (Desfazer) revela a que volta, sem texto sobre texto.
             - Com prefers-reduced-motion o MotionConfig do app desliga escala e deslocamento, e a linha que sai some na
               hora (sem o fade, que ficaria por cima da linha que já pulou para o lugar dela). */}
@@ -88,7 +88,7 @@ export function TasksSection() {
             {items.map((tarefa, indice) => (
               <motion.li
                 key={tarefa.id}
-                className="bg-background"
+                className="bg-card"
                 layout="position"
                 layoutDependency={indice}
                 exit={reduzir ? undefined : SAI_COM_ESCALA}

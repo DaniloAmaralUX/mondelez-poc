@@ -105,7 +105,7 @@ export function Tasks({ data }: TasksProps) {
 
   return (
     // @container/tarefas: tabela ou lista pela largura do próprio card, não do viewport.
-    <div className="@container/tarefas overflow-hidden rounded-xl border border-border/70 bg-background">
+    <div className="@container/tarefas overflow-hidden rounded-xl bg-card shadow-sm ring-1 ring-foreground/5">
       <div className="border-b px-4 py-4">
         <TasksToolbar table={table} />
       </div>

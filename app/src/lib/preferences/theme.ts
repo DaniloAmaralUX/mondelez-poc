@@ -20,6 +20,14 @@ export const THEME_PRESET_OPTIONS = [
     },
   },
   {
+    label: "Apple",
+    value: "apple",
+    primary: {
+      light: "oklch(0.5 0.19 294)",
+      dark: "oklch(0.58 0.19 294)",
+    },
+  },
+  {
     label: "Brutalist",
     value: "brutalist",
     primary: {

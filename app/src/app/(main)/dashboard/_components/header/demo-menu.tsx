@@ -83,6 +83,7 @@ function PainelDaDemonstracao() {
         <DropdownMenuTrigger asChild>
           <Button
             size="icon"
+            variant="ghost"
             aria-label={hydrated ? `Demonstração: ${turno.numero}º turno, ${formatarHora(agora)}` : "Demonstração"}
           >
             <Clock />

@@ -123,7 +123,9 @@ export function LoginForm() {
   });
 
   return (
-    <form noValidate onSubmit={enviar} className="flex flex-col gap-4">
+    // v0.4 (docs/14): com o card largo (notebook, iPad em paisagem) o formulário vira duas colunas, quem e onde à
+    // esquerda e o PIN com o Entrar à direita, e cabe na altura da tela sem rolar. A ordem do DOM não muda.
+    <form noValidate onSubmit={enviar} className="grid gap-4 @[32rem]/login:grid-cols-2 @[32rem]/login:gap-x-10">
       <FieldGroup className="gap-4">
         <Controller
           control={form.control}
@@ -146,7 +148,8 @@ export function LoginForm() {
                   escolherLinha(valor);
                 }}
                 aria-describedby={fieldState.invalid ? "login-linha-erro" : undefined}
-                className="w-full flex-wrap"
+                // Na coluna estreita do formulário em duas colunas, 2 × 2 em vez de 3 + 1.
+                className="w-full flex-wrap @[32rem]/login:grid @[32rem]/login:grid-cols-2"
               >
                 {localRepository.linhas(PLANTA_ID).map((linha) => (
                   <ToggleGroupItem key={linha.id} value={linha.id} className={OPCAO}>
@@ -235,7 +238,8 @@ export function LoginForm() {
             </Field>
           )}
         />
-
+      </FieldGroup>
+      <FieldGroup className="gap-4">
         <Controller
           control={form.control}
           name="pin"
@@ -260,11 +264,11 @@ export function LoginForm() {
             />
           )}
         />
+        {/* Ação primária do login: 64 px no toque, como Registrar e Resolver (docs/12 §5 item 1); 44 px no notebook. */}
+        <Button className="h-11 toque:h-16 w-full toque:text-base" type="submit" disabled={entrando}>
+          {entrando ? "Entrando…" : "Entrar"}
+        </Button>
       </FieldGroup>
-      {/* Ação primária do login: 64 px no toque, como Registrar e Resolver (docs/12 §5 item 1); 44 px no notebook. */}
-      <Button className="h-11 toque:h-16 w-full toque:text-base" type="submit" disabled={entrando}>
-        {entrando ? "Entrando…" : "Entrar"}
-      </Button>
     </form>
   );
 }

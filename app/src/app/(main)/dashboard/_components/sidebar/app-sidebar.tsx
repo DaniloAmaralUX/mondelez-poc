@@ -5,9 +5,9 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { Command } from "lucide-react";
 import { useShallow } from "zustand/react/shallow";
 
+import { MarcaDoApp } from "@/components/marca-do-app";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import {
   Sidebar,
@@ -80,7 +80,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenuButton asChild>
               {/* prefetch: Minha Rotina em cache para voltar a ela sem rede (lib/rotas.ts). */}
               <Link prefetch href="/dashboard/rotina" onClick={fecharSidebar}>
-                <Command />
+                <MarcaDoApp tamanho="sm" className="-ml-1" />
                 <span className="font-semibold text-base">{APP_CONFIG.name}</span>
               </Link>
             </SidebarMenuButton>

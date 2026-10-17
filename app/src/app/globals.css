@@ -3,6 +3,7 @@
 @import "shadcn/tailwind.css";
 
 /* Theme preset styles: these override CSS variables based on the selected data-theme-preset */
+@import "../styles/presets/apple.css";
 @import "../styles/presets/brutalist.css";
 @import "../styles/presets/linear.css";
 @import "../styles/presets/soft-pop.css";
@@ -10,6 +11,9 @@
 
 /* Densidade para toque e baseline interface nativa do projeto (v0.3); não edita components/ui. */
 @import "../styles/tablet.css";
+
+/* Refinamento do tema Apple por data-slot (v0.4, docs/14); só age com data-theme-preset="apple". */
+@import "../styles/tema-apple.css";
 
 @custom-variant dark (&:is(.dark *));
 

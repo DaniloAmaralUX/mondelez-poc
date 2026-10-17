@@ -1,0 +1,168 @@
+/*
+ * Refinamento do tema Apple (v0.4, docs/14). Folha do projeto, no mesmo espírito de tablet.css: não edita
+ * src/components/ui/**; ajusta os componentes do template pelo data-slot, e só com data-theme-preset="apple".
+ *
+ * Fora de @layer de propósito (como tablet.css): precisa vencer os utilitários dos componentes do template (ring-1 do
+ * Card, border do Status, translate-y-px do Button). Por isso aqui só entram propriedades que nenhuma tela usa para
+ * indicar estado (sombra, borda neutra, raio, tipografia, transform do toque); cor de fundo e borda de estado continuam
+ * nos utilitários de cada tela.
+ *
+ * Fontes: princípios da Apple (§1 resposta no toque, §12 materiais, §15 tipografia), design engineering de Emil Kowalski (scale 0.97 no :active,
+ * ease-out forte, < 300 ms), baseline-ui (tabular-nums, text-balance, um acento por tela) e HIG (Typography, Materials).
+ */
+
+:root[data-theme-preset="apple"] {
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  /* Linha fina neutra (hairline) para separar sem desenhar caixa. */
+  --hairline: oklch(0 0 0 / 6%);
+}
+
+.dark:root[data-theme-preset="apple"] {
+  --hairline: oklch(1 0 0 / 9%);
+}
+
+/* ---------------------------------------------------------------------------------------------------------------- */
+/* Tipografia                                                                                                        */
+/* ---------------------------------------------------------------------------------------------------------------- */
+
+/*
+ * Fonte do sistema primeiro (HIG: "Default to the platform's system font"): SF Pro no iPad e no Mac, Inter nos
+ * demais (Windows, Android), que tem métricas próximas. Só quando a fonte escolhida é a padrão (Inter): quem trocar a
+ * fonte no menu de layout continua com a escolha.
+ */
+:root[data-theme-preset="apple"][data-font="inter"] body {
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", var(--font-inter), system-ui, sans-serif;
+}
+
+:root[data-theme-preset="apple"] body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  /* Inter: dígitos e "l" mais legíveis (cv11, ss03); no SF Pro as features não existem e são ignoradas. */
+  font-feature-settings: "cv11", "ss03";
+}
+
+/* Tracking por tamanho (princípios da Apple §15): títulos grandes apertam, corpo fica em 0. Peso dá a hierarquia. */
+:root[data-theme-preset="apple"] :is(h1, h2) {
+  font-weight: 600;
+  letter-spacing: -0.021em;
+  text-wrap: balance;
+}
+
+:root[data-theme-preset="apple"] h3,
+:root[data-theme-preset="apple"] [data-slot="card-title"] {
+  font-weight: 600;
+  letter-spacing: -0.012em;
+}
+
+:root[data-theme-preset="apple"] p {
+  text-wrap: pretty;
+}
+
+/* ---------------------------------------------------------------------------------------------------------------- */
+/* Superfícies                                                                                                       */
+/* ---------------------------------------------------------------------------------------------------------------- */
+
+/* Card branco sobre o fundo agrupado: sombra macia e contorno de meio pixel no lugar do ring de 1 px. */
+:root[data-theme-preset="apple"] [data-slot="card"] {
+  box-shadow:
+    0 0 0 0.5px var(--hairline),
+    var(--shadow-sm);
+}
+
+.dark:root[data-theme-preset="apple"] [data-slot="card"] {
+  box-shadow: 0 0 0 0.5px var(--hairline);
+}
+
+/* Menus e popovers: material mais espesso que o card (princípios da Apple §12), cantos maiores. */
+:root[data-theme-preset="apple"]
+:is(
+  [data-slot="dropdown-menu-content"],
+  [data-slot="dropdown-menu-sub-content"],
+  [data-slot="popover-content"],
+  [data-slot="select-content"],
+  [data-slot="command"]
+) {
+  border-radius: calc(var(--radius) + 2px);
+  box-shadow:
+    0 0 0 0.5px var(--hairline),
+    var(--shadow-lg);
+}
+
+/* Capsula de status sem contorno: o fundo tingido já separa (iOS não desenha borda em tags). */
+:root[data-theme-preset="apple"] [data-slot="status"] {
+  border-color: transparent;
+}
+
+/* ---------------------------------------------------------------------------------------------------------------- */
+/* Shell: header como material translúcido, sidebar sem divisória dura                                              */
+/* ---------------------------------------------------------------------------------------------------------------- */
+
+:root[data-theme-preset="apple"] [data-slot="sidebar-inset"] > header {
+  border-bottom-color: var(--hairline);
+}
+
+/* Desktop: vidro (blur + saturação) sobre o conteúdo que rola por baixo. No toque a barra segue opaca (layout.tsx). */
+@media (pointer: fine) {
+  :root[data-theme-preset="apple"][data-navbar-style="sticky"] [data-slot="sidebar-inset"] > header {
+    background-color: color-mix(in oklch, var(--background) 72%, transparent);
+    backdrop-filter: blur(20px) saturate(180%);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  :root[data-theme-preset="apple"][data-navbar-style="sticky"] [data-slot="sidebar-inset"] > header {
+    background-color: var(--background);
+    backdrop-filter: none;
+  }
+}
+
+:root[data-theme-preset="apple"] [data-slot="sidebar-container"] {
+  border-color: var(--sidebar-border);
+}
+
+/* Item ativo da sidebar com peso, como a seleção da sidebar do iPadOS. */
+:root[data-theme-preset="apple"] [data-slot="sidebar-menu-button"][data-active="true"] {
+  font-weight: 600;
+}
+
+/* ---------------------------------------------------------------------------------------------------------------- */
+/* Toque: resposta no press (princípios da Apple §1, design engineering de Emil Kowalski)                                                       */
+/* ---------------------------------------------------------------------------------------------------------------- */
+
+:root[data-theme-preset="apple"]
+:is([data-slot="button"], [data-slot="toggle"], [data-slot="toggle-group-item"], [data-slot="sidebar-menu-button"]) {
+  transition-property: color, background-color, border-color, box-shadow, opacity, transform;
+  transition-duration: 160ms;
+  transition-timing-function: var(--ease-out);
+}
+
+:root[data-theme-preset="apple"]
+  :is([data-slot="button"], [data-slot="toggle"], [data-slot="toggle-group-item"]):active:not(
+    :disabled,
+    [aria-haspopup]
+  ) {
+  translate: none;
+  transform: scale(0.97);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root[data-theme-preset="apple"]
+    :is([data-slot="button"], [data-slot="toggle"], [data-slot="toggle-group-item"]):active {
+    transform: none;
+  }
+}
+
+/* Botão principal: um leve brilho de material no topo e sombra curta, como os botões preenchidos do iOS. */
+:root[data-theme-preset="apple"] [data-slot="button"][data-variant="default"] {
+  box-shadow:
+    inset 0 1px 0 oklch(1 0 0 / 14%),
+    0 1px 2px oklch(0.3 0.12 294 / 22%);
+}
+
+/* Números de dados alinham (baseline-ui). */
+:root[data-theme-preset="apple"] :is(time, [data-slot="status"], [data-slot="badge"], td) {
+  font-variant-numeric: tabular-nums;
+}

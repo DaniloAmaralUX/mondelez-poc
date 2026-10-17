@@ -54,7 +54,7 @@ export function FazerAgora() {
     if (tarefas.length === 0) descricao = "Nenhuma tarefa sua neste posto e turno.";
     else if (depois) descricao = `A próxima tarefa abre às ${formatarHora(depois.abre)}.`;
     return (
-      <Card className="shadow-xs">
+      <Card className="h-full">
         <CardHeader>
           <CardDescription>Fazer agora</CardDescription>
           <CardTitle className="flex items-center gap-2 text-2xl tracking-tight">
@@ -75,22 +75,31 @@ export function FazerAgora() {
   const atalho = rotuloDaRota(proxima);
 
   return (
-    <Card className={cn("shadow-xs", atrasada ? "border-destructive/40" : "border-primary/40")}>
-      <CardHeader>
+    <Card className="h-full">
+      {/* Ícone do módulo num bloco arredondado, como o ícone de um app (v0.4, docs/14): reconhece a rotina antes de ler. */}
+      <CardHeader className="grid-cols-[auto_1fr] gap-x-4 gap-y-1">
+        <div
+          aria-hidden
+          className={cn(
+            "row-span-2 grid size-12 place-items-center rounded-xl toque:size-14",
+            atrasada ? "bg-destructive/10 text-destructive" : "bg-primary/10 text-primary",
+          )}
+        >
+          <Icone className="size-6" />
+        </div>
         <CardDescription className="flex items-center gap-2">
           Fazer agora
           <StatusTarefa tarefa={proxima} pulsar />
         </CardDescription>
-        <CardTitle className="text-balance text-2xl leading-tight tracking-tight">{proxima.titulo}</CardTitle>
+        <CardTitle className="text-balance text-2xl leading-tight">{proxima.titulo}</CardTitle>
       </CardHeader>
-      <CardContent className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <CardContent className="flex flex-1 flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="flex flex-col gap-1">
-          <p className={cn("text-lg", atrasada && "text-destructive")}>
+          <p className={cn("font-medium text-lg tabular-nums", atrasada && "text-destructive")}>
             {atrasada ? "Venceu há " : "Vence em "}
             <Duracao ms={diferenca} />
           </p>
-          <p className="flex items-center gap-1.5 text-muted-foreground text-sm">
-            <Icone className="size-4" aria-hidden />
+          <p className="text-muted-foreground text-sm tabular-nums">
             {modulo && !proxima.titulo.startsWith(modulo.nome) ? `${modulo.nome} · ` : ""}
             {formatarHora(proxima.abre)}–{formatarHora(proxima.prazo)}
           </p>
