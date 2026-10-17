@@ -59,6 +59,48 @@ function travasFalsas() {
   };
 }
 
+/**
+ * `indexedDB.open` falso para a conexão própria da saída da página: a conexão abre depois (como no navegador) e o
+ * `put` da transação grava na hora no mesmo mapa do banco novo. Guarda as transações para o teste abortar uma.
+ */
+function indexedDBComConexao() {
+  const transacoes: { commit: ReturnType<typeof vi.fn>; onabort: (() => void) | null }[] = [];
+  const db = {
+    onclose: null,
+    onversionchange: null,
+    close: vi.fn(),
+    transaction: () => {
+      const transacao = {
+        commit: vi.fn(),
+        onabort: null as (() => void) | null,
+        objectStore: () => ({
+          put: (valor: unknown, chave: string) => {
+            novo.set(chave, structuredClone(valor));
+          },
+        }),
+      };
+      transacoes.push(transacao);
+      return transacao;
+    },
+  };
+  return {
+    transacoes,
+    open: () => {
+      const pedido = { result: db, onsuccess: null as null | (() => void), onupgradeneeded: null, onerror: null };
+      setTimeout(() => pedido.onsuccess?.(), 0);
+      return pedido;
+    },
+  };
+}
+
+/** O ouvinte de `pagehide` registrado pela persistência (o último, se houver mais de uma instância). */
+function saidaDaPagina(): () => void {
+  const chamadas = vi.mocked(window.addEventListener).mock.calls.filter(([tipo]) => tipo === "pagehide");
+  const ouvinte = chamadas.at(-1)?.[1];
+  if (typeof ouvinte !== "function") throw new Error("sem ouvinte de pagehide");
+  return ouvinte as () => void;
+}
+
 interface Estado {
   a: object;
   b: number;
@@ -210,6 +252,110 @@ describe("persistência do tablet", () => {
     armazenamento.setItem("k", { state: estado, version: 3 });
     await vi.advanceTimersByTimeAsync(ATRASO_GRAVACAO_MS);
     expect(CanalFalso.instancias[0]?.enviados).toEqual([{ tipo: "gravou" }]);
+  });
+});
+
+describe("saída da página (recarga, app descartado)", () => {
+  async function abrirComConexao() {
+    const idb = indexedDBComConexao();
+    vi.stubGlobal("indexedDB", idb);
+    const armazenamento = criar();
+    await armazenamento.getItem("k");
+    // A conexão própria abre depois da leitura, como no navegador.
+    await vi.advanceTimersByTimeAsync(0);
+    return { idb, armazenamento };
+  }
+
+  it("grava na hora, sem esperar promessa nenhuma, o que estava agendado", async () => {
+    const { idb, armazenamento } = await abrirComConexao();
+    estado = { ...estado, b: 2 };
+    armazenamento.setItem("k", { state: estado, version: 3 });
+
+    saidaDaPagina()();
+    // Síncrono: nenhum timer nem microtask rodou desde a saída.
+    expect(novo.get("k")).toEqual({ state: { a: {}, b: 2 }, version: 3, rev: 1 });
+    expect(idb.transacoes[0]?.commit).toHaveBeenCalledTimes(1);
+    expect(CanalFalso.instancias[0]?.enviados).toEqual([{ tipo: "gravou" }]);
+
+    // A escrita agendada foi cancelada: nada a gravar de novo.
+    await vi.advanceTimersByTimeAsync(ATRASO_GRAVACAO_MS * 2);
+    expect(set).not.toHaveBeenCalled();
+  });
+
+  it("grava o que uma gravação no meio do caminho ainda não gravou, e ela não desfaz nada depois", async () => {
+    const { armazenamento } = await abrirComConexao();
+    // Leitura do banco lenta: a gravação comum fica parada antes do `put`.
+    vi.mocked(get).mockImplementation(
+      (chave, store) =>
+        new Promise((resolver) => {
+          setTimeout(() => resolver(structuredClone(banco(store).get(String(chave)))), 30);
+        }),
+    );
+    estado = { ...estado, b: 2 };
+    armazenamento.setItem("k", { state: estado, version: 3 });
+    void armazenamento.gravarAgora();
+    await vi.advanceTimersByTimeAsync(5);
+    estado = { ...estado, b: 3 };
+
+    saidaDaPagina()();
+    expect(novo.get("k")).toEqual({ state: { a: {}, b: 3 }, version: 3, rev: 1 });
+
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(set).not.toHaveBeenCalled();
+    expect(estado.b).toBe(3);
+    expect(novo.get("k")).toMatchObject({ state: { b: 3 }, rev: 1 });
+  });
+
+  it("com a página já oculta, gravarAgora (rascunho salvo no visibilitychange) também grava na hora", async () => {
+    const { armazenamento } = await abrirComConexao();
+    vi.stubGlobal("document", { addEventListener: vi.fn(), visibilityState: "hidden" });
+    estado = { ...estado, b: 5 };
+    armazenamento.setItem("k", { state: estado, version: 3 });
+    void armazenamento.gravarAgora();
+    expect(novo.get("k")).toEqual({ state: { a: {}, b: 5 }, version: 3, rev: 1 });
+  });
+
+  it("sem nada novo, não grava", async () => {
+    await abrirComConexao();
+    saidaDaPagina()();
+    expect(novo.has("k")).toBe(false);
+  });
+
+  it("com o aviso de outra aba ainda por juntar, não grava às cegas: vai pela junção e as duas mudanças ficam", async () => {
+    novo.set("k", { state: { a: {}, b: 1, itens: {} }, version: 3, rev: 1 });
+    estado = { a: {}, b: 1, itens: {} };
+    const { armazenamento } = await abrirComConexao();
+    armazenamento.ouvirOutrasAbas();
+    vi.mocked(get).mockImplementation(
+      (chave, store) =>
+        new Promise((resolver) => {
+          setTimeout(() => resolver(structuredClone(banco(store).get(String(chave)))), 30);
+        }),
+    );
+    // Outra aba gravou e avisou; a releitura desta ainda não voltou.
+    novo.set("k", { state: { a: {}, b: 1, itens: { daOutra: 1 } }, version: 3, rev: 2 });
+    CanalFalso.instancias[0]?.receber();
+    estado = { ...estado, itens: { ...estado.itens, daqui: 2 } };
+    armazenamento.setItem("k", { state: estado, version: 3 });
+
+    saidaDaPagina()();
+    expect((novo.get("k") as { rev: number }).rev).toBe(2);
+
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(novo.get("k")).toMatchObject({ state: { itens: { daOutra: 1, daqui: 2 } }, rev: 3 });
+  });
+
+  it("se a gravação da saída falhar com a página viva, volta a gravar pelo caminho comum", async () => {
+    const { idb, armazenamento } = await abrirComConexao();
+    estado = { ...estado, b: 2 };
+    armazenamento.setItem("k", { state: estado, version: 3 });
+    saidaDaPagina()();
+    novo.delete("k");
+    idb.transacoes[0]?.onabort?.();
+
+    await vi.advanceTimersByTimeAsync(100);
+    expect(set).toHaveBeenCalledTimes(1);
+    expect(novo.get("k")).toMatchObject({ state: { b: 2 }, rev: 1 });
   });
 });
 

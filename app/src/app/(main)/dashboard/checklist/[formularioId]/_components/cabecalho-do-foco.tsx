@@ -63,7 +63,9 @@ export function CabecalhoDoFoco({
           </Link>
         </Button>
         <div className="flex min-w-0 flex-1 basis-60 flex-col gap-2 self-center">
-          <h1 className="text-balance font-medium @3xl/foco:text-3xl text-2xl leading-tight tracking-tight">
+          {/* wrap-break-word: um código longo sem espaço no título (ex.: descrição de material do SAP) quebra dentro da
+              coluna em vez de ser cortado na borda do conteúdo. */}
+          <h1 className="wrap-break-word text-balance font-medium @3xl/foco:text-3xl text-2xl leading-tight tracking-tight">
             {formulario.titulo}
           </h1>
           {meta}

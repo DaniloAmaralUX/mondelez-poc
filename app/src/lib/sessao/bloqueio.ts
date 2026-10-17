@@ -3,6 +3,8 @@ export type MotivoBloqueio = "inatividade" | "turno" | "oculto" | "troca";
 
 /** Sem toque, tecla ou rolagem por 5 min: bloqueia. */
 export const INATIVIDADE_MS = 5 * 60_000;
+/** Aviso antes do bloqueio por inatividade, com tempo para continuar usando (WCAG 2.2.1 pede ao menos 20 s). */
+export const AVISO_BLOQUEIO_MS = 20_000;
 /** App em segundo plano (tela apagada, outro app) por mais de 2 min: bloqueia ao voltar. */
 export const OCULTO_MS = 2 * 60_000;
 /**

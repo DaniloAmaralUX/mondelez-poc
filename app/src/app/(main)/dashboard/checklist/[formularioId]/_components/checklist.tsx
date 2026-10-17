@@ -195,8 +195,10 @@ function ChecklistEditor({
     gravacao.current.gravarAgora();
     const novo = registrarChecklist({ tarefa, formulario, rascunho: values });
     if (!novo) {
+      // Erro fica até a pessoa fechar (WCAG 2.2.1): no toque não há hover para pausar o aviso.
       toast.error("Não foi possível registrar", {
         description: "Confira se o tablet está desbloqueado e registre de novo. As respostas continuam salvas.",
+        duration: Number.POSITIVE_INFINITY,
       });
       return;
     }
@@ -218,9 +220,16 @@ function ChecklistEditor({
       },
     };
     if (novo.naoConformes > 0) {
+      // Sem rede o registro fica no tablet: dizer "enviado" faria o operador deixar de escalar uma NC de segurança.
+      const semRede = useSessionStore.getState().rede === "offline";
       toast.warning(
         `Registrado com ${novo.naoConformes} ${novo.naoConformes === 1 ? "não conformidade" : "não conformidades"}`,
-        { description: "Alerta enviado à supervisão e à especialista.", ...opcoes },
+        {
+          description: semRede
+            ? "Salvo no tablet. A supervisão recebe o alerta quando a rede voltar."
+            : "Alerta enviado à supervisão e à especialista.",
+          ...opcoes,
+        },
       );
     } else {
       toast.success("Checklist registrado", { description: formulario.titulo, ...opcoes });
@@ -251,8 +260,13 @@ function ChecklistEditor({
 
   return (
     <FormProvider {...form}>
-      {/* @container/foco: o modo foco se ajusta à área útil (sidebar aberta ou não, retrato, Split View). */}
-      <div data-checklist-foco className="@container/foco flex flex-col gap-5">
+      {/* @container/foco: o modo foco se ajusta à área útil (sidebar aberta ou não, retrato, Split View). Altura mínima
+          da tela abaixo do header (menos o padding do conteúdo: 16 px, 24 px a partir de md) para a barra de ações
+          ficar no rodapé também numa etapa curta, sempre no mesmo lugar. */}
+      <div
+        data-checklist-foco
+        className="@container/foco flex min-h-[calc(100dvh-var(--dashboard-header-height)-2rem)] flex-col gap-5 md:min-h-[calc(100dvh-var(--dashboard-header-height)-3rem)]"
+      >
         <CabecalhoDoFoco
           formulario={formulario}
           etapa={etapa}
@@ -300,7 +314,7 @@ function ChecklistEditor({
 
         {preencher && <CampoEquipamento opcoes={doPosto} />}
 
-        <form id="checklist-form" noValidate onSubmit={form.handleSubmit(enviar)}>
+        <form id="checklist-form" noValidate onSubmit={form.handleSubmit(enviar)} className="flex flex-1 flex-col">
           <ChecklistStepper
             formulario={formulario}
             tarefa={tarefa}

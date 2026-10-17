@@ -1,4 +1,5 @@
 // Tipos do domínio. Este diretório não importa React nem Next (fronteira para a migração do piloto).
+// Tamanho máximo dos textos: `LIMITES` em limites.ts (seed, store, validação e `maxLength` dos campos).
 
 export type Perfil = "operacao" | "supervisao" | "gerencia" | "assistencia" | "especialista";
 
@@ -32,6 +33,7 @@ export interface Posto {
 export interface Equipamento {
   id: string;
   postoId: string;
+  /** Até `LIMITES.nomeDoEquipamento` (40, limite do SAP). */
   nome: string;
 }
 
@@ -72,6 +74,7 @@ export type Criticidade = "normal" | "alta" | "critica";
 export interface RotinaTemplate {
   id: string;
   moduloSlug: string;
+  /** Até `LIMITES.titulo` (80). */
   titulo: string;
   frequencia: Frequencia;
   /** Janela relativa ao início do turno (frequência turno/semanal) ou ao início do bloco (frequência hora). */
@@ -117,6 +120,7 @@ export type TipoItem = "cnc" | "numero" | "texto";
 
 export interface ItemFormulario {
   id: string;
+  /** Etapa do checklist. Até `LIMITES.grupo` (40). */
   grupo: string;
   texto: string;
   tipo: TipoItem;
@@ -130,6 +134,7 @@ export interface ItemFormulario {
 export interface Formulario {
   id: string;
   moduloSlug: string;
+  /** Até `LIMITES.titulo` (80). */
   titulo: string;
   versao: number;
   itens: ItemFormulario[];
@@ -140,7 +145,9 @@ export type ValorCnc = "C" | "NC" | "NA";
 export interface Resposta {
   valor?: ValorCnc;
   numero?: number;
+  /** Item de texto (lote). Até `LIMITES.textoDoItem` (40). */
   texto?: string;
+  /** Até `LIMITES.justificativa` (500); o mínimo é `MIN_JUSTIFICATIVA`. */
   justificativa?: string;
 }
 
@@ -168,6 +175,7 @@ export interface Registro {
   dispositivoId: string;
   syncStatus: SyncStatus;
   naoConformes: number;
+  /** Até `LIMITES.observacao` (1000). */
   observacao?: string;
 }
 
@@ -175,6 +183,7 @@ export interface Registro {
 export interface Rascunho {
   respostas: Record<string, Resposta>;
   equipamentoId?: string;
+  /** Até `LIMITES.observacao` (1000). */
   observacao: string;
   /**
    * Quem começou o preenchimento (usuarioId). O store preenche na primeira gravação e preserva depois; todo
@@ -193,6 +202,7 @@ export type EstadoAlerta = "aberto" | "em_tratamento" | "resolvido";
 
 export interface AcaoAlerta {
   tipo: "envio" | "assumir" | "acao" | "resolver" | "automatica";
+  /** Até `LIMITES.acaoDoAlerta` (500). */
   texto: string;
   em: string;
   usuarioId?: string;

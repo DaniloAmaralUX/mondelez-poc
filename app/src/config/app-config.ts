@@ -16,10 +16,8 @@ export const APP_CONFIG = {
    */
   pwa: {
     shortName: "Rotinas",
-    /** `--background` do tema claro: oklch(1 0 0). */
+    /** `--background` do tema claro: oklch(1 0 0). Só o claro: o tema do app vem da classe (padrão claro), não do sistema. */
     backgroundLight: "#ffffff",
-    /** `--background` do tema escuro: oklch(0.145 0.008 326). */
-    backgroundDark: "#0c090c",
     /** `--primary` do tema claro: oklch(0.491 0.27 292.581) (violet-700). */
     primary: "#7008e7",
     /** `--primary-foreground`: oklch(0.969 0.016 293.756) (violet-50). */

@@ -5,7 +5,7 @@ import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { Clock, Lock, LogOut, UserRound, Users } from "lucide-react";
-import { createPortal } from "react-dom";
+import { createPortal, flushSync } from "react-dom";
 import { toast } from "sonner";
 
 import { PinPad } from "@/components/pin-pad";
@@ -275,10 +275,15 @@ function Identificacao({
 
   function escolherModo(valor: string) {
     if (valor !== "sugerida" && valor !== "outra") return;
-    setModo(valor);
-    setPin("");
-    setErroPin(undefined);
-    setErroMatricula(undefined);
+    // "Outra pessoa": o próximo passo obrigatório é a matrícula. flushSync monta o campo ainda dentro do toque, e o
+    // foco nele no mesmo gesto deixa o iPad abrir o teclado (fora do gesto do usuário o iOS não abre).
+    flushSync(() => {
+      setModo(valor);
+      setPin("");
+      setErroPin(undefined);
+      setErroMatricula(undefined);
+    });
+    if (valor === "outra") matriculaRef.current?.focus();
   }
 
   function errarMatricula(mensagem: string) {

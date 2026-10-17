@@ -1,0 +1,76 @@
+{
+  "title": "Rotinas Operacionais — Bloqueio \"Quem está no posto?\"",
+  "project": "Mondelez · Gestão de Rotinas Operacionais",
+  "date": "2026-10-16",
+  "version": "v0.3",
+  "viewports": ["iPad retrato 820×1180 (toque)", "iPad paisagem 1180×820 (toque)"],
+  "evidencias": {
+    "pasta": "C:/Users/dar/AppData/Local/Temp/v03/h/ui-audit-operador",
+    "capturas": [
+      "shots/bloqueio__ipad-retrato__1-bloquear.png",
+      "shots/bloqueio__ipad-retrato__2-outra-pessoa.png",
+      "shots/bloqueio__ipad-retrato__3-matricula-errada.png",
+      "shots/bloqueio__ipad-retrato__4-troca-renata.png",
+      "shots/bloqueio__ipad-retrato__5-troca-pin-errado.png",
+      "shots/bloqueio__ipad-retrato__6-virada-turno.png",
+      "shots/bloqueio__ipad-paisagem__1-bloquear.png",
+      "shots/bloqueio__ipad-paisagem__4-troca-renata.png",
+      "shots/bloqueio__ipad-paisagem__6-virada-turno.png"
+    ],
+    "medicoes": "shots/bloqueio__*.json (escopo: dialog[open])",
+    "roteiro": "bloqueio.mjs: menu da pessoa → Bloquear tablet → Outra pessoa → matrícula 999999 + PIN → Continuar como Alberto + PIN 1234 → menu da pessoa → Renata Lins → PIN 9999 → Voltar para Alberto → Demonstração: Ir para o fim do turno + Avançar 15 min (virada) → PIN 1234"
+  },
+  "macro_bets": [
+    { "category": "accuracy", "description": "Cada registro com a pessoa certa no tablet compartilhado (RNF-06)", "alignment": "strong" },
+    { "category": "velocity", "description": "Voltar ao trabalho com 4 toques quando a pessoa é a mesma", "alignment": "strong" }
+  ],
+  "jtbd": [
+    { "user": "Operador ou supervisora que chega ao tablet do posto", "situation": "tablet bloqueado por inatividade, virada de turno, bloqueio explícito ou troca pedida no menu", "motivation": "entrar como eu sem sair do que estava aberto", "outcome": "continuar a rotina em meu nome, com o rascunho e o posto preservados" }
+  ],
+  "visual_hierarchy": {
+    "title": "Visual Hierarchy",
+    "checks": [
+      { "label": "Pergunta e motivo", "status": "pass", "notes": "\"Quem está no posto?\" 30 px, com o motivo em ícone + texto: \"Tablet bloqueado · Alberto bloqueou o tablet.\", \"Trocar de pessoa · Digite o PIN de Renata.\", \"Começou o 2º turno · Quem vai usar o tablet entra de novo com o PIN.\"" },
+      { "label": "Pessoa sugerida pré-selecionada", "status": "pass", "notes": "\"Continuar como Alberto Forte\" (ou \"Entrar como Renata Lins\" na troca) já marcado; PIN rotulado com o nome (\"PIN de Renata\")." },
+      { "label": "Contexto do posto", "status": "pass", "notes": "\"Bis 2 · Embalagem\" no topo." },
+      { "label": "Paisagem", "status": "pass", "notes": "Duas colunas: escolhas à esquerda, teclado à direita; última tecla em y = 635, tudo visível sem rolar." },
+      { "label": "Retrato", "status": "pass", "notes": "Coluna única centrada; última tecla em y = 918 (967/980 com o campo de matrícula e o erro); sem rolagem." },
+      { "label": "Saídas", "status": "pass", "notes": "\"Voltar para Alberto\" só na troca pedida pelo menu; \"Sair do posto\" sempre no rodapé." }
+    ]
+  },
+  "visual_style": {
+    "title": "Visual Style",
+    "checks": [
+      { "label": "Fidelidade ao template", "status": "pass", "notes": "Cartões de escolha do template (FieldLabel + Field + RadioGroupItem), Avatar, Button e o mesmo PinPad do login." },
+      { "label": "Tela cheia opaca", "status": "pass", "notes": "<dialog> modal com fundo do tema; nada do conteúdo de baixo aparece." },
+      { "label": "Estado selecionado", "status": "pass", "notes": "Cartão com borda e fundo primário suaves e rádio preenchido." },
+      { "label": "Erro", "status": "pass", "notes": "Matrícula: rótulo, borda e mensagem destrutivos; PIN: indicadores destrutivos e tremida curta (só transform)." }
+    ]
+  },
+  "accessibility": {
+    "title": "Accessibility",
+    "checks": [
+      { "label": "Alvos ≥ 56 px", "status": "pass", "notes": "Cartões 448×81, teclas 64 px, \"Voltar para Alberto\" 148×56, \"Sair do posto\" 132×56. Os únicos itens abaixo de 56 são os rádios de 24 px dentro dos cartões de 81 px, que são o alvo." },
+      { "label": "Espaço ≥ 12 px", "status": "pass", "notes": "0 pares a menos de 12 px (cartões e teclas com 12 px)." },
+      { "label": "Foco", "status": "pass", "notes": "Ao abrir, foco no fieldset do PIN (FIELDSET#bloqueio-pin), sem abrir o teclado do sistema; matrícula inexistente leva o foco ao campo." },
+      { "label": "Modal", "status": "pass", "notes": "showModal (resto inerte), aria-labelledby no título, aria-describedby no motivo, Esc não fecha, portal no body acima de Sheets do Radix." },
+      { "label": "Contraste e texto", "status": "pass", "notes": "Nenhum texto abaixo de 4,5:1 nem de 14 px." },
+      { "label": "Campo de matrícula", "status": "pass", "notes": "16 px, 56 px de altura, inputmode numeric, autocomplete off." }
+    ]
+  },
+  "usability": {
+    "title": "Usability",
+    "checks": [
+      { "label": "Troca pede PIN de quem chega", "status": "pass", "notes": "Escolher Renata no menu bloqueia com Renata sugerida; PIN 9999 dá erro e limpa; \"Voltar para Alberto\" desbloqueia sem PIN e o header volta a \"Trocar pessoa (agora: Alberto Forte)\"." },
+      { "label": "Bloqueio explícito", "status": "pass", "notes": "\"Bloquear tablet\" não oferece voltar sem PIN." },
+      { "label": "Outra pessoa", "status": "warn", "notes": "Ao tocar em \"Outra pessoa\" o campo de matrícula aparece, mas o foco fica no rádio (medido: BUTTON do rádio): um toque a mais para começar a digitar o que é o próximo passo obrigatório." },
+      { "label": "Matrícula inexistente", "status": "pass", "notes": "\"Matrícula não encontrada. Confira o crachá.\"; PIN limpo." },
+      { "label": "Virada de turno", "status": "pass", "notes": "Avançar o relógio para o 2º turno bloqueia com \"Começou o 2º turno\"; o PIN volta ao trabalho e a pré-partida do 2º turno abre para preencher." },
+      { "label": "Avisos da pessoa anterior", "status": "pass", "notes": "toast.dismiss ao bloquear: ninguém desfaz o registro de outra pessoa." }
+    ]
+  },
+  "priority_fixes": [
+    { "rank": 1, "title": "Foco na matrícula ao escolher Outra pessoa", "description": "lock-screen.tsx, escolherModo (linhas 276–282): quando valor === \"outra\", depois de setModo, focar matriculaRef no mesmo gesto (flushSync de react-dom em volta do setModo e matriculaRef.current?.focus() logo depois, para o iPad abrir o teclado numérico com o toque).", "framework_reference": "22-patterns-cognitive-load.md → Simplified Forms" }
+  ],
+  "notes": "Tela sem fail. Não verificados aqui: bloqueio por inatividade real (5 min) e por app em segundo plano (> 2 min); a demonstração tem \"Simular 5 min parado\". Os avisos que aparecem depois do desbloqueio (\"Agora com …\") herdam o problema de contraste com o sistema em modo escuro descrito em v0.3-rotina.json."
+}

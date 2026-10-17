@@ -16,10 +16,10 @@ import {
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { MIN_JUSTIFICATIVA, situacaoItem } from "@/domain/formulario-engine";
+import { MAX_JUSTIFICATIVA, MAX_TEXTO_DO_ITEM, MIN_JUSTIFICATIVA, situacaoItem } from "@/domain/formulario-engine";
 import type { ItemFormulario, Resposta, ValorCnc } from "@/domain/types";
 
-import type { ChecklistFormValues } from "./data";
+import { type ChecklistFormValues, PRESSAO } from "./data";
 import { FaixaIndicador } from "./faixa-indicador";
 
 const SITUACAO_LABEL = { pendente: "Pendente", C: "Conforme", NC: "Não conforme", NA: "Não se aplica" } as const;
@@ -37,7 +37,9 @@ const OPCOES: { valor: ValorCnc; rotulo: string; aria: string; ativo: string }[]
     valor: "NC",
     rotulo: "NC",
     aria: "Não conforme",
-    ativo: "data-[state=on]:border-destructive/40 data-[state=on]:bg-destructive/10 data-[state=on]:text-destructive",
+    // red-700 (e red-400 no escuro), não text-destructive: sobre destructive/10 o token dava 4,01:1, abaixo de 4,5:1.
+    ativo:
+      "data-[state=on]:border-destructive/40 data-[state=on]:bg-destructive/10 data-[state=on]:text-red-700 dark:data-[state=on]:text-red-400",
   },
   { valor: "NA", rotulo: "N/A", aria: "Não se aplica", ativo: "data-[state=on]:bg-muted" },
 ];
@@ -170,13 +172,16 @@ function ItemRow({
             >
               {/* No toque, 64 × 80 px (resposta é a ação primária); no notebook, os 44 px da v0.2 (docs/12 §3.1).
                   toque:w-20, não toque:min-w-20: o min-width da camada de toque (src/styles/tablet.css, sem layer)
-                  venceria um min-w-* e voltaria a 56 px. */}
+                  venceria um min-w-* e voltaria a 56 px.
+                  Nome acessível começa pelo texto visível (WCAG 2.5.3): quem usa controle por voz diz "NC".
+                  PRESSAO: retorno no pointerdown (o Toggle do template só muda de cor no clique); troca a transição
+                  de cor do template pela de escala, e a cor da resposta muda na hora. */}
               {OPCOES.map((opcao) => (
                 <ToggleGroupItem
                   key={opcao.valor}
                   value={opcao.valor}
-                  aria-label={opcao.aria}
-                  className={cn("h-11 toque:h-16 toque:w-20 min-w-14 font-medium text-base", opcao.ativo)}
+                  aria-label={`${opcao.rotulo} (${opcao.aria})`}
+                  className={cn("h-11 toque:h-16 toque:w-20 min-w-14 font-medium text-base", PRESSAO, opcao.ativo)}
                 >
                   {opcao.rotulo}
                 </ToggleGroupItem>
@@ -204,6 +209,8 @@ function ItemRow({
               autoCapitalize="characters"
               autoCorrect="off"
               spellCheck={false}
+              // Limite da fronteira de dados (domain/limites.ts); o documento quebra o lote sem separador na coluna.
+              maxLength={MAX_TEXTO_DO_ITEM}
               enterKeyHint="next"
               onKeyDown={(e) => aoEnter(e, "proximo")}
               value={resposta?.texto ?? ""}
@@ -217,12 +224,14 @@ function ItemRow({
         {situacao === "NC" && (
           <motion.div
             key="justificativa"
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
+            // -m-1/p-1: o overflow-hidden da animação não corta o anel de foco do campo. A margem de cima também anima:
+            // fechado, −8 − 4 px anulam o gap-3 do cartão (sem os 4 px que sobravam e sumiam de uma vez no fim);
+            // aberto, −4 e −4, como o -m-1 de antes.
+            initial={{ opacity: 0, height: 0, marginTop: -8, marginBottom: -4 }}
+            animate={{ opacity: 1, height: "auto", marginTop: -4, marginBottom: -4 }}
+            exit={{ opacity: 0, height: 0, marginTop: -8, marginBottom: -4 }}
             transition={REVELAR}
-            // -m-1/p-1: o overflow-hidden da animação não corta o anel de foco do campo.
-            className="-m-1 overflow-hidden"
+            className="-mx-1 overflow-hidden"
           >
             {/* Rótulo visível e a regra numa descrição (o placeholder some ao digitar). "done" fecha o teclado. */}
             <Field className="gap-2 p-1" data-invalid={erro ? true : undefined}>
@@ -235,6 +244,7 @@ function ItemRow({
                 aria-describedby={[idAjudaJustificativa, idErro].filter(Boolean).join(" ")}
                 enterKeyHint="done"
                 autoComplete="off"
+                maxLength={MAX_JUSTIFICATIVA}
                 onKeyDown={(e) => aoEnter(e, "concluir")}
                 placeholder="O que está fora do padrão?"
                 value={resposta?.justificativa ?? ""}
@@ -247,7 +257,13 @@ function ItemRow({
           </motion.div>
         )}
       </AnimatePresence>
-      {erro && <FieldError id={idErro}>{erro}</FieldError>}
+      {/* role="none" no lugar do role="alert" do FieldError: com 3 pendências na etapa, 3 alertas entravam juntos com
+          o aviso "Faltam 3 itens". O resumo fica no aviso, e o erro de cada item é lido no foco (aria-describedby). */}
+      {erro && (
+        <FieldError id={idErro} role="none">
+          {erro}
+        </FieldError>
+      )}
     </div>
   );
 }
@@ -289,7 +305,8 @@ function CampoCenterline({
   const valor = resposta?.numero;
 
   return (
-    <div className="flex @2xl/itens:w-56 w-full flex-col gap-2">
+    // w-64 em duas colunas: com os −/+ de 64 px, o campo ainda mostra um valor de 11 caracteres (100.100.100) inteiro.
+    <div className="flex @2xl/itens:w-64 w-full flex-col gap-2">
       <NumberField
         size="lg"
         value={valor ?? null}
@@ -299,8 +316,10 @@ function CampoCenterline({
         onValueChange={(v) => onChange({ ...resposta, numero: v ?? undefined })}
         aria-label={item.texto}
       >
+        {/* −/+ são a forma de responder estes itens: no toque, alvos de resposta (64 px de largura, 62 de altura dentro
+            da borda do grupo de 64). toque:w-16 e não min-w-*: o min-width da camada de toque venceria. */}
         <NumberFieldGroup
-          className="h-11"
+          className="h-11 toque:h-16"
           aria-invalid={erro ? true : undefined}
           onPointerDownCapture={(event) => {
             if (event.button !== 0) return;
@@ -313,9 +332,14 @@ function CampoCenterline({
             onChange({ ...resposta, numero: valor === undefined ? meio : arredondar(valor + sentido * passo, passo) });
           }}
         >
-          <NumberFieldDecrement className="px-3.5" aria-label={`Diminuir ${item.texto}`} />
-          <NumberFieldInput placeholder={meio.toLocaleString("pt-BR")} inputMode="decimal" aria-describedby={idErro} />
-          <NumberFieldIncrement className="px-3.5" aria-label={`Aumentar ${item.texto}`} />
+          <NumberFieldDecrement className="toque:w-16 px-3.5" aria-label={`Diminuir ${item.texto}`} />
+          <NumberFieldInput
+            className="tabular-nums"
+            placeholder={meio.toLocaleString("pt-BR")}
+            inputMode="decimal"
+            aria-describedby={idErro}
+          />
+          <NumberFieldIncrement className="toque:w-16 px-3.5" aria-label={`Aumentar ${item.texto}`} />
         </NumberFieldGroup>
       </NumberField>
       <div className="flex items-center gap-2">

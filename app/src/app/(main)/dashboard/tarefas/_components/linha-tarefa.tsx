@@ -14,7 +14,8 @@ import { priorities, type Task } from "./data";
  * Tarefa do posto como linha tocável, para quando a tabela não cabe (abaixo de 896 px de área: tablet em retrato e em
  * paisagem com a sidebar aberta, docs/12 §3.4). Mesmo desenho da lista de Minha Rotina: ícone do módulo, título em
  * text-base, janela e criticidade em text-sm, situação no Badge da tabela e chevron. A linha inteira é o link (≥ 64 px);
- * tarefas que ainda não abriram ficam como texto, sem chevron, como o "Abrir" desabilitado da tabela.
+ * tarefas sem tela para abrir (ainda não abriram, ou são feitas na Minha Rotina de quem opera) ficam como texto, sem
+ * chevron, como o "Abrir" desabilitado da tabela. Só as que ainda não abriram ficam esmaecidas.
  */
 export function LinhaTarefa({ task }: { readonly task: Task }) {
   const Icone = ICONE_MODULO[task.label] ?? LayoutGrid;
@@ -39,9 +40,9 @@ export function LinhaTarefa({ task }: { readonly task: Task }) {
 
   const linha = "flex min-h-16 items-center gap-3 px-4 py-3";
 
-  if (task.futura) {
+  if (!task.abrivel) {
     return (
-      <div className={cn(linha, "text-muted-foreground")}>
+      <div className={cn(linha, task.futura && "text-muted-foreground")}>
         {conteudo}
         {/* Lugar do chevron: as situações ficam alinhadas na coluna da direita. */}
         <span className="size-4 shrink-0" aria-hidden />

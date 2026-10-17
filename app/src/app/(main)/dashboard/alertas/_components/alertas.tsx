@@ -23,8 +23,9 @@ function naTela(elemento: HTMLElement | null) {
 /**
  * Lista e detalhe de alertas (tela Logistics do template).
  *
- * - Com 896 px ou mais de área útil (`@4xl/content`: tablet em paisagem com a sidebar aberta, notebook), lista de
- *   360 px e detalhe lado a lado, cada um com rolagem própria.
+ * - Com 896 px ou mais de área útil (`@4xl/content`: tablet em paisagem com a sidebar aberta, notebook), lista e
+ *   detalhe lado a lado, cada um com rolagem própria. Lista de 420 px no notebook, onde as 4 abas do template ficam
+ *   numa linha (na v0.2 eram 400 px), e de 360 px no toque, onde as abas viram a grade 2 × 2 de alert-list.tsx.
  * - Abaixo disso (tablet em retrato, Split View), lista OU detalhe em pilha, com a página rolando normalmente e
  *   "Voltar" no topo do detalhe. Sem Sheet sobre a lista (docs/12 §3.4), como a pilha lista/conversa da tela Chat.
  *
@@ -103,7 +104,7 @@ export function Alertas() {
   return (
     <div
       data-content-padding="false"
-      className="grid @4xl/content:h-[calc(100dvh-var(--dashboard-header-height))] min-h-0 @4xl/content:grid-cols-[360px_minmax(0,1fr)] @4xl/content:divide-x @4xl/content:overflow-hidden"
+      className="grid @4xl/content:h-[calc(100dvh-var(--dashboard-header-height))] min-h-0 @4xl/content:grid-cols-[420px_minmax(0,1fr)] toque:@4xl/content:grid-cols-[360px_minmax(0,1fr)] @4xl/content:divide-x @4xl/content:overflow-hidden"
     >
       <div
         ref={listaRef}

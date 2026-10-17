@@ -152,14 +152,14 @@ export function SearchDialog() {
         open={open}
         onOpenChange={handleOpenChange}
         title="Buscar"
-        description="Busque telas, checklists e registros."
+        description="Busque telas e checklists."
         className="toque:top-[8%]"
       >
         <Command>
           {/* toque:self-stretch: o campo ocupa a altura toda do grupo de 56 px, e não só a linha do texto (luva). */}
           <CommandInput
             className="toque:self-stretch"
-            placeholder="Buscar telas, checklists e registros…"
+            placeholder="Buscar telas e checklists…"
             value={query}
             onValueChange={setQuery}
             enterKeyHint="go"

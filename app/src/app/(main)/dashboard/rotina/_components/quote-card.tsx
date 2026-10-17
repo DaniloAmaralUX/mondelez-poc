@@ -11,7 +11,7 @@ export function QuoteCard() {
           <Quote className="size-6" />
         </div>
         <div className="flex flex-col gap-1">
-          <p className="text-xl leading-none tracking-tight">{passagemTurnoAnterior.pendencia}</p>
+          <p className="text-xl leading-tight tracking-tight">{passagemTurnoAnterior.pendencia}</p>
           <p className="text-muted-foreground">
             {passagemTurnoAnterior.sugestao} · {passagemTurnoAnterior.autor}, turno anterior
           </p>

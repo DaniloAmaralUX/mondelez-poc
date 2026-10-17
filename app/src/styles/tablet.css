@@ -175,14 +175,6 @@ html[data-density="touch"] {
   }
 }
 
-/* Slots do PIN (InputOTP): 56 px nos dois eixos. */
-[data-slot="input-otp-slot"] {
-  @variant toque {
-    min-width: var(--touch-min-h);
-    min-height: var(--touch-min-h);
-  }
-}
-
 /* Fechar (X) de Sheet e Dialog: 44 px visíveis no canto, para não invadir o cabeçalho, e 48 px de área de toque
    (elemento secundário, docs/12 §2 item 1) por um ::after 2 px além da borda. Só o X do canto (filho direto do
    conteúdo, sempre position: absolute), para o ::after não se posicionar em outro ancestral. Fechar com texto: 56 px. */
@@ -279,11 +271,12 @@ html[data-density="touch"] {
   }
 }
 
-/* Ação (ex.: "Desfazer") e cancelar: 44 px, 16 px de texto. */
+/* Ação (ex.: "Desfazer") e cancelar: 56 px, como todo alvo do operador (docs/12 §2 item 1). O "Desfazer" substitui a
+   confirmação (§2 item 5), então não pode ficar abaixo do piso. 16 px de texto. */
 [data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-button] {
   @variant toque {
-    min-height: 2.75rem;
-    padding-inline: 1rem;
+    min-height: var(--touch-min-h);
+    padding-inline: 1.25rem;
     font-size: 1rem;
   }
 }
@@ -328,6 +321,19 @@ html[data-density="touch"] {
   }
 }
 
+/* Véu dos overlays do template (Sheet, Dialog, AlertDialog, Drawer) sem o blur de tela cheia no toque (docs/12 §2 item
+   16 e §3.3): o navegador recomporia o blur a cada quadro do fade e do deslize. O bg-black/10 continua; o notebook
+   mantém o template. */
+[data-slot="sheet-overlay"],
+[data-slot="dialog-overlay"],
+[data-slot="alert-dialog-overlay"],
+[data-slot="drawer-overlay"] {
+  @variant toque {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
 /* ---------------------------------------------------------------------------------------------------- */
 /* Baseline interface nativa (sempre ligada). Em @layer base para que utilitários como touch-none vençam.   */
 /* overscroll-behavior: none já está em globals.css.                                                     */
@@ -366,5 +372,26 @@ html[data-density="touch"] {
   [data-slot="status-indicator"]::before {
     animation-duration: 0.01ms;
     animation-iteration-count: 1;
+  }
+
+  /* Overlays do template (tw-animate-css, que não trata reduzir movimento; docs/12 §5 item 10): sem deslize nem zoom,
+     só o fade de opacidade, com a duração e a curva do template. Fora de @layer para vencer os utilitários
+     slide-in-from-*, zoom-in-95 etc. O Sheet da sidebar no retrato tem data-slot="sidebar" e data-mobile="true". */
+  [data-slot="sheet-content"],
+  [data-slot="sheet-overlay"],
+  [data-slot="sidebar"][data-mobile="true"],
+  [data-slot="dialog-content"],
+  [data-slot="alert-dialog-content"],
+  [data-slot="dropdown-menu-content"],
+  [data-slot="dropdown-menu-sub-content"],
+  [data-slot="select-content"],
+  [data-slot="popover-content"],
+  [data-slot="tooltip-content"] {
+    --tw-enter-translate-x: 0;
+    --tw-enter-translate-y: 0;
+    --tw-enter-scale: 1;
+    --tw-exit-translate-x: 0;
+    --tw-exit-translate-y: 0;
+    --tw-exit-scale: 1;
   }
 }

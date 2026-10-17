@@ -86,7 +86,9 @@ export function AccountSwitcher({
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="min-w-56 space-y-1 rounded-lg" side="bottom" align="end" sideOffset={4}>
+      {/* min-w-72 e nome em até 2 linhas: no tablet compartilhado, "Ana Beatriz do Nascimento" e "Ana Beatriz dos
+          Santos" não podem virar o mesmo "Ana Beatriz do…" na hora de escolher quem entra. */}
+      <DropdownMenuContent className="min-w-72 space-y-1 rounded-lg" side="bottom" align="end" sideOffset={4}>
         <DropdownMenuGroup>
           <DropdownMenuLabel className="toque:text-sm">Trocar de pessoa · pede o PIN</DropdownMenuLabel>
           {users.map((user) => (
@@ -102,7 +104,7 @@ export function AccountSwitcher({
                   <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
                 </Avatar>
                 <div className="grid min-w-0 flex-1 text-left text-sm toque:text-base leading-tight">
-                  <span className="truncate font-semibold">{user.name}</span>
+                  <span className="wrap-break-word line-clamp-2 font-semibold">{user.name}</span>
                   <span className="truncate text-xs toque:text-sm capitalize">{user.role}</span>
                 </div>
                 <span

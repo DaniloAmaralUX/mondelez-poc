@@ -15,14 +15,25 @@ export function statusDaTarefa(tarefa: TarefaInstancia): { variante: Variante; r
 }
 
 /**
- * Ponto + rótulo. Só o atraso pulsa: é o único estado que pede atenção agora (sem pulsar com
- * prefers-reduced-motion, pela camada em src/styles/tablet.css). Texto em text-sm: tela do operador.
+ * Ponto + rótulo. Texto em text-sm: tela do operador.
+ *
+ * `pulsar`: só no foco da tela ("Fazer agora") e só no atraso, o único estado que pede atenção agora. Nas linhas da
+ * lista o ponto vermelho fica fixo: com vários atrasos, um pulso em cada linha repetia o selo "Atrasada" e o
+ * contador e diluía a atenção (ISA-101). Sem pulsar com prefers-reduced-motion, pela camada em src/styles/tablet.css.
  */
-export function StatusTarefa({ tarefa, className }: { readonly tarefa: TarefaInstancia; readonly className?: string }) {
+export function StatusTarefa({
+  tarefa,
+  className,
+  pulsar = false,
+}: {
+  readonly tarefa: TarefaInstancia;
+  readonly className?: string;
+  readonly pulsar?: boolean;
+}) {
   const { variante, rotulo } = statusDaTarefa(tarefa);
   return (
     <Status variant={variante} className={cn("text-sm", className)}>
-      <StatusIndicator className={variante === "error" ? undefined : "before:hidden"} />
+      <StatusIndicator className={variante === "error" && pulsar ? undefined : "before:hidden"} />
       <StatusLabel>{rotulo}</StatusLabel>
     </Status>
   );

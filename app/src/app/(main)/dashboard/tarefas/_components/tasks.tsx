@@ -90,13 +90,14 @@ export function Tasks({ data }: TasksProps) {
   const canPreviousPage = table.getCanPreviousPage();
   const canNextPage = table.getCanNextPage();
   const linhas = table.getRowModel().rows;
+  const totalNoFiltro = table.getFilteredRowModel().rows.length;
 
   /**
    * Linha inteira da tabela abre a tarefa (toque ou clique em qualquer célula). Toques no link do título e no menu de
    * ações seguem o caminho deles; texto selecionado com o mouse não navega.
    */
   function abrirLinha(event: React.MouseEvent<HTMLTableRowElement>, task: Task) {
-    if (task.futura) return;
+    if (!task.abrivel) return;
     if (event.target instanceof Element && event.target.closest(CONTROLE)) return;
     if (window.getSelection()?.toString()) return;
     router.push(task.href);
@@ -149,7 +150,7 @@ export function Tasks({ data }: TasksProps) {
                   key={row.id}
                   className={cn(
                     "border-border/60 hover:bg-muted/20",
-                    !row.original.futura && "cursor-pointer active:bg-muted/50",
+                    row.original.abrivel && "cursor-pointer active:bg-muted/50",
                   )}
                   data-state={table.state.rowSelection[row.id] && "selected"}
                   onClick={(event) => abrirLinha(event, row.original)}
@@ -176,7 +177,7 @@ export function Tasks({ data }: TasksProps) {
           página e página atual, depois a paginação. No toque, 12 px entre os alvos de 56 px (docs/12 §2 item 2). */}
       <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border-t px-4 py-4">
         <div className="whitespace-nowrap text-muted-foreground text-sm tabular-nums">
-          {table.getFilteredRowModel().rows.length} tarefa(s) no filtro.
+          {totalNoFiltro} {totalNoFiltro === 1 ? "tarefa" : "tarefas"} no filtro.
         </div>
         <div className="flex flex-wrap items-center gap-x-6 gap-y-3 lg:gap-x-8">
           <div className="flex items-center gap-2 toque:gap-3">
@@ -221,12 +222,14 @@ export function Tasks({ data }: TasksProps) {
                 </PaginationLink>
               </PaginationItem>
               <PaginationItem>
+                {/* toque:min-w-14: abaixo de 640 px o template esconde "Anterior"/"Próxima" e o link fica só com o
+                    ícone (34 px), mas sem o data-size de ícone que a camada de toque deixa quadrado. */}
                 <PaginationPrevious
                   href="#"
                   text="Anterior"
                   aria-label="Página anterior"
                   aria-disabled={!canPreviousPage}
-                  className={cn(!canPreviousPage && "pointer-events-none opacity-50")}
+                  className={cn("toque:min-w-14", !canPreviousPage && "pointer-events-none opacity-50")}
                   onClick={(event) => {
                     preventPaginationNavigation(event);
                     if (canPreviousPage) table.previousPage();
@@ -264,7 +267,7 @@ export function Tasks({ data }: TasksProps) {
                   text="Próxima"
                   aria-label="Próxima página"
                   aria-disabled={!canNextPage}
-                  className={cn(!canNextPage && "pointer-events-none opacity-50")}
+                  className={cn("toque:min-w-14", !canNextPage && "pointer-events-none opacity-50")}
                   onClick={(event) => {
                     preventPaginationNavigation(event);
                     if (canNextPage) table.nextPage();

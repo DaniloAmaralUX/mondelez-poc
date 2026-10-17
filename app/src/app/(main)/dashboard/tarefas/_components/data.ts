@@ -15,6 +15,12 @@ export type Task = {
   href: string;
   janela: string;
   futura: boolean;
+  /**
+   * Tem tela para abrir: já abriu e tem checklist ou rota própria. As tarefas do operador sem formulário (ex.: "Hora x
+   * Hora · apontar caixas") são feitas na Minha Rotina de quem opera; para a liderança, o fallback de `hrefDaTarefa`
+   * levaria à Minha Rotina dela, onde a tarefa não existe.
+   */
+  abrivel: boolean;
 };
 
 export function paraLinha(tarefa: TarefaInstancia): Task {
@@ -27,6 +33,7 @@ export function paraLinha(tarefa: TarefaInstancia): Task {
     href: hrefDaTarefa(tarefa),
     janela: `${formatarHora(tarefa.abre)}–${formatarHora(tarefa.prazo)}`,
     futura: tarefa.futura,
+    abrivel: !tarefa.futura && (tarefa.formularioId !== undefined || tarefa.rota !== undefined),
   };
 }
 

@@ -86,14 +86,27 @@ function AlertOverview({ alerta, tituloId }: { alerta: Alerta; tituloId?: string
           >
             #{alerta.regra}
           </h1>
-          {/* Tamanho do template no notebook; no toque a camada (src/styles/tablet.css) leva o ícone a 56 × 56 px. */}
+          {/* Tamanho do template no notebook; no toque a camada (src/styles/tablet.css) leva o ícone a 56 × 56 px.
+              Copia uma referência legível (regra, posto e hora, como na tela), e não o id interno, para colar no Teams.
+              Sem área de transferência (página fora de HTTPS no tablet), o aviso mostra a referência para anotar. */}
           <Button
             variant="ghost"
             size="icon-sm"
-            aria-label="Copiar código do alerta"
+            aria-label="Copiar referência do alerta"
             onClick={() => {
-              void navigator.clipboard?.writeText(alerta.id);
-              toast("Código do alerta copiado", { description: alerta.id });
+              const referencia = `${alerta.regra} · ${posto?.nome ?? "posto"} · ${formatarHora(alerta.criadoEm)}`;
+              const naoCopiou = () => {
+                toast.warning("Não deu para copiar", { description: referencia });
+              };
+              // O tipo do DOM diz que `clipboard` sempre existe; fora de HTTPS ele é undefined.
+              const copia: Promise<void> | undefined = navigator.clipboard?.writeText(referencia);
+              if (!copia) {
+                naoCopiou();
+                return;
+              }
+              copia.then(() => {
+                toast("Referência do alerta copiada", { description: referencia });
+              }, naoCopiou);
             }}
           >
             <Copy />
@@ -199,7 +212,7 @@ function AlertOverview({ alerta, tituloId }: { alerta: Alerta; tituloId?: string
           <div className="space-y-1 border-amber-900 text-amber-900 dark:border-amber-50 dark:text-amber-50">
             {alerta.regra === "A-NC" ? (
               alerta.itensNaoConformes.map((item) => (
-                <p key={item.texto} className="leading-snug">
+                <p key={item.texto} className="wrap-anywhere leading-snug">
                   <span className="font-medium">{item.texto}:</span> {item.detalhe}
                 </p>
               ))
@@ -260,7 +273,8 @@ function AlertHistory({ alerta }: { alerta: Alerta }) {
                 </TimelineTime>
                 <TimelineTitle>{evento.titulo}</TimelineTitle>
               </TimelineHeader>
-              <TimelineDescription>
+              {/* wrap-anywhere: texto colado sem espaços (código, lote) quebra dentro do painel em vez de vazar. */}
+              <TimelineDescription className="wrap-anywhere">
                 {evento.texto}
                 {evento.autor && ` · ${evento.autor.nome}`}
               </TimelineDescription>
@@ -277,6 +291,10 @@ function AlertHistory({ alerta }: { alerta: Alerta }) {
  * Na pilha do retrato, a página rola normalmente e o rodapé de ações gruda na borda de baixo da tela.
  */
 export function AlertDetails({ alerta, tituloId }: AlertDetailsProps) {
+  // Tablet compartilhado: se outra pessoa desbloqueia com o diálogo "Registrar ação" aberto, ele remonta vazio, e o
+  // texto de quem saiu não vai para o histórico no nome de quem entrou (RNF-06). A mesma pessoa volta como estava.
+  const usuarioId = useSessionStore((s) => s.usuarioId);
+
   if (!alerta) {
     return (
       <div className="h-full p-4">
@@ -298,7 +316,7 @@ export function AlertDetails({ alerta, tituloId }: AlertDetailsProps) {
         data-touch-bar="true"
         className="sticky bottom-0 z-10 shrink-0 border-t bg-background/95 px-4 pt-3 pb-[max(--spacing(3),env(safe-area-inset-bottom))] backdrop-blur-sm"
       >
-        <AlertActions alerta={alerta} />
+        <AlertActions key={usuarioId ?? ""} alerta={alerta} />
       </div>
     </div>
   );

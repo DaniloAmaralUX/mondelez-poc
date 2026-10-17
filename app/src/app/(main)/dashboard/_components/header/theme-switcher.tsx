@@ -25,7 +25,8 @@ export function ThemeSwitcher() {
   };
 
   return (
-    <Button size="icon" onClick={cycleTheme} aria-label={`Tema atual: ${TEMA_LABEL[themeMode]}. Toque para trocar`}>
+    // Nome do botão sem verbo de gesto ("toque"/"clique"): o mesmo no tablet e no notebook.
+    <Button size="icon" onClick={cycleTheme} aria-label={`Trocar tema (atual: ${TEMA_LABEL[themeMode]})`}>
       {/* SYSTEM */}
       <Monitor className="hidden [html[data-theme-mode=system]_&]:block" />
 

@@ -1,0 +1,112 @@
+{
+  "title": "Rotinas Operacionais — Checklist em modo foco (ppli-l4 e pre-partida-l4)",
+  "project": "Mondelez · Gestão de Rotinas Operacionais",
+  "date": "2026-10-16",
+  "version": "v0.3",
+  "viewports": ["iPad retrato 820×1180 (toque)", "iPad paisagem 1180×820 (toque)", "Split View 590×820 (toque)", "conferência: Tab 800×1280 e 1280×800 (toque), desktop 1440×900"],
+  "evidencias": {
+    "pasta": "C:/Users/dar/AppData/Local/Temp/v03/h/ui-audit-operador",
+    "capturas": [
+      "shots/checklist__ipad-retrato__1-inicial.png",
+      "shots/checklist__ipad-retrato__2b-justificativa-digitada.png",
+      "shots/checklist__ipad-retrato__3-registrar-desvio.png",
+      "shots/checklist__ipad-retrato__3b-registrar-desvio-erros.png",
+      "shots/checklist__ipad-retrato__4-restantes-toast.png",
+      "shots/checklist__ipad-retrato__5b-centerline-preenchido.png",
+      "shots/checklist__ipad-retrato__6-revisar.png",
+      "shots/checklist__ipad-retrato__7-ver-documento.png",
+      "shots/checklist__ipad-retrato__8-registrado-toast.png",
+      "shots/checklist__ipad-retrato__9-desfeito.png",
+      "shots/checklist__ipad-paisagem__1-inicial.png",
+      "shots/checklist__ipad-paisagem__6-revisar-pagina.png",
+      "shots/checklist__ipad-paisagem__7-ver-documento.png",
+      "shots/checklist__split__2-nc-justificativa.png",
+      "shots/checklist__split__5b-centerline-preenchido.png",
+      "shots/checklist__split__6-proximo-registrou.png",
+      "shots/pular-revisar__ipad-retrato__toque.png",
+      "shots/pular-revisar__desktop__mouse.png",
+      "shots/pular-revisar__desktop__teclado.png",
+      "shots/prepartida__ipad-retrato__1-consulta.png",
+      "shots/prepartida__ipad-retrato__4-erros-etapa.png",
+      "shots/extra__sistema-escuro__checklist-toast.png"
+    ],
+    "medicoes": "shots/checklist__*.json, prepartida__*.json, extra__*.json (inclui a posição da barra de ações em cada estado)",
+    "roteiro": "checklist.mjs (Registrar no Fazer agora → NC no item 1 + justificativa → Registrar desvio vazio → Cancelar → Restantes conformes → Próximo → Restantes conformes → Próximo → + nos 4 centerlines → Revisar pelo stepper → Ver documento → Fechar → Registrar); pular-revisar.mjs (Próximo na última etapa, por toque, mouse e teclado); desfazer.mjs; bloqueio.mjs (pre-partida no 1º turno e, após a virada, no 2º)"
+  },
+  "macro_bets": [
+    { "category": "accuracy", "description": "Cada item respondido, NC justificada, centerline dentro da faixa, revisão antes de registrar", "alignment": "moderate" },
+    { "category": "velocity", "description": "Poucos toques por etapa: Restantes conformes, ± de um passo, Próximo de 64 px", "alignment": "strong" }
+  ],
+  "jtbd": [
+    { "user": "Operador de embalagem, de luva, ao lado da Loeschpack 4", "situation": "início do turno, checklist de PPLI/centerline ou pré-partida de segurança", "motivation": "conferir item a item e registrar o desvio no ponto de uso", "outcome": "máquina liberada com registro rastreável e alerta automático quando há NC" }
+  ],
+  "visual_hierarchy": {
+    "title": "Visual Hierarchy",
+    "checks": [
+      { "label": "Onde estou e como saio", "status": "pass", "notes": "Voltar 82×56, título 30 px (24 px abaixo de 768 px de área), \"Etapa 1 de 4 · Limpeza\" com aria-live, barra de progresso e \"0 de 9 respondidos\"." },
+      { "label": "Indicador de etapas", "status": "fail", "notes": "Depois de \"Restantes conformes\" em Limpeza, o stepper marca Lubrificação (0/2), Centerline (0/4) e Revisar com ✓ de concluída (checklist__ipad-retrato__4-restantes-toast.png). Na pre-partida em consulta, Proteções 0/3 e Área 0/2 aparecem com ✓. Causa: em ui/stepper.tsx (linhas 627–633) o efeito de addStep depende de `completed`; quando ele muda, o passo é removido e recolocado no fim do Map, e getDataState (linhas 110–131) compara índices nessa ordem trocada." },
+      { "label": "Ação primária em lugar fixo", "status": "fail", "notes": "No retrato a barra só gruda no rodapé quando a etapa rola. Com etapas curtas ela fica no meio da tela e o Próximo muda de altura a cada etapa: topo da barra em y = 704 (Limpeza), 828 (com justificativa), 886 (Centerline), 906 (Revisar), com 386/262/204/184 px vazios abaixo no iPad e 494 px no Tab retrato. Em paisagem e Split ela fica no rodapé (12–26 px da borda)." },
+      { "label": "Um item por cartão", "status": "pass", "notes": "Texto do item em 18 px, situação e faixa em 14 px; C/NC/N/A à direita a partir de 672 px de painel, abaixo do texto em Split." },
+      { "label": "Revisão", "status": "pass", "notes": "Resumo 8/1/0, NC listada com a justificativa, observação opcional e \"Ver documento\"; Registrar 64 px." },
+      { "label": "Avisos sobre o cabeçalho do foco", "status": "warn", "notes": "Os avisos de \"Restantes conformes\" (10 s cada) se empilham: com dois, cobrem y 10–250 no retrato (título, metadados, \"Etapa 3 de 4\" e progresso). Em \"Ver documento\" no retrato o aviso cobre o botão Imprimir (x 500–597 sob o aviso em x 232–588). O aviso de Limpeza continua com Desfazer quando a pessoa já está em Centerline." },
+      { "label": "Consulta sem registro detalhado", "status": "warn", "notes": "pre-partida-l4 no 1º turno (concluída às 06:12 sem registro): Resumo 0/0/0 com \"Faltam 5 itens. Volte às etapas anteriores para completar.\" (instrução impossível em somente consulta), observação desabilitada e \"Prévia do documento\" de um registro que não existe." }
+    ]
+  },
+  "visual_style": {
+    "title": "Visual Style",
+    "checks": [
+      { "label": "Fidelidade ao template", "status": "pass", "notes": "Stepper, cartões, Sheet e papel da Invoice do template; nada novo de layout." },
+      { "label": "Cor da resposta", "status": "pass", "notes": "C verde, NC destrutivo, N/A neutro, e a situação escrita no item (não só cor)." },
+      { "label": "Barra opaca no toque", "status": "pass", "notes": "Fundo lab(100) e backdrop-filter none medidos no toque (data-touch-bar)." },
+      { "label": "Movimento", "status": "pass", "notes": "Justificativa revela em 200 ms; régua do centerline desliza por transform; reduzir movimento respeitado." },
+      { "label": "Desfoque do overlay do Sheet", "status": "warn", "notes": "Registrar desvio abre com o overlay do template em tela cheia com backdrop-blur-xs (ui/sheet.tsx linha 40). Doc 12 §2 item 16 pede nada de blur grande no tablet (GPU do Tab Active5); a camada de toque já tira o blur das barras, não dos overlays." },
+      { "label": "Detalhes do stepper", "status": "warn", "notes": "Separador sobrando depois de \"Revisar\" (renderizado para todos os passos, checklist-form.tsx linha 209)." }
+    ]
+  },
+  "accessibility": {
+    "title": "Accessibility",
+    "checks": [
+      { "label": "Respostas C/NC/N/A", "status": "pass", "notes": "80×64 px no toque, 16 px entre elas; o segundo toque não desmarca." },
+      { "label": "± do centerline", "status": "fail", "notes": "Diminuir/Aumentar medem 56×54 px (grupo h-11 levado a 56 px pela camada, menos 2 px de borda): abaixo do piso de 56 e longe dos 64 das respostas, embora sejam a forma de responder os 4 itens de centerline." },
+      { "label": "Demais alvos ≥ 56 px", "status": "pass", "notes": "Voltar, Registrar desvio, equipamento (56), Anterior e Restantes conformes (56), Próximo/Registrar (134×64), cartões do Registrar desvio (69 px), Cancelar 56 e Registrar desvio 64 com 16 px entre eles, Fechar do documento 56. Exceção: Desfazer/fechar dos avisos 44 px (ver v0.3-rotina.json)." },
+      { "label": "Campos ≥ 16 px", "status": "pass", "notes": "Justificativa 16 px/56 px, observação 16 px/80 px, número do centerline 16 px." },
+      { "label": "Contraste", "status": "fail", "notes": "NC selecionado: text-destructive sobre destructive/10 = 4,01:1 (16 px, peso 500). \"Rascunho salvo no tablet\" 2,95:1 (Status success). Com o sistema em modo escuro, a descrição dos avisos (\"Limpeza\" no Restantes conformes) fica 1,23:1 (extra__sistema-escuro__checklist-toast.png)." },
+      { "label": "Rótulo visível no nome acessível", "status": "warn", "notes": "Os botões mostram \"NC\" e \"N/A\" mas se chamam \"Não conforme\" e \"Não se aplica\" (checklist-items.tsx linha 178): o texto visível não está no nome (WCAG 2.5.3); quem usa controle por voz diz \"NC\" e não acha." },
+      { "label": "Erro junto do item e foco", "status": "pass", "notes": "Próximo com pendência: \"Faltam 3 itens nesta etapa\", \"Responda este item.\" em cada cartão, justificativa curta com a regra, foco no primeiro campo com erro e rolagem acima da barra." },
+      { "label": "Rolagem horizontal", "status": "pass", "notes": "0 px em 820, 1180, 590, 800 e 1280. O documento rola dentro do próprio Sheet (848/819 px no retrato)." },
+      { "label": "Teclado virtual sobre a barra", "status": "na", "notes": "Não emulável no navegador: o código sobe a barra por visualViewport no iPad e usa interactive-widget no Android. Conferir no aparelho (doc 12 fase H)." }
+    ]
+  },
+  "forms": {
+    "title": "Forms",
+    "checks": [
+      { "label": "Próximo na última etapa", "status": "fail", "notes": "Em Centerline (última etapa antes de Revisar), tocar \"Próximo\" registra o checklist e leva à Minha Rotina com \"Checklist registrado · Desfazer\", sem passar por Revisar. Reproduzido por toque (iPad retrato), mouse e Enter (desktop). Causa: em checklist-form.tsx (linhas 260–278) Próximo (type=button) e Registrar (type=submit) ocupam a mesma posição; o React reaproveita o mesmo <button> e troca o type para submit dentro do próprio clique, e o navegador conclui o clique enviando o formulário. Em Split View (lista de etapas oculta abaixo de 720 px) Revisar, observação e Ver documento ficam inalcançáveis." },
+      { "label": "Restantes conformes com Desfazer", "status": "pass", "notes": "\"2 itens marcados como conformes · Limpeza · Desfazer\" por 10 s; o desfazer só volta o que ainda está como a ação deixou." },
+      { "label": "Registrar desvio", "status": "pass", "notes": "Sheet de 512 px (tela inteira em Split), lista de itens C/NC com situação, justificativa com regra; envio vazio mostra os dois erros. \"Foto opcional\" do doc 12 §3.4 não existe (warn de escopo)." },
+      { "label": "Centerline", "status": "pass", "notes": "Um toque, um passo; campo vazio começa no meio do padrão (170 °C, 185 °C, 6 bar, 100 pacotes/min); régua com a faixa e o valor; inputmode decimal." },
+      { "label": "Registrar e desfazer", "status": "pass", "notes": "\"Registrado com 1 não conformidade · Alerta enviado à supervisão e à especialista · Desfazer\"; chip passa a \"1 aguardando envio\"; Desfazer volta ao checklist com 9 de 9 respondidos (desfazer.mjs)." },
+      { "label": "Restantes conformes em Centerline", "status": "warn", "notes": "A etapa só tem itens numéricos: o botão aparece sempre desabilitado, sem motivo." },
+      { "label": "Restantes conformes em itens críticos", "status": "warn", "notes": "Na pré-partida, um toque marca \"Botões de emergência testados\" e \"Cortina de luz interrompe o ciclo\" (item crítico) como conformes. Decisão de produto a validar com o cliente (aposta de acurácia)." },
+      { "label": "Rascunho", "status": "pass", "notes": "\"Rascunho salvo no tablet\" aparece depois da primeira resposta." }
+    ]
+  },
+  "navigation": {
+    "title": "Navigation",
+    "checks": [
+      { "label": "Modo foco", "status": "pass", "notes": "Paisagem: sidebar recolhida ao preencher (data-state collapsed), área de 1132 px; retrato: Sheet fechado. Em consulta a sidebar fica como estava." },
+      { "label": "Etapas em Split View", "status": "pass", "notes": "Abaixo de 720 px de área a lista some e o cabeçalho indica a etapa (\"Etapa 1 de 4 · Limpeza\")." },
+      { "label": "Desktop mantém a densidade", "status": "pass", "notes": "1440×900 sem toque: Voltar 44 px, C 56×44, Próximo 44 px (v0.2)." }
+    ]
+  },
+  "priority_fixes": [
+    { "rank": 1, "title": "Próximo não pode registrar", "description": "checklist-form.tsx linhas 260–278: dar key distinta aos dois botões (key=\"registrar\" no submit e key=\"proximo\" no Próximo) para o React criar outro elemento em vez de trocar o type do botão clicado; como reforço, event.preventDefault() no onClick do Próximo. Conferir: Centerline → Próximo abre Revisar, inclusive em Split View.", "framework_reference": "26-patterns-error-handling.md → Error Prevention" },
+    { "rank": 2, "title": "Estado das etapas pelo próprio checklist", "description": "checklist-form.tsx linha 195: não passar a prop `completed` que muda (deixar constante) para o stepper do template não reordenar os passos; desenhar o estado a partir de `completa`: no StepperIndicator (linhas 199–201) mostrar o ✓ quando completa e, quando não, sobrescrever o visual de concluído com \"data-[state=completed]:border-muted data-[state=completed]:bg-background data-[state=completed]:text-muted-foreground\" (cobre também a consulta, em que os passos antes de Revisar viram \"completed\" pelo índice). Não edita ui/stepper.tsx.", "framework_reference": "25-patterns-feedback.md → Progress Indicators" },
+    { "rank": 3, "title": "Barra de ações sempre no rodapé", "description": "checklist.tsx linha 255: \"@container/foco flex min-h-[calc(100dvh-var(--dashboard-header-height)-3rem)] flex-col gap-5\"; linha 303: form com \"flex flex-1 flex-col\"; Stepper (checklist-form.tsx linha 187) com flex-1; BarraDeAcoes (linha 330) com mt-auto. O Próximo passa a ficar no mesmo lugar em todas as etapas do retrato.", "framework_reference": "31-patterns-navigation.md → Sticky Navigation" },
+    { "rank": 4, "title": "± do centerline com 64 px", "description": "checklist-items.tsx: NumberFieldGroup className=\"h-11 toque:h-16\" (linha 303) e toque:w-16 em NumberFieldDecrement/NumberFieldIncrement (linhas 316 e 318); w-* e não min-w-*, pela regra de tablet.css.", "framework_reference": "27-patterns-accessibility.md → Touch Targets" },
+    { "rank": 5, "title": "Avisos da etapa saem ao trocar de etapa", "description": "use-avisos-da-tela.ts: expor dispensar() que chama toast.dismiss para os ids guardados; chamar em irPara (checklist-form.tsx linha 136) e ao abrir Ver documento. O Desfazer de uma etapa que já não está na tela some junto, e o cabeçalho do foco e o Imprimir deixam de ficar cobertos.", "framework_reference": "25-patterns-feedback.md → Notifications" },
+    { "rank": 6, "title": "Contraste do NC selecionado e do rascunho", "description": "checklist-items.tsx linha 40: data-[state=on]:text-red-700 dark:data-[state=on]:text-red-400 no lugar de data-[state=on]:text-destructive. \"Rascunho salvo no tablet\": correção dos chips em v0.3-rotina.json (rank 2). Avisos com sistema escuro: v0.3-rotina.json (rank 1).", "framework_reference": "27-patterns-accessibility.md → Color Contrast" },
+    { "rank": 7, "title": "Consulta sem registro sem instruções de preenchimento", "description": "checklist-form.tsx: em ResumoDaRevisao, mostrar \"Faltam N itens…\" só fora de somenteLeitura (linhas 369–373); renderizar ChecklistNotes e ChecklistPreview (linhas 224–227) só quando !somenteLeitura || registro.", "framework_reference": "11-checklist-fidelity.md → Component States" },
+    { "rank": 8, "title": "Ajustes menores", "description": "Restantes conformes só em etapa com item C/NC (checklist-form.tsx linha 248); aria-label `${opcao.rotulo} (${opcao.aria})` nos C/NC/N/A (checklist-items.tsx linha 178); separador só entre passos (linha 209: posicao < todas.length − 1); overlays sem blur no toque em tablet.css ([data-slot=\"sheet-overlay\"], [data-slot=\"dialog-overlay\"], [data-slot=\"alert-dialog-overlay\"] com backdrop-filter: none sob a variante toque); decidir se itens críticos ficam fora de Restantes conformes; foto opcional no Registrar desvio ou retirá-la do doc 12 §3.4.", "framework_reference": "12-checklist-visual-style.md" }
+  ],
+  "notes": "O modo foco cumpre o essencial no tablet (respostas de 64 px, barra opaca, erros junto do item, desfazer em vez de confirmar, sem rolagem horizontal). Três defeitos impedem fechar o critério 9 do doc 12: o Próximo da última etapa registra sem revisão (forms, também quebra Split View), o stepper mostra etapas vazias como concluídas e a ação primária muda de lugar no retrato. Os demais são de medida (± a 54 px, contraste) e de ruído (avisos empilhados)."
+}

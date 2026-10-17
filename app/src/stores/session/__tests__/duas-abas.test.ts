@@ -170,6 +170,108 @@ describe("duas abas do mesmo tablet", () => {
   });
 });
 
+/** `indexedDB.open` falso (conexão própria da saída da página) gravando no mesmo banco compartilhado das "abas". */
+const indexedDBComConexao = () => ({
+  open: () => {
+    const db = {
+      close: () => undefined,
+      transaction: () => ({
+        commit: () => undefined,
+        objectStore: () => ({
+          put: (valor: unknown, chave: string) => {
+            compartilhado.novo.set(chave, structuredClone(valor));
+          },
+        }),
+      }),
+    };
+    const pedido = { result: db, onsuccess: null as null | (() => void) };
+    setTimeout(() => pedido.onsuccess?.(), 0);
+    return pedido;
+  },
+});
+
+const formularioPpli = () => localRepository.formulario("ppli-l4") as Formulario;
+const tarefaPpli = { id: "ppli-l4@2026-10-16T1", equipamentoId: "eq-l4" } as TarefaInstancia;
+
+describe("mudanças que fecham um estado vão já para o banco", () => {
+  it("entrar com o PIN grava sem esperar o agrupamento de 400 ms", async () => {
+    const a = await abrirAba();
+    a.estado().entrarComPin("u-alberto", PIN_DEMO);
+    await vi.advanceTimersByTimeAsync(5);
+    expect(salvo()).toMatchObject({ usuarioId: "u-alberto", bloqueado: false });
+  });
+
+  it("registrar grava na hora; o rascunho (digitação) espera o agrupamento", async () => {
+    const a = await abrirAba();
+    a.estado().entrarComPin("u-alberto", PIN_DEMO);
+    await vi.advanceTimersByTimeAsync(5);
+
+    const valores = { respostas: { mordentes: { valor: "C" as const } }, observacao: "" };
+    a.estado().salvarRascunho(tarefaPpli.id, valores);
+    await vi.advanceTimersByTimeAsync(5);
+    expect(salvo().rascunhos).not.toHaveProperty(tarefaPpli.id);
+    await vi.advanceTimersByTimeAsync(400);
+    expect(salvo().rascunhos).toHaveProperty(tarefaPpli.id);
+
+    const registro = a
+      .estado()
+      .registrarChecklist({ tarefa: tarefaPpli, formulario: formularioPpli(), rascunho: valores });
+    await vi.advanceTimersByTimeAsync(5);
+    expect(salvo().registros).toHaveProperty(registro?.id ?? "?");
+    expect(salvo().rascunhos).not.toHaveProperty(tarefaPpli.id);
+  });
+
+  it("bloquear, avançar o relógio e simular sem rede gravam na hora", async () => {
+    const a = await abrirAba();
+    a.estado().entrarComPin("u-alberto", PIN_DEMO);
+    await vi.advanceTimersByTimeAsync(5);
+    const relogioAntes = salvo().relogio;
+
+    a.estado().avancarRelogio(15);
+    await vi.advanceTimersByTimeAsync(5);
+    expect(salvo().relogio).not.toEqual(relogioAntes);
+
+    a.estado().alternarRede();
+    await vi.advanceTimersByTimeAsync(5);
+    expect(salvo().simularSemRede).toBe(true);
+
+    a.estado().bloquear("inatividade");
+    await vi.advanceTimersByTimeAsync(5);
+    expect(salvo()).toMatchObject({ bloqueado: true, motivoBloqueio: "inatividade" });
+  });
+
+  it("recarregar logo depois de entrar ou de registrar não perde nada (gravação síncrona na saída)", async () => {
+    vi.stubGlobal("indexedDB", indexedDBComConexao());
+    const a = await abrirAba();
+    await vi.advanceTimersByTimeAsync(0);
+    const saida = vi
+      .mocked(window.addEventListener)
+      .mock.calls.filter(([tipo]) => tipo === "pagehide")
+      .at(-1)?.[1];
+    if (typeof saida !== "function") throw new Error("sem ouvinte de pagehide");
+
+    // Página descartada logo depois do PIN: nenhum timer nem microtask roda entre a mudança e a saída.
+    a.estado().entrarComPin("u-alberto", PIN_DEMO);
+    (saida as () => void)();
+    expect(salvo()).toMatchObject({ usuarioId: "u-alberto" });
+
+    const registro = a.estado().registrarChecklist({
+      tarefa: tarefaPpli,
+      formulario: formularioPpli(),
+      rascunho: { respostas: { mordentes: { valor: "C" } }, observacao: "" },
+    });
+    (saida as () => void)();
+    expect(salvo().registros).toHaveProperty(registro?.id ?? "?");
+
+    // A gravação comum que tinha começado não volta nada atrás.
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(salvo()).toMatchObject({ usuarioId: "u-alberto" });
+    const b = await abrirAba({ servicos: false });
+    expect(b.estado().usuarioId).toBe("u-alberto");
+    expect(b.estado().registros).toHaveProperty(registro?.id ?? "?");
+  });
+});
+
 describe("carga do IndexedDB", () => {
   it("ao abrir, registro que estava na janela de desfazer volta para a fila", async () => {
     const a = await abrirAba({ servicos: false });

@@ -17,8 +17,13 @@ export const metadata: Metadata = {
  * Duas colunas (8/4) quando a área útil (descontada a sidebar) passa de 896 px; 9/3 a partir de 960 px de área útil,
  * que é o `xl` do template (1280 px de viewport) com a sidebar aberta (1280 − 272 − 48): o desktop não muda
  * (docs/12 §3.2). Em coluna única (tablet em retrato, paisagem com a sidebar aberta) as seções deixam de ser caixas (`contents`) e
- * os blocos seguem a ordem do turno do operador: saudação, fazer agora, fim do turno, tarefas, linha do turno,
- * recados e, por último, a passagem do turno anterior e os atalhos da liderança.
+ * os blocos seguem a ordem do turno do operador: saudação, fazer agora, fim do turno, passagem do turno anterior,
+ * tarefas (e os atalhos da liderança), linha do turno e recados.
+ *
+ * - A passagem (pendência deixada pelo turno anterior) se lê no início do turno: antes das Tarefas, como na coluna
+ *   principal das duas colunas. Antes ela era o último bloco no retrato e o segundo no desktop.
+ * - Ordem visual próxima da do DOM (Tab e leitor de tela, WCAG 1.3.2/2.4.3): passagem, tarefas e atalhos têm o
+ *   mesmo order e seguem a ordem em que estão no DOM. Só "Fim do turno" sobe da coluna lateral.
  */
 export default function Page() {
   return (
@@ -30,14 +35,14 @@ export default function Page() {
         <div className="@4xl/content:order-none order-2 min-w-0 empty:hidden">
           <FazerAgora />
         </div>
-        <div className="@4xl/content:order-none order-7 min-w-0 empty:hidden">
+        <div className="@4xl/content:order-none order-4 min-w-0 empty:hidden">
           <QuoteCard />
         </div>
         <div className="@4xl/content:order-none order-4 min-w-0 empty:hidden">
           <TasksSection />
         </div>
         {/* Os atalhos não existem para o operador: sem conteúdo, o bloco some e não deixa espaço sobrando. */}
-        <div className="@4xl/content:order-none order-8 min-w-0 empty:hidden">
+        <div className="@4xl/content:order-none order-4 min-w-0 empty:hidden">
           <QuickActions />
         </div>
       </section>

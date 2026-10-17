@@ -23,7 +23,11 @@ export function gravarRascunho(
   };
 }
 
-/** "Continuar" um rascunho de outra pessoa: a autoria passa para quem está no posto; o início fica. */
-export function assumirRascunho(rascunho: RascunhoSalvo, usuarioId: string): RascunhoSalvo {
-  return rascunho.iniciadoPor === usuarioId ? rascunho : { ...rascunho, iniciadoPor: usuarioId };
+/**
+ * "Continuar" um rascunho de outra pessoa: a autoria passa para quem está no posto, a partir de agora (horário
+ * simulado). Guardar o início antigo com o autor novo fazia o aviso dizer que ela começou antes de chegar ("iniciado
+ * por Graziela às 07:40", quando ela assumiu às 07:55).
+ */
+export function assumirRascunho(rascunho: RascunhoSalvo, usuarioId: string, agoraIso: string): RascunhoSalvo {
+  return rascunho.iniciadoPor === usuarioId ? rascunho : { ...rascunho, iniciadoPor: usuarioId, iniciadoEm: agoraIso };
 }

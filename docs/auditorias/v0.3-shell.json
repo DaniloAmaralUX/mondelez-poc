@@ -1,0 +1,64 @@
+{
+  "title": "Rotinas Operacionais — Shell (header, sidebar, busca global, avisos) na visão da liderança",
+  "project": "Mondelez · Gestão de Rotinas Operacionais",
+  "date": "2026-10-16",
+  "version": "v0.3",
+  "screenshot_url": "C:/Users/dar/AppData/Local/Temp/v03/h/lideranca/shots/",
+  "viewports": ["820×1180 toque", "1180×820 toque", "800×1280 toque", "1280×800 toque", "590×820 toque (Split View)", "1440×900 mouse"],
+  "roteiro": "Renata (201145). Sheet da sidebar no retrato (abrir, navegar, tocar fora, rota atual, girar o tablet), busca global, menus da pessoa/demonstração/layout, troca de pessoa com PIN, avisos (toasts) com o sistema em modo claro e escuro (emulateMediaFeatures).",
+  "macro_bets": [
+    { "category": "efficiency", "description": "Shell do Studio Admin 1:1; tablet ganha Sheet no retrato e densidade de toque sem tocar em components/ui", "alignment": "strong" }
+  ],
+  "jtbd": [
+    { "user": "Supervisora de produção", "situation": "pegando o tablet de um posto, em retrato", "motivation": "ir para Alertas ou Tarefas do posto sem procurar", "outcome": "chega à tela certa em dois toques" },
+    { "user": "Gerência no notebook", "situation": "sala de reunião, mouse e teclado", "motivation": "navegar com a densidade de sempre", "outcome": "nenhuma perda de espaço por causa do tablet" }
+  ],
+  "visual_hierarchy": {
+    "title": "Visual Hierarchy",
+    "checks": [
+      { "label": "Header no toque", "status": "pass", "notes": "64 px; menu 56×56 à esquerda, Buscar 70×56, chip de envio, utilidades 48×48 com 12 px, pessoa 56×56. Cabe em 590 px sem quebra." },
+      { "label": "Header no desktop", "status": "pass", "notes": "48 px, gatilho 28 px, utilidades e avatar 32 px, '⌘J' visível só com ponteiro fino: densidade da v0.2." },
+      { "label": "Contagem de alertas", "status": "pass", "notes": "Sino com selo e item Alertas com contagem no menu (3, depois 4 e 6 conforme o relógio avança)." },
+      { "label": "Chip de envio no Split View", "status": "warn", "notes": "Abaixo de 640 px o chip mostra só 'enviado' (minúsculo, sem sujeito): 'Tudo ' vira sr-only e a hora some (alertas-split.png)." }
+    ]
+  },
+  "visual_style": {
+    "title": "Visual Style",
+    "checks": [
+      { "label": "Fidelidade ao template", "status": "pass", "notes": "Sidebar, header, CommandDialog e menus do template; no retrato o Sheet do próprio ui/sidebar (384 px no iPad, 443 px no Split View)." },
+      { "label": "Densidade do desktop", "status": "pass", "notes": "Sidebar com itens de 32 px, Registrar agora 32 px, sino 36 px, menus de 28 px, busca com itens de 32 px e campo de 14 px: nada cresceu no notebook." },
+      { "label": "Header opaco no toque", "status": "pass", "notes": "Sem backdrop-blur com pointer: coarse." },
+      { "label": "Tema dos avisos", "status": "fail", "notes": "O Toaster de ui/sonner.tsx usa useTheme() do next-themes, mas o app não tem ThemeProvider: o sonner segue o sistema, não o tema escolhido no app. Sistema escuro + app claro: data-sonner-theme='dark' com data-theme-mode='light'." }
+    ]
+  },
+  "accessibility": {
+    "title": "Accessibility",
+    "checks": [
+      { "label": "Contraste dos avisos", "status": "fail", "notes": "Sistema em modo escuro, app claro: descrição do toast rgb(232,232,232) sobre lab(100 0 0) = 1,23:1 ('1 item não conforme em PPLI…' do Assumir; 'Tarefa obrigatória sem registro.' do aviso de alerta novo). Com o sistema claro: rgb(63,63,63), ok. O inverso (app escuro, sistema claro) dá texto escuro sobre fundo escuro. Shots: ev-toast-os-dark.png, ev-toast-os-light.png." },
+      { "label": "Alvos de toque", "status": "pass", "notes": "Sheet: itens 56 px, sino 56×56; menus da pessoa 52/48 px, demonstração 48 px, layout 56 px; busca: campo 54 px no grupo de 56, itens 48 px; teclado do PIN 120×64." },
+      { "label": "Campos ≥ 16 px", "status": "pass", "notes": "Busca global 16 px no toque; 14 px no desktop." },
+      { "label": "Nomes acessíveis pt-BR", "status": "warn", "notes": "Gatilho com aria-label 'Mostrar ou ocultar menu' e Toaster 'Notificações'/'Fechar aviso' ok. O Sheet do menu no retrato é anunciado como 'Sidebar' / 'Displays the mobile sidebar.' (ui/sidebar.tsx:197–199). O aria-label do tema diz 'Toque para trocar' também no notebook." },
+      { "label": "Bloqueio inerte", "status": "pass", "notes": "'Quem está no posto?' é <dialog> com showModal(): header e conteúdo ficam inertes; troca de pessoa pede o PIN da escolhida, com 'Voltar para Alberto' e 'Sair do posto' de 56 px." },
+      { "label": "Hidratação", "status": "pass", "notes": "Nenhum erro ou aviso no console em todos os fluxos e viewports." }
+    ]
+  },
+  "navigation": {
+    "title": "Navigation",
+    "checks": [
+      { "label": "Sheet fecha ao navegar", "status": "pass", "notes": "Tocar em 'Tarefas do posto' no Sheet navega e fecha; tocar fora fecha; tocar na rota atual também fecha. Busca e aviso 'Ver' navegam com o Sheet fechado." },
+      { "label": "Sheet depois de girar o tablet", "status": "fail", "notes": "Sheet aberto no retrato → girar para paisagem (sidebar fixa) → voltar ao retrato: o Sheet reaparece sozinho sobre a tela (openMobile continua true). Reproduzido duas vezes (rotacao.mjs e esc.mjs); shot rot-3-retrato-detalhe.png, com o Sheet cobrindo o detalhe de alerta." },
+      { "label": "Busca global no toque", "status": "pass", "notes": "Diálogo no topo (8 %: y 94 no retrato, 66 no Split View), foco no campo, grupos Turno/Registros/Checklists; 'tarefas' → Tarefas do posto navega e fecha." },
+      { "label": "Promessa da busca", "status": "warn", "notes": "Placeholder e descrição dizem 'telas, checklists e registros', mas só as telas do menu entram: 'Alberto' → 'Nada encontrado.'" },
+      { "label": "Saída de cada tela", "status": "pass", "notes": "Menu sempre no header; Voltar no detalhe de alerta; Minha Rotina e Alertas também no menu da pessoa." }
+    ]
+  },
+  "priority_fixes": [
+    { "rank": 1, "title": "Avisos no tema do app", "description": "app/layout.tsx:67: trocar <Toaster …/> por um wrapper cliente fora de ui/ (ex.: src/components/app-toaster.tsx) que lê usePreferencesStore((s) => s.resolvedThemeMode) e repassa as mesmas props mais theme={resolvedThemeMode}. Em ui/sonner.tsx o {...props} vem depois do theme interno, então o valor passado vence sem editar o componente.", "framework_reference": "27-patterns-accessibility.md → Color Contrast" },
+    { "rank": 2, "title": "Sheet fechado ao sair do modo móvel", "description": "sidebar/app-sidebar.tsx, junto de useFecharSidebarAoNavegar (:73): const { isMobile, setOpenMobile } = useSidebar(); React.useEffect(() => { if (!isMobile) setOpenMobile(false); }, [isMobile, setOpenMobile]); — ao girar para paisagem o estado do Sheet zera e ele não volta sozinho no retrato.", "framework_reference": "31-patterns-navigation.md → Off-canvas Navigation" },
+    { "rank": 3, "title": "Nome do menu em pt-BR", "description": "Sem editar ui/: em app-sidebar.tsx, quando useSidebar().isMobile, renderizar o ramo móvel com Sheet/SheetContent de ui/sheet (side=\"left\", showCloseButton={false}, data-sidebar=\"sidebar\", data-mobile=\"true\", className=\"w-(--sidebar-width) bg-sidebar p-0 text-sidebar-foreground\") e SheetHeader sr-only com SheetTitle 'Menu' e SheetDescription 'Telas do app' — o mesmo markup de ui/sidebar.tsx:181–203 com rótulos em português.", "framework_reference": "27-patterns-accessibility.md → Screen Reader Support" },
+    { "rank": 4, "title": "Busca promete o que entrega", "description": "header/search-dialog.tsx:155 description=\"Busque telas e checklists.\"; :162 placeholder=\"Buscar telas e checklists…\".", "framework_reference": "30-patterns-information.md → Search" },
+    { "rank": 5, "title": "Chip curto legível", "description": "header/sync-status.tsx:97: <span className=\"max-sm:sr-only\">Tudo enviado</span><span aria-hidden=\"true\" className=\"sm:hidden\">Enviado</span> (no estreito o leitor de tela lê a frase inteira e a tela mostra Enviado).", "framework_reference": "12-checklist-visual-style.md → Typography" },
+    { "rank": 6, "title": "Rótulo do tema sem 'toque'", "description": "header/theme-switcher.tsx:28: aria-label={`Trocar tema (atual: ${TEMA_LABEL[themeMode]})`}.", "framework_reference": "27-patterns-accessibility.md → ARIA Labels" }
+  ],
+  "notes": "O shell cumpre o plano no tablet (Sheet abaixo de 1024 px, gatilho de 56 px com rótulo pt-BR, fecha ao navegar, header opaco, utilidades de 48 px) e não perdeu densidade no notebook. O defeito de maior alcance é o tema dos avisos: atinge todos os toasts do app (Desfazer do operador, Assumir, aviso de alerta novo) sempre que o tablet estiver em aparência escura com o app em claro. Observação: com o foco inicial do Radix no Sheet (botão Checklists; o Radix pula links), o primeiro Esc não fechou o Sheet e, com o foco num link, fechou; sem efeito no toque e sem teclado no tablet."
+}

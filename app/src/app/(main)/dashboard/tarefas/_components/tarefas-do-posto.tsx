@@ -31,23 +31,29 @@ export function TarefasDoPosto() {
           {atrasadas > 0 && ` · ${atrasadas} ${atrasadas === 1 ? "atrasada" : "atrasadas"}`}
         </p>
       </div>
-      {/* Resumo do posto antes da tabela (UI Audit): onde está o problema sem precisar filtrar. */}
+      {/* Resumo do posto antes da tabela (UI Audit): onde está o problema sem precisar filtrar. Rótulos já como
+          aparecem (a sigla NC fica em maiúsculas). Verde e laranja um tom acima do Status do template: o 600 sobre o
+          fundo 500/10 dava 2,95:1 (mesma correção do chip de envio, sync-status.tsx). */}
       <div className="flex flex-wrap gap-2">
         {[
-          { rotulo: "Atrasadas", n: atrasadas, variante: "error" as const },
+          { rotulo: "atrasadas", n: atrasadas, variante: "error" as const },
           {
-            rotulo: "Abertas",
+            rotulo: "abertas",
             n: tarefas.filter((t) => !concluida(t) && !t.futura && t.estado !== "atrasada").length,
             variante: "info" as const,
           },
-          { rotulo: "Com NC", n: tarefas.filter((t) => t.estado === "com_nc").length, variante: "warning" as const },
-          { rotulo: "Feitas", n: tarefas.filter((t) => t.estado === "feita").length, variante: "success" as const },
-          { rotulo: "Mais tarde", n: tarefas.filter((t) => t.futura).length, variante: "default" as const },
+          { rotulo: "com NC", n: tarefas.filter((t) => t.estado === "com_nc").length, variante: "warning" as const },
+          { rotulo: "feitas", n: tarefas.filter((t) => t.estado === "feita").length, variante: "success" as const },
+          { rotulo: "mais tarde", n: tarefas.filter((t) => t.futura).length, variante: "default" as const },
         ].map((c) => (
-          <Status key={c.rotulo} variant={c.variante} className="toque:text-sm">
+          <Status
+            key={c.rotulo}
+            variant={c.variante}
+            className="toque:text-sm data-[variant=success]:text-green-700 data-[variant=warning]:text-orange-700 dark:data-[variant=success]:text-green-400 dark:data-[variant=warning]:text-orange-400"
+          >
             <StatusIndicator className={c.variante === "error" && c.n > 0 ? undefined : "before:hidden"} />
             <StatusLabel className="tabular-nums">
-              {c.n} {c.rotulo.toLowerCase()}
+              {c.n} {c.rotulo}
             </StatusLabel>
           </Status>
         ))}

@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { formularios } from "@/data/seed";
+import { equipamentos, formularios, rotinaTemplates } from "@/data/seed";
 
-import { resumirRespostas, situacaoItem, validarRespostas } from "../formulario-engine";
+import { limitarRespostas, resumirRespostas, situacaoItem, validarRespostas } from "../formulario-engine";
+import { LIMITES, limitarTexto } from "../limites";
 import type { Formulario, Resposta } from "../types";
 
 const ppli = formularios.find((f) => f.id === "ppli-l4") as Formulario;
@@ -52,6 +53,54 @@ describe("validarRespostas", () => {
   it("exige justificativa também quando o centerline está fora da faixa", () => {
     const respostas = { ...tudoConforme(), pressao: { numero: 7.2 } };
     expect(validarRespostas(ppli, respostas).pressao).toBeDefined();
+  });
+
+  it("recusa justificativa e lote acima do limite de tamanho", () => {
+    const respostas = {
+      ...tudoConforme(),
+      bandeja: { valor: "NC" as const, justificativa: "x".repeat(LIMITES.justificativa + 1) },
+    };
+    expect(validarRespostas(ppli, respostas).bandeja).toMatch(/até 500/);
+
+    const completo = formularios.find((f) => f.id === "rastreabilidade-envoltorio") as Formulario;
+    const rastreabilidade = { ...completo, itens: completo.itens.filter((i) => i.tipo === "texto") };
+    const lotes = Object.fromEntries(rastreabilidade.itens.map((i) => [i.id, { texto: "L-2026-1016" }]));
+    expect(validarRespostas(rastreabilidade, lotes)).toEqual({});
+    const loteLongo = { ...lotes, "lote-pa": { texto: "L".repeat(LIMITES.textoDoItem + 1) } };
+    expect(validarRespostas(rastreabilidade, loteLongo)["lote-pa"]).toMatch(/até 40/);
+  });
+});
+
+describe("limitarRespostas", () => {
+  it("corta texto e justificativa no limite e não mexe no resto", () => {
+    const dentro = tudoConforme();
+    expect(limitarRespostas(dentro)).toBe(dentro);
+
+    const fora: Record<string, Resposta> = {
+      ...dentro,
+      bandeja: { valor: "NC" as const, justificativa: "j".repeat(LIMITES.justificativa + 10) },
+      lote: { texto: "t".repeat(LIMITES.textoDoItem + 10) },
+    };
+    const limitado = limitarRespostas(fora);
+    expect(limitado.bandeja).toEqual({ valor: "NC", justificativa: "j".repeat(LIMITES.justificativa) });
+    expect(limitado.lote).toEqual({ texto: "t".repeat(LIMITES.textoDoItem) });
+    expect(limitado.mordentes).toBe(fora.mordentes);
+  });
+
+  it("não parte um emoji ao meio", () => {
+    expect(limitarTexto(`${"a".repeat(9)}😀`, 10)).toBe("a".repeat(9));
+    expect(limitarTexto("curto", 10)).toBe("curto");
+  });
+});
+
+describe("seed dentro dos limites", () => {
+  it("títulos, grupos e nomes de equipamento cabem nos limites da fronteira de dados", () => {
+    for (const t of rotinaTemplates) expect(t.titulo.length, t.id).toBeLessThanOrEqual(LIMITES.titulo);
+    for (const f of formularios) {
+      expect(f.titulo.length, f.id).toBeLessThanOrEqual(LIMITES.titulo);
+      for (const i of f.itens) expect(i.grupo.length, `${f.id}/${i.id}`).toBeLessThanOrEqual(LIMITES.grupo);
+    }
+    for (const e of equipamentos) expect(e.nome.length, e.id).toBeLessThanOrEqual(LIMITES.nomeDoEquipamento);
   });
 });
 

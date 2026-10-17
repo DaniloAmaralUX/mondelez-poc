@@ -2,7 +2,9 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vite
 
 import { localRepository } from "@/data/repository";
 import { PIN_DEMO } from "@/data/seed";
+import { LIMITES } from "@/domain/limites";
 import type { Formulario, Rascunho, TarefaInstancia } from "@/domain/types";
+import { agoraSimulado } from "@/lib/clock";
 
 import { JANELA_DESFAZER_MS, useSessionStore } from "../session-store";
 
@@ -148,7 +150,11 @@ describe("rascunho com autor", () => {
     });
 
     estado().assumirRascunho(tarefa.id);
-    expect(estado().rascunhos[tarefa.id]?.iniciadoPor).toBe("u-graziela");
+    // Quem assumiu passa a ser a autora a partir de agora (horário simulado), não do horário de quem começou.
+    const assumido = estado().rascunhos[tarefa.id];
+    expect(assumido?.iniciadoPor).toBe("u-graziela");
+    expect(assumido?.iniciadoEm).toBe(agoraSimulado(estado().relogio).toISOString());
+    expect(Date.parse(assumido?.iniciadoEm ?? "") - Date.parse(inicio?.iniciadoEm ?? "")).toBe(60_000);
 
     estado().descartarRascunho(tarefa.id);
     expect(estado().rascunhos[tarefa.id]).toBeUndefined();
@@ -221,6 +227,32 @@ describe("fila com janela de desfazer", () => {
     expect(estado().rede).toBe("offline");
     estado().definirRedeNavegador("online");
     expect(estado().rede).toBe("online");
+  });
+});
+
+describe("limites de tamanho na fronteira de dados", () => {
+  it("o registro nunca leva observação, lote ou justificativa acima do limite", () => {
+    const longo = (n: number) => "x".repeat(n + 25);
+    const registro = estado().registrarChecklist({
+      tarefa,
+      formulario,
+      rascunho: {
+        respostas: {
+          mordentes: { valor: "NC", justificativa: longo(LIMITES.justificativa) },
+          lote: { texto: longo(40) },
+        },
+        observacao: longo(LIMITES.observacao),
+      },
+    });
+    expect(registro?.observacao).toHaveLength(LIMITES.observacao);
+    expect(registro?.respostas.mordentes?.justificativa).toHaveLength(LIMITES.justificativa);
+    expect(registro?.respostas.lote?.texto).toHaveLength(LIMITES.textoDoItem);
+  });
+
+  it("a ação de um alerta fica no limite", () => {
+    estado().entrarComPin("u-renata", PIN_DEMO);
+    estado().tratarAlerta("nc:reg-x", "acao", "y".repeat(LIMITES.acaoDoAlerta + 1));
+    expect(estado().tratamentos["nc:reg-x"]?.[0]?.texto).toHaveLength(LIMITES.acaoDoAlerta);
   });
 });
 

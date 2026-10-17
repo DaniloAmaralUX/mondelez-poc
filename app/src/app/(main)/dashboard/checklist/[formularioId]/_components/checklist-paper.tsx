@@ -19,7 +19,12 @@ const SYNC: Record<SyncStatus, string> = {
   erro: "Envio falhou · nova tentativa",
 };
 
-/** Documento do registro: o que fica guardado, com a rastreabilidade exigida (doc 02 §5). */
+/**
+ * Documento do registro: o que fica guardado, com a rastreabilidade exigida (doc 02 §5).
+ *
+ * Altura mínima de uma folha Carta, não fixa: com justificativas longas ou muitas NC a folha cresce e o rodapé vem
+ * depois do conteúdo (mt-auto no flex-col), em vez de um rodapé absoluto por cima das últimas linhas da tabela.
+ */
 export function ChecklistPaper({ formulario, valores, tarefa, registro }: ChecklistPaperProps) {
   const usuarioAtual = useUsuarioAtual();
   const contexto = useSessionStore((s) => s.contexto);
@@ -36,9 +41,9 @@ export function ChecklistPaper({ formulario, valores, tarefa, registro }: Checkl
 
   return (
     <article
-      style={{ width: PAPER_WIDTH, height: PAPER_HEIGHT }}
+      style={{ width: PAPER_WIDTH, minHeight: PAPER_HEIGHT }}
       data-print-paper
-      className="relative flex flex-col gap-8 bg-neutral-50 px-12.25 py-11 font-mono text-neutral-950"
+      className="flex flex-col gap-8 bg-neutral-50 px-12.25 py-11 font-mono text-neutral-950"
     >
       <header className="flex flex-col gap-6">
         <div className="grid grid-cols-2 items-start gap-14">
@@ -101,7 +106,9 @@ export function ChecklistPaper({ formulario, valores, tarefa, registro }: Checkl
                 key={item.id}
                 className="grid grid-cols-[1fr_160px_128px_56px] gap-3 border-[oklch(0.86_0_0)] border-b px-3 py-2"
               >
-                <span>
+                {/* wrap-anywhere: um lote ou uma justificativa sem espaço quebra dentro da coluna, em vez de alargar
+                    a coluna 1fr (minmax(auto, 1fr)) ou passar por cima de "Sit." e sair da folha. */}
+                <span className="wrap-anywhere">
                   {item.texto}
                   {situacao === "NC" && resposta?.justificativa && (
                     <span className="block text-neutral-500">{resposta.justificativa}</span>
@@ -112,7 +119,7 @@ export function ChecklistPaper({ formulario, valores, tarefa, registro }: Checkl
                     ? `${item.faixa.min.toLocaleString("pt-BR")}–${item.faixa.max.toLocaleString("pt-BR")} ${item.faixa.unidade}`
                     : "—"}
                 </span>
-                <span className="text-right">{descreverResposta(item, resposta)}</span>
+                <span className="wrap-anywhere text-right">{descreverResposta(item, resposta)}</span>
                 <span className="text-right font-semibold">{SITUACAO[situacao]}</span>
               </div>
             );
@@ -145,8 +152,8 @@ export function ChecklistPaper({ formulario, valores, tarefa, registro }: Checkl
         </div>
       </div>
 
-      <footer className="absolute right-12.25 bottom-11 left-12.25 grid grid-cols-2 gap-14 text-neutral-500 text-sm leading-relaxed">
-        <div>
+      <footer className="mt-auto grid grid-cols-2 gap-14 text-neutral-500 text-sm leading-relaxed">
+        <div className="wrap-anywhere min-w-0">
           <p>{valores.observacao.trim() || "Sem observações."}</p>
           <p>Dispositivo {registro?.dispositivoId ?? "tablet do posto"}</p>
         </div>

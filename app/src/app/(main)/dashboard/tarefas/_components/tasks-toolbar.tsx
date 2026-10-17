@@ -45,7 +45,7 @@ export function TasksToolbar<TData extends RowData>({ table }: TasksToolbarProps
       <div className="flex flex-1 flex-wrap items-center gap-2 toque:gap-3">
         <Input
           aria-label="Filtrar tarefas"
-          placeholder="Filtrar tarefas..."
+          placeholder="Filtrar tarefas…"
           enterKeyHint="search"
           autoComplete="off"
           value={searchValue}

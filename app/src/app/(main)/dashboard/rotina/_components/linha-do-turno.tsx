@@ -76,6 +76,15 @@ export function LinhaDoTurno() {
   const proximas = inteiro ? todasProximas : todasProximas.slice(0, PROXIMAS_VISIVEIS);
   const itens = [...feitas, ...abertas, ...proximas];
 
+  // Título curto (o trecho antes de " · ", sem o equipamento repetido em toda linha), a não ser que duas rotinas
+  // diferentes do turno fiquem com o mesmo nome curto (ex.: PPLI de duas envolvedoras): aí vai o título inteiro.
+  const nomeCurto = (t: TarefaInstancia) => t.titulo.split(" · ")[0] ?? t.titulo;
+  const titulosPorNome = new Map<string, Set<string>>();
+  for (const t of tarefas)
+    titulosPorNome.set(nomeCurto(t), (titulosPorNome.get(nomeCurto(t)) ?? new Set()).add(t.titulo));
+  const tituloNaLinha = (t: TarefaInstancia) =>
+    (titulosPorNome.get(nomeCurto(t))?.size ?? 0) > 1 ? t.titulo : nomeCurto(t);
+
   // Janela da coluna única, em índices de `itens`: [inicio, fim).
   const inicio = Math.max(0, feitas.length - FEITAS_NA_JANELA);
   const fim = Math.min(itens.length, feitas.length + A_FAZER_NA_JANELA);
@@ -120,7 +129,7 @@ export function LinhaDoTurno() {
                         {prefixoDaHora(tarefa)}
                         {formatarHora(hora)}
                       </TimelineTime>
-                      <TimelineTitle className="line-clamp-2 text-sm">{tarefa.titulo.split(" · ")[0]}</TimelineTitle>
+                      <TimelineTitle className="line-clamp-2 text-sm">{tituloNaLinha(tarefa)}</TimelineTitle>
                     </TimelineHeader>
                     <TimelineDescription
                       className={cn(

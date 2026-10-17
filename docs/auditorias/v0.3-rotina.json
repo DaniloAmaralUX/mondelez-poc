@@ -1,0 +1,92 @@
+{
+  "title": "Rotinas Operacionais — Minha Rotina (operador)",
+  "project": "Mondelez · Gestão de Rotinas Operacionais",
+  "date": "2026-10-16",
+  "version": "v0.3",
+  "viewports": ["iPad retrato 820×1180 (toque)", "iPad paisagem 1180×820 (toque)", "Split View 590×820 (toque)", "conferência: Tab 800×1280 e 1280×800 (toque), desktop 1440×900"],
+  "evidencias": {
+    "pasta": "C:/Users/dar/AppData/Local/Temp/v03/h/ui-audit-operador",
+    "capturas": [
+      "shots/rotina__ipad-retrato__1-inicial-pagina.png",
+      "shots/rotina__ipad-paisagem__1-inicial.png",
+      "shots/rotina__split__1-inicial.png",
+      "shots/rotina__ipad-retrato__2-filtro.png",
+      "shots/rotina__ipad-retrato__3-concluir-desfazer.png",
+      "shots/rotina__ipad-retrato__4-menu-pessoa.png",
+      "shots/toast-tema__dark.png",
+      "shots/toast-tema__light.png",
+      "shots/extra__tab-paisagem__rotina.png"
+    ],
+    "medicoes": "shots/rotina__*.json e extra__*.json",
+    "roteiro": "rotina.mjs (login 104233, fecha o aviso, mede, abre o filtro, toca Concluir em Hora x Hora, abre o menu da pessoa); tema.mjs (mesmo login com prefers-color-scheme claro e escuro); extras.mjs (Tab e desktop)"
+  },
+  "macro_bets": [
+    { "category": "velocity", "description": "Saber o que fazer agora e começar com um toque", "alignment": "strong" },
+    { "category": "accuracy", "description": "Concluir sem confirmação, com desfazer; estado de envio sempre à vista", "alignment": "moderate" }
+  ],
+  "jtbd": [
+    { "user": "Operador de embalagem no tablet do posto", "situation": "ao longo do turno, entre uma tarefa e outra", "motivation": "ver a próxima tarefa e o prazo dela", "outcome": "nada vence sem ser feito e o turno fecha em dia" }
+  ],
+  "visual_hierarchy": {
+    "title": "Visual Hierarchy",
+    "checks": [
+      { "label": "Ação dominante", "status": "pass", "notes": "\"Fazer agora\" é o primeiro cartão (y = 184) com \"Registrar\" de 141×64 px no toque e prazo em 18 px; em Split o botão ocupa a largura do cartão." },
+      { "label": "Ordem em coluna única", "status": "pass", "notes": "Retrato: saudação 88, Fazer agora 184, Fim do turno 433, Tarefas 637, Linha do turno 1077, Recados 1615 (= doc 12 §3.4). Paisagem iPad com sidebar (908 px de inset) fica em coluna única com a mesma ordem." },
+      { "label": "Passagem do turno anterior", "status": "warn", "notes": "\"Etiqueta aberta: desalinhamento da correia transportadora\" é o último bloco no iPad (≈ y 1890 de 2071 no retrato), mas o 2º bloco em duas colunas (Tab paisagem 1280, desktop). A mesma pendência muda de prioridade conforme a largura (doc 12 §2 item 7); decidir uma posição para as duas." },
+      { "label": "Linha do turno compacta", "status": "pass", "notes": "Coluna única: 2 feitas + 4 próximas e \"Ver o turno inteiro (18 tarefas)\" de 56 px; rótulo redundante escondido." },
+      { "label": "Contadores do turno", "status": "pass", "notes": "\"5 para agora · 11% do turno feito\" atualiza ao concluir (4 · 17%)." },
+      { "label": "Cor só para o anormal", "status": "pass", "notes": "Atraso em destrutivo; o ponto só pulsa em atrasada." }
+    ]
+  },
+  "visual_style": {
+    "title": "Visual Style",
+    "checks": [
+      { "label": "Fidelidade ao template", "status": "pass", "notes": "Composição da Productivity; cartões, header e sidebar do template." },
+      { "label": "Header no toque", "status": "pass", "notes": "64 px, opaco e sem blur; trigger do menu 56 px; utilidades 48 px (secundárias, §3.3)." },
+      { "label": "Movimento", "status": "pass", "notes": "Linha concluída sai em 180 ms (opacidade + escala), layout só onde muda; reduzir movimento respeitado." },
+      { "label": "Aviso no topo sobre o header", "status": "warn", "notes": "O toast (top-center) cobre o chip de envio por 8–10 s e o X de 44 px fica sobre \"Buscar\" (sobreposição de 53 px medida em paisagem). Aceitável para não cobrir a barra do checklist; registrar." },
+      { "label": "Chip de envio em Split View", "status": "warn", "notes": "Abaixo de 640 px o chip mostra só \"enviado\" (minúsculo, sem sujeito): \"Tudo \" fica sr-only (sync-status.tsx linha 97)." }
+    ]
+  },
+  "accessibility": {
+    "title": "Accessibility",
+    "checks": [
+      { "label": "Alvos ≥ 56 px", "status": "pass", "notes": "Conteúdo: Registrar 141×64, Concluir 112×56, filtro 144×56, linhas de tarefa 77 px, \"Ver o turno inteiro\" 56. Abaixo de 56 só as utilidades do header (48, decisão §3.3) e os botões do aviso (ver abaixo)." },
+      { "label": "Desfazer do aviso", "status": "warn", "notes": "\"Desfazer\" mede 95×44 px e o fechar 44×44 (tablet.css linhas 282–299). Doc 12 §2 item 5 pede ≥ 44, mas o item 1 do mesmo doc e a regra do projeto pedem 56 para tudo que o operador toca; o Desfazer é o que substitui a confirmação, com luva e em 10 s." },
+      { "label": "Espaço ≥ 12 px entre alvos", "status": "warn", "notes": "Filtro → primeira linha da lista: 9 px (gap-2 + borda). Linha-link → botão Concluir da linha seguinte: 11 px (py-2.5 + divisória)." },
+      { "label": "Contraste dos chips de estado", "status": "fail", "notes": "\"Tudo enviado · 07:40\" (header, em todas as telas) e \"Feita\": texto green-600 sobre green-500/10 = 2,95:1 em 14 px (mínimo 4,5:1). O mesmo vale para warning (orange-600) em \"Sem rede\" e \"Com NC\"." },
+      { "label": "Contraste do aviso com o sistema em modo escuro", "status": "fail", "notes": "O Toaster segue o prefers-color-scheme do sistema (ui/sonner.tsx usa useTheme do next-themes, sem provider: \"system\"), mas o fundo vem do tema do app (claro). Com o iPad em aparência escura/automática, a descrição fica rgb(232,232,232) sobre branco = 1,23:1: \"Hora x Hora · apontar caixas\" no Concluir, \"Operador de Embalagem\" no Bom turno. Reproduzido em tema.mjs (claro: rgb(63,63,63), escuro: rgb(232,232,232))." },
+      { "label": "Texto ≥ 14 px", "status": "warn", "notes": "\"Ver todos\" (Recados, desabilitado) 12,8 px; rótulos de grupo da sidebar e \"Matrícula 104233\" 12 px em paisagem (template)." },
+      { "label": "Rolagem horizontal", "status": "pass", "notes": "0 px em 820, 1180, 590, 800 e 1280." },
+      { "label": "Nomes acessíveis", "status": "pass", "notes": "\"Mostrar ou ocultar menu\", \"Trocar pessoa (agora: Alberto Forte)\", \"Filtrar tarefas\"; botões desabilitados com o motivo escrito ao lado." },
+      { "label": "Reduzir movimento", "status": "pass", "notes": "Ping do Status parado com prefers-reduced-motion (tablet.css); MotionConfig do app." }
+    ]
+  },
+  "usability": {
+    "title": "Usability",
+    "checks": [
+      { "label": "Concluir sem confirmação", "status": "pass", "notes": "Hora x Hora concluída num toque; aviso \"Concluída\" com Desfazer por 10 s; a linha sai da lista e os contadores mudam." },
+      { "label": "Filtro da lista", "status": "pass", "notes": "Select de 56 px com itens de 48 px (Agora, Turno inteiro, Feitas)." },
+      { "label": "Menu da pessoa", "status": "pass", "notes": "Pessoas 52 px, ações 48 px; \"Trocar de pessoa · pede o PIN\" e \"Bloquear tablet\" à vista." },
+      { "label": "Estado de envio", "status": "pass", "notes": "Chip sempre no header com a hora da última sincronização; \"1 aguardando envio\" depois de registrar." },
+      { "label": "Desktop mantém a densidade", "status": "pass", "notes": "1440×900 sem toque: Concluir 40 px, filtro 32 px, pointer fine; camada de toque desligada." }
+    ]
+  },
+  "navigation": {
+    "title": "Navigation",
+    "checks": [
+      { "label": "Retrato", "status": "pass", "notes": "Sidebar em Sheet (0 px), trigger de 56 px; conteúdo 820 px." },
+      { "label": "Paisagem", "status": "pass", "notes": "Sidebar fixa de 272 px, inset de 908 px, sem rolagem horizontal." },
+      { "label": "Split View", "status": "pass", "notes": "590 px: coluna única, Registrar em largura total, sem rolagem horizontal." }
+    ]
+  },
+  "priority_fixes": [
+    { "rank": 1, "title": "Toaster no tema do app, não no do sistema", "description": "Criar src/components/app-toaster.tsx (\"use client\") que lê usePreferencesStore((s) => s.resolvedThemeMode) de @/stores/preferences/preferences-provider e renderiza <Toaster {...props} theme={tema} />; trocar o <Toaster> de app/layout.tsx (linhas 67–73) por <AppToaster> com as mesmas props. ui/sonner.tsx espalha {...props} depois de theme, então não precisa ser editado. Corrige a descrição a 1,23:1 em todos os avisos com Desfazer.", "framework_reference": "27-patterns-accessibility.md → Color Contrast" },
+    { "rank": 2, "title": "Texto 700 nos chips success e warning", "description": "Status do template usa green-600/orange-600 sobre fundo /10 (2,95:1). No ponto de uso, acrescentar \"data-[variant=success]:text-green-700 data-[variant=warning]:text-orange-700 dark:data-[variant=success]:text-green-400 dark:data-[variant=warning]:text-orange-400\": no CHIP de header/sync-status.tsx (linha 15), em rotina/_components/status-tarefa.tsx (linha 24) e no \"Rascunho salvo no tablet\" de checklist/[formularioId]/_components/checklist.tsx (linha 279).", "framework_reference": "27-patterns-accessibility.md → Color Contrast" },
+    { "rank": 3, "title": "Desfazer com 56 px no toque", "description": "src/styles/tablet.css, regra do [data-button] do sonner (linhas 283–289): min-height: var(--touch-min-h) e padding-inline: 1.25rem. Atualizar doc 12 §2 item 5 (hoje diz ≥ 44 px).", "framework_reference": "26-patterns-error-handling.md → Undo" },
+    { "rank": 4, "title": "12 px entre filtro e lista e entre linhas com botão", "description": "rotina/_components/tasks-section.tsx: section com gap-3 em vez de gap-2 (linha 50) e linha = \"flex min-h-14 items-center gap-3 px-4 py-3\" (linha 118).", "framework_reference": "27-patterns-accessibility.md → Touch Targets" },
+    { "rank": 5, "title": "Uma posição para a passagem do turno", "description": "rotina/page.tsx linha 33: se a pendência do turno anterior deve ser lida no início do turno, order-3 na coluna única (e Fim do turno/Tarefas/Linha/Recados descem um), igual ao arranjo de duas colunas; se não, levá-la para depois de Recados também em duas colunas.", "framework_reference": "23-patterns-visual-hierarchy.md → Proximity and Order" },
+    { "rank": 6, "title": "Chip legível em Split View", "description": "header/sync-status.tsx linha 97: no estreito mostrar \"Enviado\" (com maiúscula) em vez do fragmento \"enviado\", mantendo \"Tudo enviado\" para leitor de tela.", "framework_reference": "12-checklist-visual-style.md → Typography" }
+  ],
+  "notes": "Hierarquia e toque bem resolvidos no tablet. Os dois fail são de contraste e transversais (header e avisos aparecem em todas as telas do operador). O fail do aviso só aparece com o sistema em aparência escura ou automática, que é o padrão de muitos iPads à noite (3º turno); com o sistema claro a descrição mede rgb(63,63,63) e passa."
+}

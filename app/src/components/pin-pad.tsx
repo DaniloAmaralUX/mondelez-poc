@@ -18,9 +18,12 @@ const TECLAS = ["1", "2", "3", "4", "5", "6", "7", "8", "9"] as const;
  */
 const TECLA = "h-16 w-full text-2xl font-medium tabular-nums motion-safe:active:scale-[0.97]";
 
-/** Tremida curta no erro. Só transform: com "reduzir movimento" o MotionProvider (reducedMotion="user") a desliga. */
+/**
+ * Tremida curta no erro, dentro do teto de 300 ms para retorno de interface. Em `x` (e não numa string de transform):
+ * `x` é chave de posição do motion, e com "reduzir movimento" o MotionProvider (reducedMotion="user") a desliga.
+ */
 const TREMIDA = { x: [0, -10, 10, -6, 6, 0] };
-const TRANSICAO_DA_TREMIDA = { duration: 0.36, ease: "easeOut" } as const;
+const TRANSICAO_DA_TREMIDA = { duration: 0.3, ease: "easeOut" } as const;
 
 type TeclaFisica = Pick<KeyboardEvent, "key" | "repeat" | "ctrlKey" | "metaKey" | "altKey">;
 

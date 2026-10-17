@@ -66,14 +66,12 @@ export function LoginForm() {
   const linhaId = form.watch("linhaId");
   const postoId = form.watch("postoId");
   const postos = linhaId ? localRepository.postos(linhaId) : [];
-  // O PIN entra sozinho no último número, e com o teclado de 64 px Linha e Posto podem ficar abaixo da dobra (paisagem):
-  // o posto escolhido aparece junto do PIN, para ninguém entrar no posto errado sem ver.
+  // Linha e Posto vêm antes da matrícula (onde, depois quem): o PIN entra sozinho no último número, então nada que se
+  // escolhe fica depois dele. Com o teclado de 64 px, em paisagem Linha e Posto podem sair da vista quando o PIN
+  // recebe o foco: o posto escolhido aparece junto do PIN, para ninguém entrar no posto errado sem ver.
   const linhaNome = localRepository.linhas(PLANTA_ID).find((l) => l.id === linhaId)?.nome;
   const postoNome = postos.find((p) => p.id === postoId)?.nome;
-  const postoEscolhido =
-    linhaNome && postoNome
-      ? `Entrando em ${linhaNome} · ${postoNome}. Para trocar, escolha abaixo antes do último número.`
-      : undefined;
+  const postoEscolhido = linhaNome && postoNome ? `Entrando em ${linhaNome} · ${postoNome}.` : undefined;
 
   /** Troca de linha mantém o mesmo tipo de posto (Embalagem → Embalagem), se existir na linha nova. */
   function escolherLinha(novaLinhaId: string) {
@@ -109,69 +107,6 @@ export function LoginForm() {
   return (
     <form noValidate onSubmit={enviar} className="flex flex-col gap-4">
       <FieldGroup className="gap-4">
-        <Controller
-          control={form.control}
-          name="matricula"
-          render={({ field, fieldState }) => (
-            <Field className="gap-1.5" data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="login-matricula">Matrícula</FieldLabel>
-              <Input
-                {...field}
-                id="login-matricula"
-                // Aparelho compartilhado: sem sugestão de matrícula de outra pessoa (docs/pesquisa auditoria §5.2).
-                autoComplete="off"
-                autoCorrect="off"
-                spellCheck={false}
-                inputMode="numeric"
-                enterKeyHint="next"
-                placeholder="6 números do crachá"
-                maxLength={TAMANHO_MATRICULA}
-                aria-invalid={fieldState.invalid}
-                aria-describedby={fieldState.invalid ? "login-matricula-erro" : undefined}
-                onChange={(evento) => {
-                  const matricula = apenasDigitos(evento.target.value, TAMANHO_MATRICULA);
-                  const completou = matricula.length === TAMANHO_MATRICULA && field.value.length < TAMANHO_MATRICULA;
-                  field.onChange(matricula);
-                  // 6 números: o foco vai para o PIN e o teclado do sistema fecha (o PIN é digitado na tela).
-                  if (completou) pinPadRef.current?.focus();
-                }}
-                onKeyDown={(evento) => {
-                  // "Próximo" do teclado leva ao PIN em vez de enviar o formulário pela metade.
-                  if (evento.key !== "Enter") return;
-                  evento.preventDefault();
-                  pinPadRef.current?.focus();
-                }}
-              />
-              {fieldState.invalid && <FieldError id="login-matricula-erro" errors={[fieldState.error]} />}
-            </Field>
-          )}
-        />
-
-        <Controller
-          control={form.control}
-          name="pin"
-          render={({ field, fieldState }) => (
-            <PinPad
-              ref={(elemento) => {
-                field.ref(elemento);
-                pinPadRef.current = elemento;
-              }}
-              rotulo="PIN"
-              descricao={postoEscolhido}
-              valor={field.value}
-              onValorChange={(pin) => {
-                field.onChange(pin);
-                if (fieldState.error) form.clearErrors("pin");
-              }}
-              tamanho={TAMANHO_PIN}
-              // PIN completo envia sozinho: menos um toque no tablet compartilhado.
-              onComplete={() => void enviar()}
-              erro={fieldState.error?.message}
-              desabilitado={entrando}
-            />
-          )}
-        />
-
         <Controller
           control={form.control}
           name="linhaId"
@@ -242,6 +177,69 @@ export function LoginForm() {
               )}
               {fieldState.invalid && <FieldError id="login-posto-erro" errors={[fieldState.error]} />}
             </FieldSet>
+          )}
+        />
+
+        <Controller
+          control={form.control}
+          name="matricula"
+          render={({ field, fieldState }) => (
+            <Field className="gap-1.5" data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="login-matricula">Matrícula</FieldLabel>
+              <Input
+                {...field}
+                id="login-matricula"
+                // Aparelho compartilhado: sem sugestão de matrícula de outra pessoa (docs/pesquisa auditoria §5.2).
+                autoComplete="off"
+                autoCorrect="off"
+                spellCheck={false}
+                inputMode="numeric"
+                enterKeyHint="next"
+                placeholder="6 números do crachá"
+                maxLength={TAMANHO_MATRICULA}
+                aria-invalid={fieldState.invalid}
+                aria-describedby={fieldState.invalid ? "login-matricula-erro" : undefined}
+                onChange={(evento) => {
+                  const matricula = apenasDigitos(evento.target.value, TAMANHO_MATRICULA);
+                  const completou = matricula.length === TAMANHO_MATRICULA && field.value.length < TAMANHO_MATRICULA;
+                  field.onChange(matricula);
+                  // 6 números: o foco vai para o PIN e o teclado do sistema fecha (o PIN é digitado na tela).
+                  if (completou) pinPadRef.current?.focus();
+                }}
+                onKeyDown={(evento) => {
+                  // "Próximo" do teclado leva ao PIN em vez de enviar o formulário pela metade.
+                  if (evento.key !== "Enter") return;
+                  evento.preventDefault();
+                  pinPadRef.current?.focus();
+                }}
+              />
+              {fieldState.invalid && <FieldError id="login-matricula-erro" errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
+
+        <Controller
+          control={form.control}
+          name="pin"
+          render={({ field, fieldState }) => (
+            <PinPad
+              ref={(elemento) => {
+                field.ref(elemento);
+                pinPadRef.current = elemento;
+              }}
+              rotulo="PIN"
+              descricao={postoEscolhido}
+              valor={field.value}
+              onValorChange={(pin) => {
+                field.onChange(pin);
+                if (fieldState.error) form.clearErrors("pin");
+              }}
+              tamanho={TAMANHO_PIN}
+              // PIN completo envia sozinho: menos um toque no tablet compartilhado.
+              onComplete={() => void enviar()}
+              erro={fieldState.error?.message}
+              desabilitado={entrando}
+            />
           )}
         />
       </FieldGroup>

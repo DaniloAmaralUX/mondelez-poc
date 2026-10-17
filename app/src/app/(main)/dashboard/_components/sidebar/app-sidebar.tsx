@@ -8,6 +8,7 @@ import { usePathname } from "next/navigation";
 import { Command } from "lucide-react";
 import { useShallow } from "zustand/react/shallow";
 
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import {
   Sidebar,
   SidebarContent,
@@ -58,6 +59,9 @@ function useFecharSidebarAoNavegar() {
   }, [path, setOpenMobile]);
 }
 
+/** Largura do Sheet do retrato: a mesma do ramo móvel de `ui/sidebar.tsx` (SIDEBAR_WIDTH_MOBILE). */
+const LARGURA_SHEET = { "--sidebar-width": "18rem" } as React.CSSProperties;
+
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { sidebarVariant, sidebarCollapsible, isSynced } = usePreferencesStore(
     useShallow((s) => ({
@@ -69,16 +73,23 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   const usuario = useUsuarioAtual();
   const toque = usePonteiroGrosso();
+  const { isMobile, openMobile, setOpenMobile } = useSidebar();
   const fecharSidebar = useFecharSidebarMovel();
   useFecharSidebarAoNavegar();
+
+  // Girar o retrato para paisagem deixa a sidebar fixa com o `openMobile` ainda `true`: sem fechar aqui, o Sheet
+  // reaparecia sozinho sobre a tela ao voltar para o retrato.
+  React.useEffect(() => {
+    if (!isMobile) setOpenMobile(false);
+  }, [isMobile, setOpenMobile]);
 
   const variant = isSynced ? sidebarVariant : props.variant;
   const preferido = isSynced ? sidebarCollapsible : props.collapsible;
   // Recolhida em ícones, os rótulos só aparecem em tooltip, que não abre no toque: no tablet ela some por inteiro.
   const collapsible = toque && preferido === "icon" ? "offcanvas" : preferido;
 
-  return (
-    <Sidebar {...props} variant={variant} collapsible={collapsible}>
+  const conteudo = (
+    <>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
@@ -101,6 +112,36 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SupportCard />
         {usuario && <NavUser user={paraUsuarioDoShell(usuario)} />}
       </SidebarFooter>
+    </>
+  );
+
+  // Retrato e Split View: o mesmo Sheet do ramo móvel de `ui/sidebar.tsx` (mesmos atributos e classes), montado aqui só
+  // para o leitor de tela anunciar o menu em pt-BR; o do template tem título e descrição fixos em inglês ("Sidebar").
+  if (isMobile && collapsible !== "none") {
+    return (
+      <Sheet open={openMobile} onOpenChange={setOpenMobile}>
+        <SheetContent
+          side="left"
+          showCloseButton={false}
+          data-sidebar="sidebar"
+          data-slot="sidebar"
+          data-mobile="true"
+          className="w-(--sidebar-width) bg-sidebar p-0 text-sidebar-foreground"
+          style={LARGURA_SHEET}
+        >
+          <SheetHeader className="sr-only">
+            <SheetTitle>Menu</SheetTitle>
+            <SheetDescription>Telas do app</SheetDescription>
+          </SheetHeader>
+          <div className="flex h-full w-full flex-col">{conteudo}</div>
+        </SheetContent>
+      </Sheet>
+    );
+  }
+
+  return (
+    <Sidebar {...props} variant={variant} collapsible={collapsible}>
+      {conteudo}
     </Sidebar>
   );
 }

@@ -28,7 +28,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { MIN_JUSTIFICATIVA, situacaoItem } from "@/domain/formulario-engine";
+import { MAX_JUSTIFICATIVA, MIN_JUSTIFICATIVA, situacaoItem } from "@/domain/formulario-engine";
 import type { Formulario, Resposta } from "@/domain/types";
 import { useDeslocamentoDoTeclado } from "@/hooks/use-visual-viewport";
 import { JANELA_DESFAZER_MS } from "@/stores/session/session-store";
@@ -54,7 +54,7 @@ interface Erros {
  */
 export function RegistrarDesvio({ formulario }: { formulario: Formulario }) {
   const { getValues, setValue } = useFormContext<ChecklistFormValues>();
-  const avisar = useAvisosDaTela();
+  const { avisar } = useAvisosDaTela();
   const teclado = useDeslocamentoDoTeclado();
   const [aberto, setAberto] = React.useState(false);
   const [itemId, setItemId] = React.useState("");
@@ -208,6 +208,7 @@ export function RegistrarDesvio({ formulario }: { formulario: Formulario }) {
                 }}
                 placeholder="O que está fora do padrão?"
                 autoComplete="off"
+                maxLength={MAX_JUSTIFICATIVA}
                 enterKeyHint="done"
                 onKeyDown={(event) => {
                   // "done" fecha o teclado; o envio fica no botão, à vista acima do teclado.

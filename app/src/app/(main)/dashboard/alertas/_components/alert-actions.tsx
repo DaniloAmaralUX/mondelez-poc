@@ -180,10 +180,14 @@ export function AlertActions({ alerta }: { readonly alerta: Alerta }) {
               </DialogHeader>
               <Field className="gap-1.5" data-invalid={erro ? true : undefined}>
                 <FieldLabel htmlFor={campoId}>Ação tomada</FieldLabel>
+                {/* Limite e quebra em qualquer ponto: um texto colado sem espaços fazia o campo (field-sizing) crescer
+                    na horizontal e empurrava Cancelar e a ação para fora da tela. */}
                 <Textarea
                   ref={campoRef}
                   id={campoId}
                   rows={3}
+                  maxLength={500}
+                  className="wrap-anywhere"
                   value={texto}
                   onChange={(e) => {
                     setTexto(e.target.value);

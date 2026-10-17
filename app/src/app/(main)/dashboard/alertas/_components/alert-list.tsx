@@ -198,11 +198,8 @@ export function AlertList({ alertas, selectedAlertId, selecaoExplicita, onSelect
             </TabsList>
           ) : (
             // Notebook (ponteiro fino): a linha do template, como na v0.2 (docs/12 §3.1: o notebook mantém a
-            // densidade). Se não couber, quebra linha em vez de ficar cortada pela borda do card.
-            <TabsList
-              className="w-full flex-wrap gap-y-2 border-b px-4 group-data-horizontal/tabs:h-auto group-data-horizontal/tabs:min-h-8"
-              variant="line"
-            >
+            // densidade). A lista tem 420 px no notebook (alertas.tsx), o bastante para as 4 abas numa linha de 32 px.
+            <TabsList className="w-full border-b px-4" variant="line">
               {FILTROS.map((f) => (
                 // min-h-6: a mesma altura que o h-8 da lista dava ao gatilho no template.
                 <TabsTrigger key={f.value} className="min-h-6 text-xs tabular-nums" value={f.value}>
@@ -218,7 +215,7 @@ export function AlertList({ alertas, selectedAlertId, selecaoExplicita, onSelect
             <InputGroupInput
               className="h-8"
               aria-label="Buscar alertas"
-              placeholder="Buscar alertas..."
+              placeholder="Buscar alertas…"
               enterKeyHint="search"
               autoComplete="off"
               value={busca}
@@ -231,9 +228,14 @@ export function AlertList({ alertas, selectedAlertId, selecaoExplicita, onSelect
         </div>
 
         {/* Rolagem própria só lado a lado; na pilha do retrato a lista cresce e a página rola.
-            py-1: o anel do item ativo e o de foco não são cortados pela borda da área de rolagem. */}
-        <ScrollArea className="@4xl/content:h-0 @4xl/content:flex-1">
-          <div className="flex flex-col gap-4 px-4 py-1">
+            O viewport do Radix envolve o conteúdo num div com display: table, que cresce até o texto sem quebra dos
+            cards (truncate) e cortava Responsável e Idade à direita: block! (vence o estilo inline) prende os cards
+            à largura da coluna e o truncate volta a valer.
+            py-1: o anel do item ativo e o de foco não são cortados pela borda da área de rolagem.
+            key: busca e filtro são escolha da pessoa, então a lista remonta (sem deslize, que a cada tecla levava
+            cards por até 630 px sobre os que entravam); a reordenação vinda dos dados (assumir, alerta novo) anima. */}
+        <ScrollArea className="[&_[data-slot=scroll-area-viewport]>div]:block! @4xl/content:h-0 @4xl/content:flex-1">
+          <div key={`${filtro}|${termo}`} className="flex flex-col gap-4 px-4 py-1">
             {visiveis.length === 0 && (
               <div className="grid min-h-32 place-items-center rounded-lg border border-dashed text-muted-foreground text-sm">
                 {alertas.length === 0 ? "Nenhum alerta neste turno." : "Nenhum alerta neste filtro."}
@@ -243,7 +245,14 @@ export function AlertList({ alertas, selectedAlertId, selecaoExplicita, onSelect
               // Reordenação por estado e criticidade desliza em vez de pular (oportunidades de movimento, item 4).
               // layoutDependency: o motion só mede quando a posição do card na lista muda (estado, filtro, alerta novo),
               // e não a cada virada de minuto do relógio, que re-renderiza a lista inteira (docs/12 §3.6).
-              <motion.div key={alerta.id} layout="position" layoutDependency={indice} transition={REORDENAR}>
+              // rounded-xl bg-card: um card que desliza passa por cima, e não através, de outro que entra no meio.
+              <motion.div
+                key={alerta.id}
+                layout="position"
+                layoutDependency={indice}
+                transition={REORDENAR}
+                className="rounded-xl bg-card"
+              >
                 <AlertCard
                   active={alerta.id === selectedAlertId}
                   explicito={selecaoExplicita}

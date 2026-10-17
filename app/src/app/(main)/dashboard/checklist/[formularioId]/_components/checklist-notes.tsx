@@ -2,6 +2,7 @@ import { useFormContext } from "react-hook-form";
 
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
+import { LIMITES } from "@/domain/limites";
 
 import type { ChecklistFormValues } from "./data";
 
@@ -18,6 +19,7 @@ export function ChecklistNotes() {
         <Textarea
           id="observacao"
           rows={3}
+          maxLength={LIMITES.observacao}
           placeholder="Algo que a supervisão precisa saber?"
           {...register("observacao")}
         />

@@ -97,27 +97,33 @@ export const columns: ColumnDef<DataTableFeatures, Task>[] = [
     header: ({ column }) => <TitleColumnHeader column={column} />,
     cell: ({ row }) => {
       const task = row.original;
+      const titulo: string = row.getValue("title");
       const label = labels.find((label) => label.value === task.label);
+      // O módulo só aparece quando o título não começa por ele (mesma regra de fazer-agora.tsx): "Sobrepeso, refugo e
+      // reprocesso" não se repete na mesma linha. No toque, 14 px como a lista da mesma tela (docs/12 §3.3).
+      const mostrarModulo = label !== undefined && !titulo.startsWith(label.label);
       const conteudo = (
         <>
-          {label && (
-            <Badge className="rounded-sm bg-transparent" variant="outline">
+          {mostrarModulo && (
+            <Badge className="rounded-sm bg-transparent toque:text-sm" variant="outline">
               {label.label}
             </Badge>
           )}
-          <span className="max-w-lg truncate font-medium text-sm">{row.getValue("title")}</span>
+          <span className="max-w-lg truncate font-medium text-sm">{titulo}</span>
         </>
       );
 
-      if (task.futura) return <div className="flex min-w-0 items-center gap-2">{conteudo}</div>;
+      // Sem tela para abrir (ainda não abriu, ou é feita na Minha Rotina de quem opera): título sem link.
+      if (!task.abrivel) return <div className="flex min-w-0 items-center gap-2">{conteudo}</div>;
 
       // A linha inteira abre a tarefa (tasks.tsx); este link é o caminho do teclado e do leitor de tela.
-      // prefetch: o checklist abre sem rede (lib/rotas.ts).
+      // prefetch: o checklist abre sem rede (lib/rotas.ts). No toque, o link ocupa a altura da linha (56 px, a do menu
+      // de ações) para não ficar um alvo de 20 px dentro dela.
       return (
         <Link
           prefetch
           href={task.href}
-          className="flex min-w-0 items-center gap-2 rounded-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+          className="flex toque:min-h-14 min-w-0 items-center gap-2 rounded-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
         >
           {conteudo}
         </Link>
@@ -127,7 +133,8 @@ export const columns: ColumnDef<DataTableFeatures, Task>[] = [
   {
     accessorKey: "status",
     header: "Situação",
-    cell: ({ row }) => <SituacaoBadge value={row.getValue("status")} />,
+    // No toque, 14 px e h-6 como na lista da mesma tela (linha-tarefa.tsx).
+    cell: ({ row }) => <SituacaoBadge value={row.getValue("status")} className="toque:h-6 toque:text-sm" />,
     filterFn: (row, id, value) => {
       return value.includes(row.getValue(id));
     },
@@ -168,8 +175,8 @@ export const columns: ColumnDef<DataTableFeatures, Task>[] = [
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-40">
-              <DropdownMenuItem asChild disabled={task.futura}>
-                <Link prefetch={!task.futura} href={task.href}>
+              <DropdownMenuItem asChild disabled={!task.abrivel}>
+                <Link prefetch={task.abrivel} href={task.href}>
                   Abrir
                 </Link>
               </DropdownMenuItem>

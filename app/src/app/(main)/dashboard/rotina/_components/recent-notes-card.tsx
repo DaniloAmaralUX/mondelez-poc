@@ -43,7 +43,9 @@ export function RecentNotesCard() {
             <div key={recado.id} className="flex items-start gap-4">
               <Icone className="size-5 shrink-0 text-muted-foreground" />
               <div className="min-w-0">
-                <div className="line-clamp-2 font-medium text-sm leading-tight">{recado.titulo}</div>
+                {/* Texto inteiro: o recado é o próprio texto, e não há onde ler o resto ("Ver todos" ainda não existe).
+                    wrap-anywhere quebra um e-mail ou endereço longo dentro da coluna. */}
+                <div className="wrap-anywhere font-medium text-sm leading-tight">{recado.titulo}</div>
                 <div className="text-muted-foreground text-xs toque:text-sm">
                   {formatarData(subDays(hoje, recado.diasAtras))} · {recado.autor}
                 </div>

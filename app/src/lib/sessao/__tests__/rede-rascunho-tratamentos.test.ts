@@ -52,10 +52,14 @@ describe("rascunho com autor", () => {
     });
   });
 
-  it("assumir passa a autoria e mantém o início", () => {
+  it("assumir passa a autoria a partir de agora; o próprio autor não muda nada", () => {
     const r: RascunhoSalvo = { ...valores, iniciadoPor: "u-alberto", iniciadoEm: "2026-10-16T10:40:00.000Z" };
-    expect(assumirRascunho(r, "u-joana")).toEqual({ ...r, iniciadoPor: "u-joana" });
-    expect(assumirRascunho(r, "u-alberto")).toBe(r);
+    expect(assumirRascunho(r, "u-joana", "2026-10-16T10:55:00.000Z")).toEqual({
+      ...r,
+      iniciadoPor: "u-joana",
+      iniciadoEm: "2026-10-16T10:55:00.000Z",
+    });
+    expect(assumirRascunho(r, "u-alberto", "2026-10-16T10:55:00.000Z")).toBe(r);
   });
 });
 

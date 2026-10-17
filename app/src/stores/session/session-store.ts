@@ -6,7 +6,8 @@ import { create } from "zustand";
 import { persist, type StorageValue } from "zustand/middleware";
 
 import { localRepository } from "@/data/repository";
-import { resumirRespostas } from "@/domain/formulario-engine";
+import { limitarRespostas, resumirRespostas } from "@/domain/formulario-engine";
+import { LIMITES, limitarTexto } from "@/domain/limites";
 import { chaveTurno, montarTurno, turnoAtual } from "@/domain/turno";
 import type {
   AcaoAlerta,
@@ -76,10 +77,13 @@ export interface SessionState extends SessaoPersistida {
   /** Volta para a pessoa atual sem PIN, só se o bloqueio for uma troca iniciada por ela. */
   cancelarTroca: () => void;
 
-  /** Salva o rascunho (autor e início preservados; preenchidos na primeira gravação). */
+  /**
+   * Salva o rascunho (autor e início preservados; preenchidos na primeira gravação). É a única mudança que espera os
+   * 400 ms da gravação agrupada: as que fecham um estado vão já para o banco (`gravarJa`).
+   */
   salvarRascunho: (tarefaId: string, valores: Rascunho) => void;
   descartarRascunho: (tarefaId: string) => void;
-  /** "Continuar" o rascunho de outra pessoa: a autoria passa para quem está no posto. */
+  /** "Continuar" o rascunho de outra pessoa: a autoria passa para quem está no posto, com o horário de agora. */
   assumirRascunho: (tarefaId: string) => void;
   /** Cria o registro como `pendente` e só o põe na fila depois de `JANELA_DESFAZER_MS`. */
   registrarChecklist: (input: {
@@ -228,6 +232,15 @@ export const useSessionStore = create<SessionState>()(
     (setState, getState) => {
       const agora = () => agoraSimulado(getState().relogio);
       const chaveDoTurnoAgora = () => chaveTurno(turnoAtual(agora()));
+      /**
+       * Mudança que fecha um estado (entrar, sair, bloquear, registrar, concluir, tratar, relógio, rede, reset): vai já
+       * para o IndexedDB, sem os 400 ms da gravação agrupada, que ficam para a digitação do rascunho e o envio da fila.
+       * Com a espera, outras mudanças logo depois (sincronização, rede) adiavam a escrita até 2 s e uma recarga nesse
+       * meio-tempo voltava ao login com o cookie ainda gravado, ou perdia o registro com o toast já na tela.
+       */
+      const gravarJa = () => {
+        void armazenamento.gravarAgora();
+      };
 
       const iniciarSessao = (usuarioId: string, contexto?: Contexto) => {
         setState({
@@ -238,6 +251,7 @@ export const useSessionStore = create<SessionState>()(
           candidatoId: null,
           turnoDaSessao: chaveDoTurnoAgora(),
         });
+        gravarJa();
         setClientCookie(SESSION_COOKIE, usuarioId, 1);
         limparMarcaDeSegundoPlano();
       };
@@ -318,18 +332,22 @@ export const useSessionStore = create<SessionState>()(
             candidatoId: null,
             turnoDaSessao: null,
           });
+          gravarJa();
           deleteClientCookie(SESSION_COOKIE);
         },
 
         bloquear: (motivo, candidatoId) => {
           const mudanca = aplicarBloqueio(getState(), motivo, candidatoId);
-          if (mudanca) setState(mudanca);
+          if (!mudanca) return;
+          setState(mudanca);
+          gravarJa();
         },
 
         cancelarTroca: () => {
           const s = getState();
           if (!s.bloqueado || s.motivoBloqueio !== "troca" || !s.usuarioId) return;
           setState({ bloqueado: false, motivoBloqueio: null, candidatoId: null });
+          gravarJa();
         },
 
         salvarRascunho: (tarefaId, valores) => {
@@ -350,17 +368,22 @@ export const useSessionStore = create<SessionState>()(
           const { rascunhos } = getState();
           if (!(tarefaId in rascunhos)) return;
           setState({ rascunhos: Object.fromEntries(Object.entries(rascunhos).filter(([id]) => id !== tarefaId)) });
+          gravarJa();
         },
 
         assumirRascunho: (tarefaId) => {
           const { usuarioId, rascunhos } = getState();
           const rascunho = rascunhos[tarefaId];
           if (!usuarioId || !rascunho || rascunho.iniciadoPor === usuarioId) return;
-          setState({ rascunhos: { ...rascunhos, [tarefaId]: assumirRascunho(rascunho, usuarioId) } });
+          setState({
+            rascunhos: { ...rascunhos, [tarefaId]: assumirRascunho(rascunho, usuarioId, agora().toISOString()) },
+          });
+          gravarJa();
         },
 
         registrarChecklist: ({ tarefa, formulario, rascunho }) => {
-          const { respostas } = rascunho;
+          // Fronteira de dados: nada acima dos limites de tamanho entra na fila (domain/limites.ts).
+          const respostas = limitarRespostas(rascunho.respostas);
           const { usuarioId, contexto, bloqueado, rascunhos } = getState();
           // Tablet bloqueado: ninguém registra em nome da pessoa anterior (RNF-06).
           if (!usuarioId || !contexto || bloqueado) return undefined;
@@ -381,7 +404,7 @@ export const useSessionStore = create<SessionState>()(
             dispositivoId: DISPOSITIVO_ID,
             syncStatus: "pendente",
             naoConformes: resumo.naoConformes,
-            observacao: rascunho.observacao.trim() || undefined,
+            observacao: limitarTexto(rascunho.observacao.trim(), LIMITES.observacao) || undefined,
           };
 
           // O rascunho volta igual se o registro for desfeito, inclusive com quem começou.
@@ -402,6 +425,7 @@ export const useSessionStore = create<SessionState>()(
               },
             },
           }));
+          gravarJa();
 
           janelasDeDesfazer.set(
             registro.id,
@@ -423,6 +447,7 @@ export const useSessionStore = create<SessionState>()(
           janelasDeDesfazer.delete(registroId);
           rascunhosParaDesfazer.delete(registroId);
           setState(desfeito);
+          gravarJa();
           return true;
         },
 
@@ -434,6 +459,7 @@ export const useSessionStore = create<SessionState>()(
           setState((s) => ({
             conclusoes: { ...s.conclusoes, [tarefaId]: { estado: "feita", em: agora().toISOString(), usuarioId } },
           }));
+          gravarJa();
         },
 
         desfazerConclusao: (tarefaId) => {
@@ -442,31 +468,44 @@ export const useSessionStore = create<SessionState>()(
           setState((s) => ({
             conclusoes: Object.fromEntries(Object.entries(s.conclusoes).filter(([id]) => id !== tarefaId)),
           }));
+          gravarJa();
         },
 
         tratarAlerta: (alertaId, tipo, texto) => {
           const { usuarioId, bloqueado } = getState();
           if (!usuarioId || bloqueado) return;
-          const acao: AcaoAlerta = { tipo, texto, usuarioId, em: agora().toISOString() };
+          const acao: AcaoAlerta = {
+            tipo,
+            texto: limitarTexto(texto, LIMITES.acaoDoAlerta),
+            usuarioId,
+            em: agora().toISOString(),
+          };
           setState((s) => ({
             tratamentos: { ...s.tratamentos, [alertaId]: [...(s.tratamentos[alertaId] ?? []), acao] },
           }));
+          gravarJa();
         },
 
         desfazerTratamento: (alertaId) => {
           const { usuarioId, tratamentos } = getState();
           if (!usuarioId) return;
           const proximo = removerUltimaAcao(tratamentos, alertaId, usuarioId);
-          if (proximo !== tratamentos) setState({ tratamentos: proximo });
+          if (proximo === tratamentos) return;
+          setState({ tratamentos: proximo });
+          gravarJa();
         },
 
-        avancarRelogio: (minutos) => setState((s) => ({ relogio: avancar(s.relogio, minutos) })),
+        avancarRelogio: (minutos) => {
+          setState((s) => ({ relogio: avancar(s.relogio, minutos) }));
+          gravarJa();
+        },
 
         irParaFimDoTurno: () => {
           const atual = agora();
           const fim = turnoAtual(atual).fim;
           const minutos = Math.max(0, Math.round((fim.getTime() - atual.getTime()) / 60000) - 5);
           setState((s) => ({ relogio: avancar(s.relogio, minutos) }));
+          gravarJa();
         },
 
         definirRedeNavegador: (redeNavegador) => {
@@ -482,6 +521,7 @@ export const useSessionStore = create<SessionState>()(
           const simularSemRede = !s.simularSemRede;
           const rede = redeEfetiva(s.redeNavegador, simularSemRede);
           setState({ simularSemRede, rede });
+          gravarJa();
           if (rede === "online") enviarFila();
         },
 
@@ -495,6 +535,7 @@ export const useSessionStore = create<SessionState>()(
             // Quem está logado continua no turno do relógio novo: resetar não bloqueia o tablet.
             turnoDaSessao: s.usuarioId ? chaveTurno(turnoAtual(agoraSimulado(demo.relogio))) : null,
           });
+          gravarJa();
         },
       };
     },

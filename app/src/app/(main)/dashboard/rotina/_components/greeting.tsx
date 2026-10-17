@@ -24,7 +24,7 @@ export function Greeting() {
       <h1 className="text-3xl text-foreground leading-none tracking-tight">
         {saudacao(agora)}, {usuario ? primeiroNome(usuario.nome) : ""}.
       </h1>
-      <p className="text-lg text-muted-foreground leading-none">
+      <p className="text-lg text-muted-foreground leading-tight">
         {turno.numero}º turno, das {formatarHora(turno.inicio)} às {formatarHora(turno.fim)}
         {linha && posto ? ` · ${linha.nome} · ${posto.nome}` : ""}
       </p>

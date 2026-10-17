@@ -18,10 +18,11 @@ import { useAgora } from "@/stores/session/session-store";
 
 import { Duracao } from "./duracao";
 import { StatusTarefa } from "./status-tarefa";
-import { temTela, useConcluirTarefa } from "./use-concluir";
+import { rotuloDaRota, temFormulario, useConcluirTarefa } from "./use-concluir";
 
-// Feedback de toque no botão principal (design engineering de Emil Kowalski: botões precisam responder à pressão).
-const PRESSAO = "transition-transform duration-150 ease-out active:scale-[0.97]";
+// Feedback de toque no botão principal (design engineering de Emil Kowalski: botões precisam responder à pressão); com
+// prefers-reduced-motion o retorno fica, sem a transição (docs/12 §5 item 10).
+const PRESSAO = "transition-transform duration-150 ease-out active:scale-[0.97] motion-reduce:transition-none";
 
 /** A ação dominante da tela: a próxima tarefa, com prazo vivo e um botão grande (UI Audit, prioridade 1). */
 export function FazerAgora() {
@@ -51,6 +52,10 @@ export function FazerAgora() {
   );
 
   if (!proxima) {
+    // Sem nenhuma tarefa no posto e turno: nem "mais" tarefas nem "0% do turno feito", que contradiria "Tudo em dia".
+    let descricao = "Não há mais tarefas neste turno.";
+    if (tarefas.length === 0) descricao = "Nenhuma tarefa sua neste posto e turno.";
+    else if (depois) descricao = `A próxima tarefa abre às ${formatarHora(depois.abre)}.`;
     return (
       <Card className="shadow-xs">
         <CardHeader>
@@ -60,10 +65,8 @@ export function FazerAgora() {
             Tudo em dia
           </CardTitle>
         </CardHeader>
-        <CardContent className="text-muted-foreground">
-          {depois ? `A próxima tarefa abre às ${formatarHora(depois.abre)}.` : "Não há mais tarefas neste turno."}
-        </CardContent>
-        {contadores}
+        <CardContent className="text-muted-foreground">{descricao}</CardContent>
+        {tarefas.length > 0 && contadores}
       </Card>
     );
   }
@@ -72,13 +75,14 @@ export function FazerAgora() {
   const modulo = localRepository.modulo(proxima.moduloSlug);
   const atrasada = proxima.estado === "atrasada";
   const diferenca = Math.abs(proxima.prazo.getTime() - agora.getTime());
+  const atalho = rotuloDaRota(proxima);
 
   return (
     <Card className={cn("shadow-xs", atrasada ? "border-destructive/40" : "border-primary/40")}>
       <CardHeader>
         <CardDescription className="flex items-center gap-2">
           Fazer agora
-          <StatusTarefa tarefa={proxima} />
+          <StatusTarefa tarefa={proxima} pulsar />
         </CardDescription>
         <CardTitle className="text-balance text-2xl leading-tight tracking-tight">{proxima.titulo}</CardTitle>
       </CardHeader>
@@ -94,7 +98,7 @@ export function FazerAgora() {
             {formatarHora(proxima.abre)}–{formatarHora(proxima.prazo)}
           </p>
         </div>
-        {temTela(proxima) ? (
+        {temFormulario(proxima) ? (
           // 44 px no notebook (v0.2); 64 px no toque: ação primária do operador (docs/12 §2 item 1 e §3.1).
           <Button asChild size="lg" className={cn("h-11 toque:h-16 px-5 toque:px-6 text-base", PRESSAO)}>
             {/* prefetch: a tela de registro abre mesmo com a rede caindo (lib/rotas.ts). */}
@@ -104,14 +108,26 @@ export function FazerAgora() {
             </Link>
           </Button>
         ) : (
-          <Button
-            size="lg"
-            className={cn("h-11 toque:h-16 px-5 toque:px-6 text-base", PRESSAO)}
-            onClick={() => concluir(proxima)}
-          >
-            <Check data-icon="inline-start" />
-            Concluir
-          </Button>
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Tarefa feita em outra tela, sem formulário (ex.: "Revisar alertas abertos"): o atalho leva até lá e o
+                Concluir fecha a tarefa, com Desfazer. */}
+            {atalho && proxima.rota && (
+              <Button asChild variant="outline" size="lg" className="h-11 px-5 text-base">
+                <Link prefetch href={proxima.rota}>
+                  {atalho}
+                  <ArrowRight data-icon="inline-end" />
+                </Link>
+              </Button>
+            )}
+            <Button
+              size="lg"
+              className={cn("h-11 toque:h-16 px-5 toque:px-6 text-base", PRESSAO)}
+              onClick={() => concluir(proxima)}
+            >
+              <Check data-icon="inline-start" />
+              Concluir
+            </Button>
+          </div>
         )}
       </CardContent>
       {contadores}

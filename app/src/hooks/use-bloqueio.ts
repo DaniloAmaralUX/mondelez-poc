@@ -2,8 +2,11 @@
 
 import { useEffect } from "react";
 
+import { toast } from "sonner";
+
 import { chaveTurno, turnoAtual } from "@/domain/turno";
 import {
+  AVISO_BLOQUEIO_MS,
   CHAVE_OCULTO,
   INATIVIDADE_MS,
   OCULTO_MS,
@@ -20,6 +23,20 @@ export { INATIVIDADE_MS, OCULTO_MS };
 /** Toque, tecla ou rolagem contam como atividade (capturados na janela, antes de qualquer componente). */
 const EVENTOS_DE_ATIVIDADE = ["pointerdown", "keydown", "wheel", "touchstart"] as const;
 const OPCOES_DE_ESCUTA: AddEventListenerOptions = { capture: true, passive: true };
+const ID_AVISO_BLOQUEIO = "aviso-bloqueio";
+
+/**
+ * Aviso 20 s antes do bloqueio por inatividade (WCAG 2.2.1): quem lê um documento sem tocar na tela tem tempo de
+ * continuar. Qualquer toque já reinicia a contagem e fecha o aviso; o botão só deixa a saída explícita.
+ */
+function avisarBloqueio() {
+  toast("O tablet bloqueia em 20 s", {
+    id: ID_AVISO_BLOQUEIO,
+    description: "Toque na tela para continuar usando. Nada do que você fez se perde.",
+    duration: AVISO_BLOQUEIO_MS,
+    action: { label: "Continuar usando", onClick: () => undefined },
+  });
+}
 
 function lerOcultoEm(): number | null {
   try {
@@ -41,7 +58,8 @@ function gravarOcultoEm(instante: number | null) {
 
 /**
  * Bloqueio automático do tablet compartilhado ("Quem está no posto?"):
- * - inatividade: `INATIVIDADE_MS` (5 min) sem pointerdown, keydown, wheel ou touchstart;
+ * - inatividade: `INATIVIDADE_MS` (5 min) sem pointerdown, keydown, wheel ou touchstart, com um aviso
+ *   `AVISO_BLOQUEIO_MS` (20 s) antes;
  * - oculto: ao voltar de segundo plano depois de mais de `OCULTO_MS` (2 min), inclusive se a página foi recarregada;
  * - turno: quando o turno simulado passa do turno em que a pessoa entrou.
  * Inatividade e segundo plano só valem no toque (`modoToque`, lido na hora de bloquear): o notebook da liderança é
@@ -57,30 +75,49 @@ export function useBloqueioAutomatico(): void {
   const bloquear = useSessionStore((s) => s.bloquear);
   const chaveAtual = chaveTurno(turnoAtual(useAgora()));
 
-  // Inatividade: um timeout reagendado só quando vence (registrar atividade é só guardar o instante).
+  // Inatividade: um timeout reagendado só quando vence (registrar atividade é só guardar o instante). Primeiro vence o
+  // aviso (20 s antes), depois o bloqueio.
   useEffect(() => {
     if (!hidratado || !logado) return;
     let ultimaAtividade = Date.now();
+    let avisado = false;
     let timer: ReturnType<typeof setTimeout>;
 
+    const fecharAviso = () => {
+      if (!avisado) return;
+      avisado = false;
+      toast.dismiss(ID_AVISO_BLOQUEIO);
+    };
     const registrarAtividade = () => {
       ultimaAtividade = Date.now();
+      fecharAviso();
     };
     const verificar = () => {
       const restante = restanteDeInatividade(ultimaAtividade, Date.now());
+      if (restante > AVISO_BLOQUEIO_MS) {
+        timer = setTimeout(verificar, restante - AVISO_BLOQUEIO_MS);
+        return;
+      }
       if (restante > 0) {
+        // Já bloqueado (troca de pessoa na tela) não há o que avisar: ninguém está usando o tablet.
+        if (!avisado && modoToque() && !useSessionStore.getState().bloqueado) {
+          avisado = true;
+          avisarBloqueio();
+        }
         timer = setTimeout(verificar, restante);
         return;
       }
+      fecharAviso();
       if (modoToque()) bloquear("inatividade");
       ultimaAtividade = Date.now();
-      timer = setTimeout(verificar, INATIVIDADE_MS);
+      timer = setTimeout(verificar, INATIVIDADE_MS - AVISO_BLOQUEIO_MS);
     };
 
-    timer = setTimeout(verificar, INATIVIDADE_MS);
+    timer = setTimeout(verificar, INATIVIDADE_MS - AVISO_BLOQUEIO_MS);
     for (const evento of EVENTOS_DE_ATIVIDADE) window.addEventListener(evento, registrarAtividade, OPCOES_DE_ESCUTA);
     return () => {
       clearTimeout(timer);
+      fecharAviso();
       for (const evento of EVENTOS_DE_ATIVIDADE) {
         window.removeEventListener(evento, registrarAtividade, OPCOES_DE_ESCUTA);
       }

@@ -1,15 +1,19 @@
+/** Partículas de nomes em português que não entram nas iniciais. */
+const PARTICULAS = new Set(["da", "das", "de", "di", "do", "dos", "du", "e"]);
+
+/**
+ * Iniciais para avatar: primeira letra da primeira e da última palavra (no máximo 2 letras).
+ * Antes juntava a inicial de todas as palavras, e nomes longos vazavam do avatar (teste de estresse, v0.3).
+ */
 export const getInitials = (str: string): string => {
   if (typeof str !== "string" || !str.trim()) return "?";
 
-  return (
-    str
-      .trim()
-      .split(/\s+/)
-      .filter(Boolean)
-      .map((word) => word[0])
-      .join("")
-      .toUpperCase() || "?"
-  );
+  const palavras = str.trim().split(/\s+/).filter(Boolean);
+  const nomes = palavras.filter((p) => !PARTICULAS.has(p.toLowerCase()));
+  const base = nomes.length > 0 ? nomes : palavras;
+  const primeira = base[0]?.[0] ?? "";
+  const ultima = base.length > 1 ? (base[base.length - 1]?.[0] ?? "") : "";
+  return (primeira + ultima).toUpperCase() || "?";
 };
 
 export function formatCurrency(

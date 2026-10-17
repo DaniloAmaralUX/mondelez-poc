@@ -37,7 +37,13 @@ export interface ChecklistPaperProps {
  * O `PrintChecklist` (cópia do papel que só aparece na impressão) fica montado aqui fora do Sheet, uma vez só: assim
  * imprimir funciona com o Sheet aberto e a impressão não sai em duas páginas.
  */
-export function ChecklistPreview(props: ChecklistPaperProps) {
+export function ChecklistPreview({
+  aoAbrir,
+  ...props
+}: ChecklistPaperProps & {
+  /** Ao abrir o documento (ex.: tirar os avisos da tela, que cobririam Imprimir). */
+  aoAbrir?: () => void;
+}) {
   const titulo = props.registro ? "Documento do registro" : "Prévia do documento";
 
   return (
@@ -52,7 +58,11 @@ export function ChecklistPreview(props: ChecklistPaperProps) {
               : "Como o registro vai ficar, com responsável, posto e horário."}
           </p>
         </div>
-        <Sheet>
+        <Sheet
+          onOpenChange={(aberto) => {
+            if (aberto) aoAbrir?.();
+          }}
+        >
           <SheetTrigger asChild>
             <Button type="button" variant="outline">
               <FileText data-icon="inline-start" />
@@ -85,12 +95,19 @@ export function ChecklistPreview(props: ChecklistPaperProps) {
                 </SheetClose>
               </div>
             </SheetHeader>
-            {/* Papel em escala 1 (816 × 1056 px): no retrato e no Split View rola também na horizontal, só aqui dentro. */}
-            <div className="min-h-0 flex-1 overflow-auto overscroll-contain bg-stone-200 p-4 pb-[max(--spacing(4),env(safe-area-inset-bottom))] dark:bg-stone-800">
+            {/* Papel em escala 1 (816 px de largura): no retrato e no Split View rola também na horizontal, só aqui
+                dentro. Focável e nomeado: sem nenhum controle dentro, o teclado precisa do foco aqui para rolar (o
+                WebKit não torna focável um contêiner com rolagem). */}
+            <section
+              // biome-ignore lint/a11y/noNoninteractiveTabindex: região com rolagem precisa de foco para o teclado rolar (WCAG 2.1.1).
+              tabIndex={0}
+              aria-label="Documento do registro"
+              className="min-h-0 flex-1 overflow-auto overscroll-contain bg-stone-200 p-4 pb-[max(--spacing(4),env(safe-area-inset-bottom))] outline-none focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset dark:bg-stone-800"
+            >
               <div className="mx-auto w-fit shadow-sm">
                 <ChecklistPaper {...props} />
               </div>
-            </div>
+            </section>
           </SheetContent>
         </Sheet>
       </section>

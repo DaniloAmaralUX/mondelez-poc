@@ -15,4 +15,15 @@
 | [08 · Plano de implementação](08-plano-de-implementacao.md) | Ambiente, incrementos, frentes por módulo, backlog inicial, critérios de aceite, referências técnicas |
 | [09 · Framework de UX (UI Audit)](09-framework-ux-ui-audit.md) | Deep dive no guia UI Audit: apostas do projeto, leis de psicologia por tela, padrões por template, scaffold de regras, ritual de auditoria |
 
+### Versões do protótipo (fora do PDF)
+
+| Doc | Conteúdo |
+|---|---|
+| [10 · Mapa do escopo sobre o template](10-mapa-do-template.md) | Cada parte do escopo sobre a tela do Studio Admin que a recebe; conflitos com os docs anteriores |
+| [11 · v0.2: componentes e layout](11-v0.2-componentes-e-layout.md) | Auditoria da v0, bibliotecas, componentes de registries, decisões por tela, movimento e resultado da v0.2 |
+| [12 · v0.3: tablet-first](12-v0.3-tablet-first.md) | Estudo e plano: usuário do tablet, princípios, decisões, backlog em fases A–H e critérios de aceite |
+| [13 · v0.3: resultado](13-v0.3-tablet-first-resultado.md) | O que mudou por fase, decisões e porquês, desvios do template, critérios de aceite, pendências, verificação em aparelho real e como testar no desktop |
+
+Auditorias UI Audit por tela em `auditorias/` (`v0-*.json` e `v0.3-*.json`). Auditoria do código para tablet e receitas técnicas da v0.3 em `pesquisa/`.
+
 Fontes originais em `../Documentos/`. Foto de referência do estado atual em `assets/`. Pipeline do PDF em `pdf/` (Node + Edge/Chrome local; sem dependências globais).

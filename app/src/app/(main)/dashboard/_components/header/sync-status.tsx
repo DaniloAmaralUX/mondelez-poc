@@ -11,8 +11,13 @@ import { agoraSimulado } from "@/lib/clock";
 import { formatarHora } from "@/lib/format";
 import { useSessionHydrated, useSessionStore } from "@/stores/session/session-store";
 
-/** No toque o chip passa de text-xs (Status do template) a text-sm: aparece em todas as telas do operador (docs/12 §3.3). */
-const CHIP = "toque:text-sm tabular-nums";
+/**
+ * No toque o chip passa de text-xs (Status do template) a text-sm: aparece em todas as telas do operador (docs/12 §3.3).
+ * Verde e laranja um tom acima do Status do template (600 → 700 no claro): o texto 600 sobre o fundo 500/10 dava
+ * 2,95:1, abaixo dos 4,5:1 do texto de 14 px. No escuro, o 400 do template.
+ */
+const CHIP =
+  "toque:text-sm tabular-nums data-[variant=success]:text-green-700 data-[variant=warning]:text-orange-700 dark:data-[variant=success]:text-green-400 dark:data-[variant=warning]:text-orange-400";
 
 /** Fila do tablet por estado (RF-07). "No tablet" = tudo o que ainda não chegou ao servidor. */
 function contarFila(registros: Record<string, Registro>) {
@@ -92,9 +97,14 @@ export function SyncStatus() {
       variante: "success",
       pulsar: false,
       hora: "simples",
+      // Abaixo de 640 px o chip encurta para "Enviado" (com maiúscula, sem a hora); o leitor de tela segue com
+      // "Tudo enviado".
       rotulo: (
         <>
-          <span className="max-sm:sr-only">Tudo </span>enviado
+          <span className="max-sm:sr-only">Tudo enviado</span>
+          <span aria-hidden="true" className="sm:hidden">
+            Enviado
+          </span>
         </>
       ),
     };

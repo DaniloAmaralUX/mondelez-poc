@@ -20,7 +20,7 @@ import {
   StepperTitle,
   StepperTrigger,
 } from "@/components/ui/stepper";
-import { resumirRespostas, situacaoItem, validarRespostas } from "@/domain/formulario-engine";
+import { descreverResposta, resumirRespostas, situacaoItem, validarRespostas } from "@/domain/formulario-engine";
 import type { Formulario, Registro, Resposta, TarefaInstancia } from "@/domain/types";
 import { useDeslocamentoDoTeclado } from "@/hooks/use-visual-viewport";
 import { JANELA_DESFAZER_MS } from "@/stores/session/session-store";
@@ -28,12 +28,10 @@ import { JANELA_DESFAZER_MS } from "@/stores/session/session-store";
 import { ChecklistItems } from "./checklist-items";
 import { ChecklistNotes } from "./checklist-notes";
 import { ChecklistPreview } from "./checklist-preview";
-import { type ChecklistFormValues, rolagem } from "./data";
+import { type ChecklistFormValues, PRESSAO, rolagem } from "./data";
 import { useAvisosDaTela } from "./use-avisos-da-tela";
 
 export const ETAPA_REVISAR = "revisar";
-// Retorno de toque (doc 11 §5); com prefers-reduced-motion o retorno fica, sem a transição.
-const PRESSAO = "transition-transform duration-150 ease-out active:scale-[0.97] motion-reduce:transition-none";
 
 export interface Etapa {
   value: string;
@@ -108,7 +106,7 @@ export function ChecklistStepper({
   const { getValues, setValue } = useFormContext<ChecklistFormValues>();
   const valores = useWatch<ChecklistFormValues>() as ChecklistFormValues;
   const respostas = valores.respostas ?? {};
-  const avisar = useAvisosDaTela();
+  const { avisar, dispensar } = useAvisosDaTela();
   const raizRef = React.useRef<HTMLDivElement>(null);
   const etapas = etapasDoFormulario(formulario);
   const todas = etapasComRevisao(formulario);
@@ -132,10 +130,16 @@ export function ChecklistStepper({
     return false;
   };
 
+  /** Toda troca de etapa (barra ou lista de etapas) tira os avisos desta tela: ver `useAvisosDaTela`. */
+  function trocarEtapa(valor: string) {
+    dispensar();
+    onEtapaChange(valor);
+  }
+
   /** Troca de etapa pela barra: a etapa nova começa do primeiro item, então volta ao topo se ele saiu da tela. */
   function irPara(valor: string | undefined) {
     if (!valor) return;
-    onEtapaChange(valor);
+    trocarEtapa(valor);
     requestAnimationFrame(() => {
       const raiz = raizRef.current;
       // 96 px: abaixo do header do dashboard, que pode ser fixo (64 px no toque).
@@ -143,6 +147,8 @@ export function ChecklistStepper({
     });
   }
 
+  // Só em etapa com itens C/NC: numa etapa só de centerline ou de lote o botão ficaria sempre desabilitado.
+  const temItensCnc = (atual?.itens ?? []).some((item) => item.tipo === "cnc");
   const restantes = (atual?.itens ?? []).filter(
     (item) => item.tipo === "cnc" && situacaoItem(item, respostas[item.id]) === "pendente",
   );
@@ -182,9 +188,10 @@ export function ChecklistStepper({
     <Stepper
       ref={raizRef}
       value={etapa}
-      onValueChange={onEtapaChange}
+      onValueChange={trocarEtapa}
       onValidate={onValidate}
-      className="flex scroll-mt-24 flex-col gap-5"
+      // flex-1: com etapa curta, a barra de ações (mt-auto) desce até o rodapé em vez de ficar no meio da tela.
+      className="flex flex-1 scroll-mt-24 flex-col gap-5"
     >
       <StepperList className="@max-[45rem]/foco:hidden">
         {todas.map((e, posicao) => {
@@ -192,21 +199,33 @@ export function ChecklistStepper({
           const respondidos = e.itens.filter((item) => situacaoItem(item, respostas[item.id]) !== "pendente").length;
           const completa = !ehRevisar && Object.keys(errosDa(e.itens)).length === 0;
           return (
-            <StepperItem key={e.value} value={e.value} completed={completa} className="min-w-0">
+            // Sem `completed`: o StepperItem do template remove e recoloca o passo no fim da lista interna quando esse
+            // valor muda, e as etapas depois da ativa passavam a aparecer como concluídas (0/2 com ✓). O ✓ e a cor
+            // vêm de `completa`; o data-state "completed" que o template dá às etapas antes da ativa fica neutro
+            // quando a etapa não está completa.
+            <StepperItem key={e.value} value={e.value} className="min-w-0">
               {/* 44 px no notebook (v0.2); 56 px no toque. A camada de densidade não cobre o stepper-trigger, então o
                   piso vem daqui (toque:, que acompanha o override data-density). */}
               <StepperTrigger className="min-h-11 toque:min-h-14 min-w-0">
-                <StepperIndicator>
-                  {(estado) => (estado === "completed" ? <Check className="size-3.5" aria-hidden /> : posicao + 1)}
+                <StepperIndicator
+                  className={
+                    completa
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "data-[state=completed]:border-muted data-[state=completed]:bg-background data-[state=completed]:text-muted-foreground"
+                  }
+                >
+                  {completa ? <Check className="size-3.5" aria-hidden /> : posicao + 1}
                 </StepperIndicator>
                 <div className="flex min-w-0 flex-col items-start gap-0.5 text-left">
-                  <StepperTitle className="truncate">{e.titulo}</StepperTitle>
+                  {/* max-w-full: no flex-col items-start o título teria a largura do texto e escreveria por cima da
+                      etapa ao lado; o nome inteiro está no cabeçalho ("Etapa X de Y · Nome"). */}
+                  <StepperTitle className="max-w-full truncate">{e.titulo}</StepperTitle>
                   <StepperDescription className="text-sm tabular-nums">
                     {ehRevisar ? `${resumo.respondidos}/${resumo.total} itens` : `${respondidos}/${e.itens.length}`}
                   </StepperDescription>
                 </div>
               </StepperTrigger>
-              <StepperSeparator className="mx-3 min-w-6" />
+              {posicao < todas.length - 1 && <StepperSeparator className="mx-3 min-w-6" />}
             </StepperItem>
           );
         })}
@@ -220,11 +239,23 @@ export function ChecklistStepper({
         ))}
       </fieldset>
       <StepperContent value={ETAPA_REVISAR} className="flex flex-col gap-5">
-        <ResumoDaRevisao formulario={formulario} valores={valores} />
-        <fieldset disabled={somenteLeitura} className="min-w-0">
-          <ChecklistNotes />
-        </fieldset>
-        <ChecklistPreview formulario={formulario} valores={valores} tarefa={tarefa} registro={registro} />
+        <ResumoDaRevisao formulario={formulario} valores={valores} somenteLeitura={somenteLeitura} />
+        {/* Consulta sem registro (sem tarefa, tarefa concluída antes do registro detalhado, liderança): não há
+            observação a escrever nem documento a mostrar. */}
+        {(!somenteLeitura || registro) && (
+          <>
+            <fieldset disabled={somenteLeitura} className="min-w-0">
+              <ChecklistNotes />
+            </fieldset>
+            <ChecklistPreview
+              formulario={formulario}
+              valores={valores}
+              tarefa={tarefa}
+              registro={registro}
+              aoAbrir={dispensar}
+            />
+          </>
+        )}
       </StepperContent>
 
       <BarraDeAcoes>
@@ -245,7 +276,7 @@ export function ChecklistStepper({
           {resumo.naoConformes > 0 && ` · ${resumo.naoConformes} não conforme${resumo.naoConformes > 1 ? "s" : ""}`}
         </p>
         <div className="ml-auto flex items-center gap-3">
-          {!somenteLeitura && etapa !== ETAPA_REVISAR && (
+          {!somenteLeitura && etapa !== ETAPA_REVISAR && temItensCnc && (
             <Button
               type="button"
               variant="outline"
@@ -257,18 +288,29 @@ export function ChecklistStepper({
               Restantes conformes
             </Button>
           )}
+          {/* key própria em cada botão: Registrar (submit) e Próximo (button) ocupam o mesmo lugar na árvore. Sem a
+              key o React reaproveita o mesmo <button> e troca o type para submit dentro do clique em Próximo, e o
+              navegador termina esse clique enviando o formulário: Centerline → Próximo registrava sem passar pela
+              revisão. */}
           {etapa === ETAPA_REVISAR ? (
             !somenteLeitura && (
-              <Button type="submit" className={cn("h-11 toque:h-16 px-5 toque:px-6 toque:text-base", PRESSAO)}>
+              <Button
+                key="registrar"
+                type="submit"
+                className={cn("h-11 toque:h-16 px-5 toque:px-6 toque:text-base", PRESSAO)}
+              >
                 <Send data-icon="inline-start" />
                 Registrar
               </Button>
             )
           ) : (
             <Button
+              key="proximo"
               type="button"
               className={cn("h-11 toque:h-16 px-5 toque:px-6 toque:text-base", PRESSAO)}
-              onClick={() => {
+              onClick={(event) => {
+                // Reforço: este clique nunca envia o formulário, mesmo que o elemento mude no meio dele.
+                event.preventDefault();
                 if (onValidate(etapa, "next") === true) irPara(proxima?.value);
               }}
             >
@@ -322,22 +364,51 @@ function BarraDeAcoes({ children }: { children: React.ReactNode }) {
     };
   }, [tecladoAberto]);
 
+  // Foco por Tab (WCAG 2.4.11): o navegador rola o controle focado para dentro da área visível descontando o
+  // scroll-padding da janela. Com ele do tamanho da barra (mais os 12 px da borda e 12 de respiro, e o teclado no iPad),
+  // nenhum controle recebe foco escondido sob a barra fixa. O scroll-mb dos cartões vale só para a rolagem até eles.
+  React.useEffect(() => {
+    const barra = barraRef.current;
+    if (!barra) return;
+    const raiz = document.documentElement;
+    const aplicar = () => {
+      raiz.style.scrollPaddingBottom = `${barra.offsetHeight + 24 + teclado}px`;
+    };
+    aplicar();
+    const observador = new ResizeObserver(aplicar);
+    observador.observe(barra);
+    return () => {
+      observador.disconnect();
+      raiz.style.scrollPaddingBottom = "";
+    };
+  }, [teclado]);
+
   return (
     <div
       ref={barraRef}
       data-touch-bar="true"
       style={{ "--teclado": `${teclado}px` } as React.CSSProperties}
-      className="sticky bottom-[calc(var(--teclado,0px)+max(--spacing(3),env(safe-area-inset-bottom)))] z-10 flex items-center gap-3 rounded-xl border bg-background/95 p-3 shadow-sm backdrop-blur-sm"
+      // mt-auto: com etapa curta, a barra fica no rodapé da área do modo foco (que ocupa a altura da tela).
+      className="sticky bottom-[calc(var(--teclado,0px)+max(--spacing(3),env(safe-area-inset-bottom)))] z-10 mt-auto flex items-center gap-3 rounded-xl border bg-background/95 p-3 shadow-sm backdrop-blur-sm"
     >
       {children}
     </div>
   );
 }
 
-function ResumoDaRevisao({ formulario, valores }: { formulario: Formulario; valores: ChecklistFormValues }) {
+function ResumoDaRevisao({
+  formulario,
+  valores,
+  somenteLeitura,
+}: {
+  formulario: Formulario;
+  valores: ChecklistFormValues;
+  somenteLeitura: boolean;
+}) {
   const respostas = valores.respostas ?? {};
   const resumo = resumirRespostas(formulario, respostas);
   const ncs = formulario.itens.filter((item) => situacaoItem(item, respostas[item.id]) === "NC");
+  const faltam = resumo.total - resumo.respondidos;
 
   return (
     <section className="flex flex-col gap-3 rounded-xl border bg-card p-4">
@@ -359,6 +430,14 @@ function ResumoDaRevisao({ formulario, valores }: { formulario: Formulario; valo
           {ncs.map((item) => (
             <li key={item.id} className="text-destructive">
               {item.texto}
+              {/* Centerline: o valor digitado e o padrão, para conferir um erro de digitação antes de registrar. */}
+              {item.tipo === "numero" && item.faixa && (
+                <span className="tabular-nums">
+                  {" "}
+                  · {descreverResposta(item, respostas[item.id])}, padrão {item.faixa.min.toLocaleString("pt-BR")}–
+                  {item.faixa.max.toLocaleString("pt-BR")} {item.faixa.unidade}
+                </span>
+              )}
               {respostas[item.id]?.justificativa && (
                 <span className="text-muted-foreground"> · {respostas[item.id]?.justificativa}</span>
               )}
@@ -366,9 +445,10 @@ function ResumoDaRevisao({ formulario, valores }: { formulario: Formulario; valo
           ))}
         </ul>
       )}
-      {resumo.respondidos < resumo.total && (
+      {/* Só quem pode preencher volta às etapas; em consulta os campos estão desabilitados. */}
+      {faltam > 0 && !somenteLeitura && (
         <p className="text-muted-foreground text-sm">
-          Faltam {resumo.total - resumo.respondidos} itens. Volte às etapas anteriores para completar.
+          {faltam === 1 ? "Falta 1 item." : `Faltam ${faltam} itens.`} Volte às etapas anteriores para completar.
         </p>
       )}
     </section>
