@@ -1,3 +1,5 @@
+import { withSerwist } from "@serwist/turbopack";
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactCompiler: true,
@@ -16,6 +18,19 @@ const nextConfig = {
     // quando a rede caiu não voltava depois do checklist.
     staleTimes: { static: 8 * 60 * 60, dynamic: 8 * 60 * 60 },
   },
+  async headers() {
+    return [
+      {
+        // Service worker (src/app/sw.ts, gerado em src/app/serwist/[path]/route.ts): o navegador sempre confere se há
+        // versão nova, e o escopo "/" vale mesmo com o arquivo em /serwist/.
+        source: "/serwist/:path*",
+        headers: [
+          { key: "Cache-Control", value: "no-cache" },
+          { key: "Service-Worker-Allowed", value: "/" },
+        ],
+      },
+    ];
+  },
   async redirects() {
     return [
       {
@@ -27,4 +42,5 @@ const nextConfig = {
   },
 };
 
-export default nextConfig;
+// Serwist com Turbopack: deixa o esbuild (que empacota o service worker na rota acima) fora do bundle do servidor.
+export default withSerwist(nextConfig);

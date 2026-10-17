@@ -6,7 +6,13 @@ import { LIMITES } from "@/domain/limites";
 import type { Formulario, Rascunho, TarefaInstancia } from "@/domain/types";
 import { agoraSimulado } from "@/lib/clock";
 
-import { ESPERA_PIN_MS, JANELA_DESFAZER_MS, MAX_TENTATIVAS_PIN, useSessionStore } from "../session-store";
+import {
+  definirConfirmacaoDoEnvio,
+  ESPERA_PIN_MS,
+  JANELA_DESFAZER_MS,
+  MAX_TENTATIVAS_PIN,
+  useSessionStore,
+} from "../session-store";
 
 // Integração do store em node: sem window o persist não lê nem grava o IndexedDB; o cookie vai para um document falso.
 const formulario = localRepository.formulario("ppli-l4") as Formulario;
@@ -236,6 +242,48 @@ describe("fila com janela de desfazer", () => {
     estado().definirRedeNavegador("online");
     vi.advanceTimersByTime(ENVIO_MS);
     expect(doRegistro(registro.id)).toBe("sincronizado");
+  });
+
+  it("com a confirmação instalada, só é sincronizado o que chegou ao servidor; o resto volta para a fila", async () => {
+    const chegou: boolean[] = [false, true];
+    const confirmar = vi.fn(() => Promise.resolve(chegou.shift() ?? true));
+    definirConfirmacaoDoEnvio(confirmar);
+    try {
+      const registro = registrar();
+      vi.advanceTimersByTime(JANELA_DESFAZER_MS);
+      expect(doRegistro(registro.id)).toBe("enviando");
+      const antes = estado().ultimaSincronizacaoSimulada;
+      // O servidor não respondeu (Wi-Fi ligado, servidor fora): nada de "sincronizado", e a hora não muda.
+      await vi.advanceTimersByTimeAsync(ENVIO_MS);
+      expect(confirmar).toHaveBeenCalledTimes(1);
+      expect(doRegistro(registro.id)).toBe("erro");
+      expect(estado().ultimaSincronizacaoSimulada).toBe(antes);
+
+      estado().tentarEnviarDeNovo();
+      expect(doRegistro(registro.id)).toBe("enviando");
+      await vi.advanceTimersByTimeAsync(ENVIO_MS);
+      expect(doRegistro(registro.id)).toBe("sincronizado");
+      expect(estado().ultimaSincronizacaoSimulada).not.toBe(antes);
+    } finally {
+      definirConfirmacaoDoEnvio(null);
+    }
+  });
+
+  it("com a fila vazia, a hora da última sincronização só renova se o servidor responder", async () => {
+    useSessionStore.setState({ ultimaSincronizacao: null, ultimaSincronizacaoSimulada: null });
+    definirConfirmacaoDoEnvio(() => Promise.resolve(false));
+    try {
+      estado().tentarEnviarDeNovo();
+      await vi.advanceTimersByTimeAsync(0);
+      expect(estado().ultimaSincronizacaoSimulada).toBeNull();
+
+      definirConfirmacaoDoEnvio(() => Promise.resolve(true));
+      estado().tentarEnviarDeNovo();
+      await vi.advanceTimersByTimeAsync(0);
+      expect(estado().ultimaSincronizacaoSimulada).not.toBeNull();
+    } finally {
+      definirConfirmacaoDoEnvio(null);
+    }
   });
 
   it("simular sem rede vence o aparelho online; a rede efetiva só volta quando os dois permitem", () => {

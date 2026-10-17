@@ -265,6 +265,28 @@ const emEnvioNestaAba = new Set<string>();
 /** Quem descartou cada rascunho nesta aba: só essa pessoa desfaz o descarte (`restaurarRascunho`). */
 const descartesNestaAba = new Map<string, string>();
 
+/**
+ * Confirmação do envio simulado com o servidor de verdade: a `<Plataforma />` instala `sondarServidor`
+ * (src/lib/pwa/servidor.ts), um pedido que o service worker não atende. Com o service worker, a rede do Next pode
+ * parecer no ar com o servidor fora (as telas e o RSC saem do cache), e a fila marcava "sincronizado" sem nada ter
+ * chegado. Assim, só vira "sincronizado", e só renova a hora da última sincronização, o que passou por um pedido que
+ * chegou ao servidor. Sem ela (testes), vale a rede efetiva.
+ */
+let confirmarComOServidor: (() => Promise<boolean>) | null = null;
+
+export function definirConfirmacaoDoEnvio(confirmar: (() => Promise<boolean>) | null) {
+  confirmarComOServidor = confirmar;
+}
+
+/** `aoConcluir(true)` quando o servidor recebeu: na hora sem confirmação instalada; senão, depois do pedido. */
+function depoisDaConfirmacao(aoConcluir: (chegou: boolean) => void) {
+  if (!confirmarComOServidor) {
+    aoConcluir(true);
+    return;
+  }
+  void confirmarComOServidor().then(aoConcluir, () => aoConcluir(false));
+}
+
 // Carga inicial do IndexedDB. Só ela conta: o que outra aba grava é juntado sem voltar a "carregando".
 let sessaoCarregada = false;
 const ouvintesDaCarga = new Set<() => void>();
@@ -346,15 +368,21 @@ export const useSessionStore = create<SessionState>()(
         };
       };
 
-      /** Simula o envio da fila ao servidor quando há rede. */
+      /**
+       * Simula o envio da fila ao servidor quando há rede. O resultado depende da rede efetiva no fim e da confirmação
+       * com o servidor (`definirConfirmacaoDoEnvio`): sem ela, o que estava "enviando" vira "erro" e volta na próxima
+       * tentativa (rede de volta, foco, minuto).
+       */
       const enviarFila = () => {
         const s = getState();
         if (s.rede !== "online") return;
         const ids = idsParaEnviar(s.registros, emEnvioNestaAba, janelasDeDesfazer, agora().getTime());
         if (ids.length === 0) {
-          // Nada a enviar e nada no meio do caminho: o tablet está em dia com o servidor.
+          // Nada a enviar e nada no meio do caminho: o tablet está em dia com o servidor, se ele responder.
           if (filaVazia(s.registros) && sincronizacaoVencida(s.ultimaSincronizacaoSimulada, agora().getTime())) {
-            setState(sincronizadoAgora());
+            depoisDaConfirmacao((chegou) => {
+              if (chegou && getState().rede === "online") setState(sincronizadoAgora());
+            });
           }
           return;
         }
@@ -362,14 +390,17 @@ export const useSessionStore = create<SessionState>()(
         setState({ registros: marcarComo(s.registros, ids, "enviando") });
 
         setTimeout(() => {
-          for (const id of ids) emEnvioNestaAba.delete(id);
-          const atual = getState();
-          const registros = concluirEnvio(atual.registros, ids, atual.rede);
-          if (atual.rede === "online") {
-            setState({ registros: podarRegistros(registros, agora()), ...sincronizadoAgora() });
-          } else {
-            setState({ registros });
-          }
+          depoisDaConfirmacao((chegou) => {
+            for (const id of ids) emEnvioNestaAba.delete(id);
+            const atual = getState();
+            const rede = chegou ? atual.rede : "offline";
+            const registros = concluirEnvio(atual.registros, ids, rede);
+            if (rede === "online") {
+              setState({ registros: podarRegistros(registros, agora()), ...sincronizadoAgora() });
+            } else {
+              setState({ registros });
+            }
+          });
         }, ATRASO_ENVIO_MS);
       };
 

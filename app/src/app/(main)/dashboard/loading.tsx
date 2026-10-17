@@ -18,6 +18,9 @@ import { Spinner } from "@/components/ui/spinner";
  * As rotas do operador continuam com prefetch completo (`<Link prefetch>` e a `<Plataforma />`): abrem direto, sem
  * passar por aqui. Com este arquivo, os links com o prefetch padrão também guardam este carregamento, que então aparece
  * sem rede. No servidor e na hidratação `useOffline` é false: o HTML é sempre o do carregamento com rede.
+ *
+ * Com o service worker (build de produção), a navegação que falha sem rede vira navegação do navegador (o 503 de
+ * src/app/sw.ts): abre o HTML guardado da tela ou a página offline (`src/app/~offline`), com este mesmo aviso.
  */
 export default function Loading() {
   const semRede = useOffline();

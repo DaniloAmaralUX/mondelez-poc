@@ -4,6 +4,7 @@ import type { Metadata, Viewport } from "next";
 
 import { AppToaster } from "@/components/app-toaster";
 import { MotionProvider } from "@/components/motion-provider";
+import { ServiceWorkerProvider } from "@/components/service-worker-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { APP_CONFIG } from "@/config/app-config";
 import { fontVars } from "@/lib/fonts/registry";
@@ -58,23 +59,26 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
         <ThemeBootScript />
       </head>
       <body className={`${fontVars} min-h-dvh antialiased`}>
-        <TooltipProvider>
-          <PreferencesStoreProvider initialValues={PREFERENCE_DEFAULTS}>
-            <MotionProvider>{children}</MotionProvider>
-            {/* No topo para não cobrir a barra de ações; 8 s e botão de fechar para quem está de luva. No máximo 3 avisos.
-                `cn-toast` repetido porque o `toastOptions` daqui substitui o do wrapper em `ui/sonner.tsx`.
-                Rótulos em pt-BR: o sonner traz "Close toast" no fechar e "Notifications" na região.
-                AppToaster: tema do app (não o do sistema) e pilha aberta no toque e no foco por Tab. */}
-            <AppToaster
-              position="top-center"
-              duration={8000}
-              closeButton
-              visibleToasts={3}
-              containerAriaLabel="Notificações"
-              toastOptions={{ classNames: { toast: "cn-toast" }, closeButtonAriaLabel: "Fechar aviso" }}
-            />
-          </PreferencesStoreProvider>
-        </TooltipProvider>
+        {/* Service worker (só no build de produção): offline depois de recarregar ou abrir o app instalado. */}
+        <ServiceWorkerProvider>
+          <TooltipProvider>
+            <PreferencesStoreProvider initialValues={PREFERENCE_DEFAULTS}>
+              <MotionProvider>{children}</MotionProvider>
+              {/* No topo para não cobrir a barra de ações; 8 s e botão de fechar para quem está de luva. No máximo 3 avisos.
+                  `cn-toast` repetido porque o `toastOptions` daqui substitui o do wrapper em `ui/sonner.tsx`.
+                  Rótulos em pt-BR: o sonner traz "Close toast" no fechar e "Notifications" na região.
+                  AppToaster: tema do app (não o do sistema) e pilha aberta no toque e no foco por Tab. */}
+              <AppToaster
+                position="top-center"
+                duration={8000}
+                closeButton
+                visibleToasts={3}
+                containerAriaLabel="Notificações"
+                toastOptions={{ classNames: { toast: "cn-toast" }, closeButtonAriaLabel: "Fechar aviso" }}
+              />
+            </PreferencesStoreProvider>
+          </TooltipProvider>
+        </ServiceWorkerProvider>
       </body>
     </html>
   );
