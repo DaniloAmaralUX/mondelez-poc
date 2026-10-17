@@ -13,13 +13,16 @@ export function ChecklistNotes() {
     <section className="flex flex-col gap-4">
       <h2 className="font-medium tracking-tight">Observações</h2>
 
-      {/* Rótulo e descrição no text-sm do template: tela do operador, nada em text-xs (docs/12 §3.3). */}
+      {/* Rótulo e descrição no text-sm do template: tela do operador, nada em text-xs (docs/12 §3.3).
+          Limite da fronteira de dados (domain/limites.ts) e quebra em qualquer ponto: um texto colado sem espaços fazia
+          o campo (field-sizing do template) crescer na horizontal. Sem contador: o template não tem esse padrão. */}
       <Field className="gap-1">
         <FieldLabel htmlFor="observacao">Observação geral</FieldLabel>
         <Textarea
           id="observacao"
           rows={3}
           maxLength={LIMITES.observacao}
+          className="wrap-anywhere"
           placeholder="Algo que a supervisão precisa saber?"
           {...register("observacao")}
         />

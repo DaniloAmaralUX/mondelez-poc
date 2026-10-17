@@ -20,11 +20,12 @@ export function Greeting() {
   const { linha, posto } = contexto ? localRepository.descreverContexto(contexto) : {};
 
   return (
-    <div className="flex flex-col gap-2">
-      <h1 className="text-3xl text-foreground leading-none tracking-tight">
+    // Com pouca altura útil (paisagem com o teclado do Android aberto, src/styles/tablet.css), título e turno menores.
+    <div className="flex flex-col gap-2 pouca-altura:gap-1">
+      <h1 className="pouca-altura:text-2xl text-3xl text-foreground leading-none tracking-tight">
         {saudacao(agora)}, {usuario ? primeiroNome(usuario.nome) : ""}.
       </h1>
-      <p className="text-lg text-muted-foreground leading-tight">
+      <p className="pouca-altura:text-base text-lg text-muted-foreground leading-tight">
         {turno.numero}º turno, das {formatarHora(turno.inicio)} às {formatarHora(turno.fim)}
         {linha && posto ? ` · ${linha.nome} · ${posto.nome}` : ""}
       </p>

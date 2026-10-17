@@ -13,16 +13,13 @@ import { concluida, proximaTarefa } from "@/domain/routine-engine";
 import { useMinhasTarefas } from "@/hooks/use-turno";
 import { formatarHora } from "@/lib/format";
 import { ICONE_MODULO } from "@/lib/modulo-icones";
+import { PRESSAO } from "@/lib/pressao";
 import { hrefDaTarefa } from "@/lib/rotas";
 import { useAgora } from "@/stores/session/session-store";
 
 import { Duracao } from "./duracao";
 import { StatusTarefa } from "./status-tarefa";
 import { rotuloDaRota, temFormulario, useConcluirTarefa } from "./use-concluir";
-
-// Feedback de toque no botão principal (design engineering de Emil Kowalski: botões precisam responder à pressão); com
-// prefers-reduced-motion o retorno fica, sem a transição (docs/12 §5 item 10).
-const PRESSAO = "transition-transform duration-150 ease-out active:scale-[0.97] motion-reduce:transition-none";
 
 /** A ação dominante da tela: a próxima tarefa, com prazo vivo e um botão grande (UI Audit, prioridade 1). */
 export function FazerAgora() {

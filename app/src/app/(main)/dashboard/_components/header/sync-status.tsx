@@ -7,17 +7,16 @@ import { cn } from "cn";
 import { Button } from "@/components/ui/button";
 import { Status, StatusIndicator, StatusLabel } from "@/components/ui/status";
 import type { Registro } from "@/domain/types";
-import { agoraSimulado } from "@/lib/clock";
 import { formatarHora } from "@/lib/format";
+import { STATUS_LEGIVEL } from "@/lib/status-legivel";
 import { useSessionHydrated, useSessionStore } from "@/stores/session/session-store";
 
 /**
  * No toque o chip passa de text-xs (Status do template) a text-sm: aparece em todas as telas do operador (docs/12 §3.3).
- * Verde e laranja um tom acima do Status do template (600 → 700 no claro): o texto 600 sobre o fundo 500/10 dava
- * 2,95:1, abaixo dos 4,5:1 do texto de 14 px. No escuro, o 400 do template.
+ * Cores um tom acima do Status do template (`STATUS_LEGIVEL`): o texto 600 sobre o fundo 500/10 dava 2,95:1, abaixo
+ * dos 4,5:1 do texto de 14 px.
  */
-const CHIP =
-  "toque:text-sm tabular-nums data-[variant=success]:text-green-700 data-[variant=warning]:text-orange-700 dark:data-[variant=success]:text-green-400 dark:data-[variant=warning]:text-orange-400";
+const CHIP = cn("toque:text-sm tabular-nums", STATUS_LEGIVEL);
 
 /** Fila do tablet por estado (RF-07). "No tablet" = tudo o que ainda não chegou ao servidor. */
 function contarFila(registros: Record<string, Registro>) {
@@ -55,15 +54,14 @@ export function SyncStatus() {
   const hydrated = useSessionHydrated();
   const rede = useSessionStore((s) => s.rede);
   const registros = useSessionStore((s) => s.registros);
-  const relogio = useSessionStore((s) => s.relogio);
-  const ultimaSincronizacao = useSessionStore((s) => s.ultimaSincronizacao);
+  const ultimaSincronizacao = useSessionStore((s) => s.ultimaSincronizacaoSimulada);
   const tentarEnviarDeNovo = useSessionStore((s) => s.tentarEnviarDeNovo);
   const fila = contarFila(registros);
 
-  // A última sincronização é gravada em horário real; aqui aparece no relógio da demonstração, o mesmo do resto da
-  // tela (o relógio simulado anda junto com o real a partir da âncora).
+  // A hora da última sincronização no relógio da demonstração, gravada junto com ela (V03-NET-02): converter a hora
+  // real pela âncora atual mudava a hora mostrada depois de avançar o relógio (a das 07:40 virava 08:40).
   const instante = ultimaSincronizacao ? Date.parse(ultimaSincronizacao) : Number.NaN;
-  const hora = hydrated && Number.isFinite(instante) ? formatarHora(agoraSimulado(relogio, instante)) : null;
+  const hora = hydrated && Number.isFinite(instante) ? formatarHora(new Date(instante)) : null;
 
   let estado: Estado;
   if (rede === "offline") {

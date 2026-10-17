@@ -71,7 +71,7 @@ describe("desfazer tratamento", () => {
     em,
   });
 
-  it("remove só a última ação da pessoa no alerta", () => {
+  it("remove só a última ação do alerta, quando é da pessoa", () => {
     const tratamentos = {
       a1: [acao("assumir", "u-renata", "1"), acao("acao", "u-joao", "2"), acao("acao", "u-renata", "3")],
       a2: [acao("assumir", "u-renata", "4")],
@@ -79,6 +79,18 @@ describe("desfazer tratamento", () => {
     const proximo = removerUltimaAcao(tratamentos, "a1", "u-renata");
     expect(proximo.a1.map((a) => a.em)).toEqual(["1", "2"]);
     expect(proximo.a2).toBe(tratamentos.a2);
+  });
+
+  it("depois que outra pessoa agiu no alerta, a ação anterior não sai", () => {
+    const tratamentos = { a1: [acao("assumir", "u-renata", "1"), acao("acao", "u-joao", "2")] };
+    expect(removerUltimaAcao(tratamentos, "a1", "u-renata")).toBe(tratamentos);
+  });
+
+  it("com o instante, só sai a ação que o aviso anunciou", () => {
+    const tratamentos = { a1: [acao("assumir", "u-renata", "1"), acao("acao", "u-renata", "2")] };
+    // O "Desfazer" do Assumir (em "1") não apaga a ação registrada depois (em "2").
+    expect(removerUltimaAcao(tratamentos, "a1", "u-renata", "1")).toBe(tratamentos);
+    expect(removerUltimaAcao(tratamentos, "a1", "u-renata", "2").a1.map((a) => a.em)).toEqual(["1"]);
   });
 
   it("sem ações restantes, o alerta sai do mapa", () => {

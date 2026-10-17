@@ -1,11 +1,14 @@
 "use client";
 
+import { cn } from "cn";
+
 import { Status, StatusIndicator, StatusLabel } from "@/components/ui/status";
 import { localRepository } from "@/data/repository";
 import { concluida } from "@/domain/routine-engine";
 import { turnoAtual } from "@/domain/turno";
 import { useTarefas } from "@/hooks/use-turno";
 import { formatarHora } from "@/lib/format";
+import { STATUS_LEGIVEL } from "@/lib/status-legivel";
 import { useAgora, useSessionStore } from "@/stores/session/session-store";
 
 import { paraLinha } from "./data";
@@ -32,8 +35,8 @@ export function TarefasDoPosto() {
         </p>
       </div>
       {/* Resumo do posto antes da tabela (UI Audit): onde está o problema sem precisar filtrar. Rótulos já como
-          aparecem (a sigla NC fica em maiúsculas). Verde e laranja um tom acima do Status do template: o 600 sobre o
-          fundo 500/10 dava 2,95:1 (mesma correção do chip de envio, sync-status.tsx). */}
+          aparecem (a sigla NC fica em maiúsculas). Cores um tom acima do Status do template (STATUS_LEGIVEL): o 600
+          sobre o fundo 500/10 dava 2,95:1 e o vermelho de "atrasadas", 3,97:1. */}
       <div className="flex flex-wrap gap-2">
         {[
           { rotulo: "atrasadas", n: atrasadas, variante: "error" as const },
@@ -46,11 +49,7 @@ export function TarefasDoPosto() {
           { rotulo: "feitas", n: tarefas.filter((t) => t.estado === "feita").length, variante: "success" as const },
           { rotulo: "mais tarde", n: tarefas.filter((t) => t.futura).length, variante: "default" as const },
         ].map((c) => (
-          <Status
-            key={c.rotulo}
-            variant={c.variante}
-            className="toque:text-sm data-[variant=success]:text-green-700 data-[variant=warning]:text-orange-700 dark:data-[variant=success]:text-green-400 dark:data-[variant=warning]:text-orange-400"
-          >
+          <Status key={c.rotulo} variant={c.variante} className={cn("toque:text-sm", STATUS_LEGIVEL)}>
             <StatusIndicator className={c.variante === "error" && c.n > 0 ? undefined : "before:hidden"} />
             <StatusLabel className="tabular-nums">
               {c.n} {c.rotulo}

@@ -43,6 +43,14 @@
   }
 }
 
+/*
+ * Pouca altura útil (docs/12 §3.1): paisagem com o teclado aberto no Android, onde interactive-widget=resizes-content
+ * encolhe o viewport para 360–420 px. No iPad o teclado não muda o viewport (lá vale o visualViewport) e a variante
+ * não entra. Uso no JSX: `pouca-altura:` para compactar títulos e cabeçalhos do operador, para o campo em foco caber
+ * entre o header e a barra fixa.
+ */
+@custom-variant pouca-altura (@media (height < 600px));
+
 html {
   --touch-min-h: 0px;
   --touch-item-h: 0px;
@@ -264,6 +272,30 @@ html[data-density="touch"] {
 /* Sonner. O CSS do sonner é injetado no <head> depois desta folha, então os seletores levam             */
 /* [data-sonner-toaster] na frente para ter especificidade maior que a dele.                             */
 /* ---------------------------------------------------------------------------------------------------- */
+
+/*
+ * Avisos abaixo do header do dashboard, nunca por cima dele: no Split View (590 px) o aviso top-center cobria o header
+ * inteiro e um toque no avatar "Trocar pessoa" caía no "Desfazer" e desfazia um registro. O AppToaster
+ * (src/components/app-toaster.tsx) usa --avisos-topo no `offset`/`mobileOffset` do sonner; fora do dashboard (login)
+ * vale o padrão do sonner (24 px; 16 px abaixo de 600 px).
+ * O Toaster fica no layout raiz, fora do SidebarInset que define --dashboard-header-height, então a altura do header
+ * (48 px; 64 no toque, como em dashboard/layout.tsx) se repete aqui no html, com 8 px de respiro. No toque o respiro
+ * conta a partir do X do aviso, que tem 44 px e sai 35 % para cima da borda (mais 2 px de área de toque): 16 px a mais,
+ * para nem o X encostar no botão do menu.
+ */
+html:has([data-slot="sidebar-inset"] > header) {
+  --avisos-topo: calc(3rem + 0.5rem);
+}
+
+@media (pointer: coarse) {
+  html:not([data-density="fine"]):has([data-slot="sidebar-inset"] > header) {
+    --avisos-topo: calc(4rem + 0.5rem + 1rem);
+  }
+}
+
+html[data-density="touch"]:has([data-slot="sidebar-inset"] > header) {
+  --avisos-topo: calc(4rem + 0.5rem + 1rem);
+}
 
 [data-sonner-toaster] [data-sonner-toast][data-styled="true"] {
   @variant toque {

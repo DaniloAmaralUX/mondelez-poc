@@ -1,6 +1,6 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { useCallback, useDeferredValue, useMemo, useSyncExternalStore } from "react";
 
 import { create } from "zustand";
 import { persist, type StorageValue } from "zustand/middleware";
@@ -34,6 +34,7 @@ import {
   normalizarAoAbrir,
 } from "@/lib/sessao/fila";
 import { migrarSessao, type SessaoPersistida, VERSAO_SESSAO } from "@/lib/sessao/migracao";
+import { assinarDesbloqueioDoPin, bloqueioVigente, conferirPin, mensagemDeEsperaDoPin } from "@/lib/sessao/pin";
 import { podarRegistros } from "@/lib/sessao/poda";
 import { assumirRascunho, gravarRascunho, type RascunhoSalvo } from "@/lib/sessao/rascunho";
 import { type Rede, redeEfetiva } from "@/lib/sessao/rede";
@@ -45,6 +46,7 @@ import { type ArmazenamentoSessao, criarArmazenamentoSessao } from "./persistenc
 export { INATIVIDADE_MS, type MotivoBloqueio, OCULTO_MS } from "@/lib/sessao/bloqueio";
 export { JANELA_DESFAZER_MS } from "@/lib/sessao/fila";
 export type { SessaoPersistida } from "@/lib/sessao/migracao";
+export { ESPERA_PIN_MS, MAX_TENTATIVAS_PIN, mensagemDeEsperaDoPin, segundosParaDesbloquear } from "@/lib/sessao/pin";
 export type { RascunhoSalvo } from "@/lib/sessao/rascunho";
 export type { Rede } from "@/lib/sessao/rede";
 
@@ -53,7 +55,13 @@ export const SESSION_COOKIE = "rotinas_sessao";
 const DISPOSITIVO_ID = "tablet-bis2-embalagem-01";
 const NOME_ARMAZENAMENTO = "rotinas-sessao";
 
-export type ResultadoLogin = { ok: true; usuario: Usuario } | { ok: false; campo: "matricula" | "pin"; erro: string };
+/**
+ * Resultado de `entrar` e `entrarComPin`. Com o PIN bloqueado por tentativas (lib/sessao/pin.ts), `campo: "pin"` traz
+ * `bloqueadoAte` (ISO, horário real): até lá nenhum PIN é conferido. Para a tela seguir o desbloqueio, `usePinBloqueadoAte`.
+ */
+export type ResultadoLogin =
+  | { ok: true; usuario: Usuario }
+  | { ok: false; campo: "matricula" | "pin"; erro: string; bloqueadoAte?: string };
 
 export interface SessionState extends SessaoPersistida {
   /** Rede segundo o aparelho (eventos online/offline + `useOffline` do Next), mantida pela `<Plataforma />`. */
@@ -61,11 +69,17 @@ export interface SessionState extends SessaoPersistida {
   /** Rede efetiva: a do aparelho, com "Simular sem rede" da demo por cima. */
   rede: Rede;
 
-  /** Login com matrícula e PIN (tela de login). Desbloqueia e lembra o posto. */
+  /**
+   * Login com matrícula e PIN (tela de login). Desbloqueia e lembra o posto. Conta os PINs errados da pessoa: no 5º
+   * seguido, o PIN dela fica bloqueado por 60 s (`MAX_TENTATIVAS_PIN`, `ESPERA_PIN_MS`); o acerto zera a contagem.
+   */
   entrar: (matricula: string, pin: string, contexto: Contexto) => ResultadoLogin;
   /** Só para o SSO simulado da demonstração: entra sem PIN. */
   entrarComo: (usuarioId: string) => void;
-  /** Tela de bloqueio e troca de pessoa: confere o PIN, define a pessoa, desbloqueia e grava o cookie. */
+  /**
+   * Tela de bloqueio e troca de pessoa: confere o PIN, define a pessoa, desbloqueia e grava o cookie. Mesma contagem de
+   * PINs errados de `entrar` (por pessoa, salva no tablet: recarregar não zera).
+   */
   entrarComPin: (usuarioId: string, pin: string) => ResultadoLogin;
   /**
    * Encerra a sessão da pessoa: identidade, turno da sessão, bloqueio e quem estava no posto saem. Registros, fila,
@@ -83,6 +97,11 @@ export interface SessionState extends SessaoPersistida {
    */
   salvarRascunho: (tarefaId: string, valores: Rascunho) => void;
   descartarRascunho: (tarefaId: string) => void;
+  /**
+   * Desfazer do "Descartar": o rascunho volta como estava, com quem começou e quando. Só para quem descartou, nesta aba
+   * e com o tablet desbloqueado; false se recusou.
+   */
+  restaurarRascunho: (tarefaId: string, rascunho: RascunhoSalvo) => boolean;
   /** "Continuar" o rascunho de outra pessoa: a autoria passa para quem está no posto, com o horário de agora. */
   assumirRascunho: (tarefaId: string) => void;
   /** Cria o registro como `pendente` e só o põe na fila depois de `JANELA_DESFAZER_MS`. */
@@ -100,11 +119,15 @@ export interface SessionState extends SessaoPersistida {
   tentarEnviarDeNovo: () => void;
 
   confirmarTarefa: (tarefaId: string) => void;
-  /** Desfaz a conclusão só se foi a pessoa no posto que concluiu e o tablet está desbloqueado. */
-  desfazerConclusao: (tarefaId: string) => void;
-  tratarAlerta: (alertaId: string, tipo: AcaoAlerta["tipo"], texto: string) => void;
-  /** Remove a última ação da pessoa atual no alerta (desfazer de "Assumir"). */
-  desfazerTratamento: (alertaId: string) => void;
+  /** Desfaz a conclusão só se foi a pessoa no posto que concluiu e o tablet está desbloqueado; false se recusou. */
+  desfazerConclusao: (tarefaId: string) => boolean;
+  /** Registra a ação no histórico do alerta e a devolve (o `em` dela identifica a ação no desfazer). */
+  tratarAlerta: (alertaId: string, tipo: AcaoAlerta["tipo"], texto: string) => AcaoAlerta | undefined;
+  /**
+   * Desfaz a última ação do alerta, só se for da pessoa atual e com o tablet desbloqueado (`removerUltimaAcao`). Com
+   * `em`, só a ação desse instante (a que o aviso anunciou). false se recusou.
+   */
+  desfazerTratamento: (alertaId: string, em?: string) => boolean;
 
   avancarRelogio: (minutos: number) => void;
   irParaFimDoTurno: () => void;
@@ -116,6 +139,12 @@ export interface SessionState extends SessaoPersistida {
 }
 
 const CONTEXTO_PADRAO: Contexto = { plantaId: "chocolate", linhaId: "bis-2", postoId: "bis-2-embalagem" };
+
+/**
+ * Horário fixo para o HTML do servidor e a hidratação (07:40 locais, o mesmo nos dois lados, em qualquer fuso).
+ * Depois da hidratação vale o relógio da demo. Telas que mostram hora continuam esperando `useSessionHydrated`.
+ */
+const AGORA_NO_SERVIDOR = new Date(2026, 9, 16, 7, 40);
 
 /** Estado inicial da demo: 07:40 do 1º turno, com a pré-partida e o primeiro Hora x Hora já feitos. */
 function estadoInicialDemo(realAgora: number = Date.now()) {
@@ -142,7 +171,19 @@ function estadoInicialDemo(realAgora: number = Date.now()) {
     rascunhos: {} as Record<string, RascunhoSalvo>,
     simularSemRede: false,
     ultimaSincronizacao: null,
+    ultimaSincronizacaoSimulada: null,
   };
+}
+
+/**
+ * Estado antes de ler o IndexedDB, o mesmo no servidor e na hidratação: a demo no dia de `AGORA_NO_SERVIDOR`, como o
+ * `useAgora` desses dois momentos. Montado com o dia real, ele dependia de quando e onde o módulo carregou: um servidor
+ * de antes da meia-noite (ou em UTC, à noite no Brasil) e o navegador já no dia seguinte guardavam as conclusões em
+ * turnos diferentes, e a contagem de alertas do menu não batia na hidratação (React #418). Sem nada salvo no tablet, a
+ * carga troca este estado pela demo de hoje (`merge`).
+ */
+function sessaoAntesDaCarga(): SessaoPersistida {
+  return sessaoInicial(AGORA_NO_SERVIDOR.getTime());
 }
 
 function sessaoInicial(realAgora: number = Date.now()): SessaoPersistida {
@@ -155,6 +196,8 @@ function sessaoInicial(realAgora: number = Date.now()): SessaoPersistida {
     ultimoUsuarioId: null,
     candidatoId: null,
     turnoDaSessao: null,
+    tentativasPin: {},
+    pinBloqueadoAte: {},
   };
 }
 
@@ -174,21 +217,35 @@ function partializar(s: SessionState): SessaoPersistida {
     ultimoUsuarioId: s.ultimoUsuarioId,
     candidatoId: s.candidatoId,
     ultimaSincronizacao: s.ultimaSincronizacao,
+    ultimaSincronizacaoSimulada: s.ultimaSincronizacaoSimulada,
     turnoDaSessao: s.turnoDaSessao,
+    tentativasPin: s.tentativasPin,
+    pinBloqueadoAte: s.pinBloqueadoAte,
   };
 }
 
 /** Mapas por id: entre abas, cada aba só leva para o banco as chaves que mudou (persistencia.ts). */
-const CAMPOS_POR_CHAVE = ["registros", "conclusoes", "tratamentos", "rascunhos"] as const;
+const CAMPOS_POR_CHAVE = [
+  "registros",
+  "conclusoes",
+  "tratamentos",
+  "rascunhos",
+  "tentativasPin",
+  "pinBloqueadoAte",
+] as const;
 /**
  * Com a fila vazia, a "última sincronização" é renovada no máximo a cada 50 s: o pulso de cada minuto a atualiza, mas
- * foco, volta da rede e outra aba não viram uma escrita no banco (e um aviso às outras abas) a cada chamada.
+ * foco, volta da rede e outra aba não viram uma escrita no banco (e um aviso às outras abas) a cada chamada. A conta é
+ * no relógio da demo, o mesmo da hora mostrada: se ele pula (avançar, resetar), a próxima chamada já renova, e o chip
+ * nunca mostra uma sincronização fora do relógio.
  */
 const RENOVAR_SINCRONIZACAO_MS = MINUTO_MS - 10_000;
 
-function sincronizacaoVencida(ultima: string | null, agoraReal: number = Date.now()): boolean {
-  const instante = ultima ? Date.parse(ultima) : Number.NaN;
-  return !Number.isFinite(instante) || agoraReal - instante >= RENOVAR_SINCRONIZACAO_MS;
+function sincronizacaoVencida(ultimaSimulada: string | null, agoraSimuladoMs: number): boolean {
+  const instante = ultimaSimulada ? Date.parse(ultimaSimulada) : Number.NaN;
+  if (!Number.isFinite(instante)) return true;
+  const passou = agoraSimuladoMs - instante;
+  return passou < 0 || passou >= RENOVAR_SINCRONIZACAO_MS;
 }
 
 /** Quem acabou de entrar está no posto: uma marca antiga de segundo plano (use-bloqueio.ts) não pode bloquear. */
@@ -205,6 +262,8 @@ function limparMarcaDeSegundoPlano() {
 const janelasDeDesfazer = new Map<string, ReturnType<typeof setTimeout>>();
 const rascunhosParaDesfazer = new Map<string, RascunhoSalvo>();
 const emEnvioNestaAba = new Set<string>();
+/** Quem descartou cada rascunho nesta aba: só essa pessoa desfaz o descarte (`restaurarRascunho`). */
+const descartesNestaAba = new Map<string, string>();
 
 // Carga inicial do IndexedDB. Só ela conta: o que outra aba grava é juntado sem voltar a "carregando".
 let sessaoCarregada = false;
@@ -256,6 +315,37 @@ export const useSessionStore = create<SessionState>()(
         limparMarcaDeSegundoPlano();
       };
 
+      /** A sincronização com o servidor acabou de acontecer: horário real (auditoria) e o do relógio da demo (chip). */
+      const sincronizadoAgora = () => ({
+        ultimaSincronizacao: new Date().toISOString(),
+        ultimaSincronizacaoSimulada: agora().toISOString(),
+      });
+
+      /**
+       * PIN de `usuario` em `entrar` e `entrarComPin` (lib/sessao/pin.ts). `null`: certo e sem bloqueio, pode entrar.
+       * A contagem vai já para o banco: recarregar a página não dá mais tentativas.
+       */
+      const conferirPinDe = (usuario: Usuario, pin: string): ResultadoLogin | null => {
+        const agoraReal = Date.now();
+        const conferencia = conferirPin(getState(), usuario.id, usuario.pin === pin, agoraReal);
+        if (conferencia.mudanca) setState(conferencia.mudanca);
+        // O acerto grava junto com o início da sessão (`iniciarSessao`).
+        if (conferencia.resultado === "certo") return null;
+        if (conferencia.mudanca) gravarJa();
+        if (conferencia.resultado === "errado") {
+          const erro =
+            conferencia.restantes === 1 ? "PIN incorreto. Mais um erro bloqueia o PIN por 1 minuto." : "PIN incorreto.";
+          return { ok: false, campo: "pin", erro };
+        }
+        const { bloqueadoAte } = conferencia;
+        return {
+          ok: false,
+          campo: "pin",
+          erro: mensagemDeEsperaDoPin(Date.parse(bloqueadoAte), agoraReal),
+          bloqueadoAte,
+        };
+      };
+
       /** Simula o envio da fila ao servidor quando há rede. */
       const enviarFila = () => {
         const s = getState();
@@ -263,8 +353,8 @@ export const useSessionStore = create<SessionState>()(
         const ids = idsParaEnviar(s.registros, emEnvioNestaAba, janelasDeDesfazer, agora().getTime());
         if (ids.length === 0) {
           // Nada a enviar e nada no meio do caminho: o tablet está em dia com o servidor.
-          if (filaVazia(s.registros) && sincronizacaoVencida(s.ultimaSincronizacao)) {
-            setState({ ultimaSincronizacao: new Date().toISOString() });
+          if (filaVazia(s.registros) && sincronizacaoVencida(s.ultimaSincronizacaoSimulada, agora().getTime())) {
+            setState(sincronizadoAgora());
           }
           return;
         }
@@ -276,7 +366,7 @@ export const useSessionStore = create<SessionState>()(
           const atual = getState();
           const registros = concluirEnvio(atual.registros, ids, atual.rede);
           if (atual.rede === "online") {
-            setState({ registros: podarRegistros(registros, agora()), ultimaSincronizacao: new Date().toISOString() });
+            setState({ registros: podarRegistros(registros, agora()), ...sincronizadoAgora() });
           } else {
             setState({ registros });
           }
@@ -295,17 +385,19 @@ export const useSessionStore = create<SessionState>()(
         janelasDeDesfazer.clear();
         rascunhosParaDesfazer.clear();
         emEnvioNestaAba.clear();
+        descartesNestaAba.clear();
       };
 
       return {
-        ...sessaoInicial(),
+        ...sessaoAntesDaCarga(),
         redeNavegador: "online",
         rede: "online",
 
         entrar: (matricula, pin, contexto) => {
           const usuario = localRepository.usuarioPorMatricula(matricula);
           if (!usuario) return { ok: false, campo: "matricula", erro: "Matrícula não encontrada. Confira o crachá." };
-          if (usuario.pin !== pin) return { ok: false, campo: "pin", erro: "PIN incorreto." };
+          const recusa = conferirPinDe(usuario, pin);
+          if (recusa) return recusa;
           iniciarSessao(usuario.id, contexto);
           return { ok: true, usuario };
         },
@@ -318,7 +410,8 @@ export const useSessionStore = create<SessionState>()(
         entrarComPin: (usuarioId, pin) => {
           const usuario = localRepository.usuario(usuarioId);
           if (!usuario) return { ok: false, campo: "matricula", erro: "Pessoa não encontrada. Confira o crachá." };
-          if (usuario.pin !== pin) return { ok: false, campo: "pin", erro: "PIN incorreto." };
+          const recusa = conferirPinDe(usuario, pin);
+          if (recusa) return recusa;
           iniciarSessao(usuario.id);
           return { ok: true, usuario };
         },
@@ -365,10 +458,23 @@ export const useSessionStore = create<SessionState>()(
         },
 
         descartarRascunho: (tarefaId) => {
-          const { rascunhos } = getState();
+          const { rascunhos, usuarioId } = getState();
           if (!(tarefaId in rascunhos)) return;
+          if (usuarioId) descartesNestaAba.set(tarefaId, usuarioId);
+          else descartesNestaAba.delete(tarefaId);
           setState({ rascunhos: Object.fromEntries(Object.entries(rascunhos).filter(([id]) => id !== tarefaId)) });
           gravarJa();
+        },
+
+        restaurarRascunho: (tarefaId, rascunho) => {
+          const { usuarioId, bloqueado } = getState();
+          // O aviso com "Desfazer" pode seguir na tela depois da troca: a pessoa seguinte não traz de volta o que a
+          // anterior descartou.
+          if (bloqueado || !usuarioId || descartesNestaAba.get(tarefaId) !== usuarioId) return false;
+          descartesNestaAba.delete(tarefaId);
+          setState((s) => ({ rascunhos: { ...s.rascunhos, [tarefaId]: rascunho } }));
+          gravarJa();
+          return true;
         },
 
         assumirRascunho: (tarefaId) => {
@@ -464,16 +570,17 @@ export const useSessionStore = create<SessionState>()(
 
         desfazerConclusao: (tarefaId) => {
           const { usuarioId, bloqueado, conclusoes } = getState();
-          if (bloqueado || !usuarioId || conclusoes[tarefaId]?.usuarioId !== usuarioId) return;
+          if (bloqueado || !usuarioId || conclusoes[tarefaId]?.usuarioId !== usuarioId) return false;
           setState((s) => ({
             conclusoes: Object.fromEntries(Object.entries(s.conclusoes).filter(([id]) => id !== tarefaId)),
           }));
           gravarJa();
+          return true;
         },
 
         tratarAlerta: (alertaId, tipo, texto) => {
           const { usuarioId, bloqueado } = getState();
-          if (!usuarioId || bloqueado) return;
+          if (!usuarioId || bloqueado) return undefined;
           const acao: AcaoAlerta = {
             tipo,
             texto: limitarTexto(texto, LIMITES.acaoDoAlerta),
@@ -484,15 +591,18 @@ export const useSessionStore = create<SessionState>()(
             tratamentos: { ...s.tratamentos, [alertaId]: [...(s.tratamentos[alertaId] ?? []), acao] },
           }));
           gravarJa();
+          return acao;
         },
 
-        desfazerTratamento: (alertaId) => {
-          const { usuarioId, tratamentos } = getState();
-          if (!usuarioId) return;
-          const proximo = removerUltimaAcao(tratamentos, alertaId, usuarioId);
-          if (proximo === tratamentos) return;
+        desfazerTratamento: (alertaId, em) => {
+          const { usuarioId, bloqueado, tratamentos } = getState();
+          // Como os outros desfazer: o aviso pode seguir na tela depois da troca de pessoa ou do bloqueio.
+          if (bloqueado || !usuarioId) return false;
+          const proximo = removerUltimaAcao(tratamentos, alertaId, usuarioId, em);
+          if (proximo === tratamentos) return false;
           setState({ tratamentos: proximo });
           gravarJa();
+          return true;
         },
 
         avancarRelogio: (minutos) => {
@@ -550,7 +660,10 @@ export const useSessionStore = create<SessionState>()(
       migrate: (persistido, versao) => migrarSessao(persistido, versao) ?? sessaoInicial(),
       // Só na carga inicial: o que outra aba grava depois é juntado por `aplicarDeOutraAba` (ver `ouvirOutrasAbas`).
       merge: (persistido, atual) => {
-        if (typeof persistido !== "object" || persistido === null) return atual;
+        // Nada salvo (primeiro uso do tablet): a demo começa hoje, no lugar do estado fixo da hidratação.
+        if (typeof persistido !== "object" || persistido === null) {
+          return { ...atual, ...sessaoInicial(), rede: redeEfetiva(atual.redeNavegador, false) };
+        }
         const salvo = persistido as Partial<SessaoPersistida>;
         const relogio = salvo.relogio ?? atual.relogio;
         const simularSemRede = salvo.simularSemRede ?? atual.simularSemRede;
@@ -566,8 +679,12 @@ export const useSessionStore = create<SessionState>()(
           rede: redeEfetiva(atual.redeNavegador, simularSemRede),
         };
       },
-      // Sucesso ou falha ao ler o IndexedDB: o app segue (com o estado salvo ou, sem banco, só em memória).
-      onRehydrateStorage: () => () => marcarSessaoCarregada(),
+      // Sucesso ou falha ao ler o IndexedDB: o app segue (com o estado salvo ou, sem banco, só em memória). Na falha, a
+      // demo de hoje no lugar do estado fixo da hidratação, como no primeiro uso.
+      onRehydrateStorage: () => (_estado, erro) => {
+        if (erro) useSessionStore.setState(sessaoInicial());
+        marcarSessaoCarregada();
+      },
     },
   ),
 );
@@ -621,17 +738,50 @@ const ticker = criarTicker({
 });
 
 /**
- * Horário fixo para o HTML do servidor e a hidratação (07:40 locais, o mesmo nos dois lados, em qualquer fuso).
- * Depois da hidratação vale o relógio da demo. Telas que mostram hora continuam esperando `useSessionHydrated`.
+ * Horário simulado da demo. Todas as chamadas compartilham um só ticker: o valor muda na virada de cada minuto
+ * simulado e imediatamente quando o relógio da demo muda.
+ *
+ * O valor novo chega por `useDeferredValue` (critério 8): um avanço do relógio re-renderiza a tela inteira (tarefas,
+ * linha do turno, prazos), e o `useSyncExternalStore` sozinho faz esse render síncrono, numa tarefa só. Adiado, o
+ * React o faz em segundo plano, em fatias, e o toque que avançou o relógio não espera por ele; a tela troca de hora
+ * inteira de uma vez, no mesmo commit. Ações do store usam o relógio do próprio store, nunca este valor.
  */
-const AGORA_NO_SERVIDOR = new Date(2026, 9, 16, 7, 40);
+export function useAgora(): Date {
+  return useDeferredValue(useSyncExternalStore(ticker.assinar, ticker.agora, () => AGORA_NO_SERVIDOR));
+}
+
+/** Bloqueio salvo do PIN da pessoa (ISO), se houver. */
+function bloqueioSalvoDoPin(usuarioId: string | undefined): string | undefined {
+  return usuarioId ? useSessionStore.getState().pinBloqueadoAte[usuarioId] : undefined;
+}
+
+function assinarMudancasDoPin(aoMudar: () => void): () => void {
+  return useSessionStore.subscribe((s, anterior) => {
+    if (s.pinBloqueadoAte !== anterior.pinBloqueadoAte) aoMudar();
+  });
+}
 
 /**
- * Horário simulado da demo. Todas as chamadas compartilham um só ticker: o valor muda na virada de cada minuto
- * simulado e imediatamente quando o relógio da demo muda. O parâmetro da v0.2 é aceito e ignorado.
+ * Até quando o PIN da pessoa está bloqueado por tentativas (`MAX_TENTATIVAS_PIN` erros seguidos), ou `null`. Volta a
+ * `null` sozinho no instante do desbloqueio, com um único `setTimeout` até esse instante (não um relógio; ver
+ * `assinarDesbloqueioDoPin`). Para mostrar os segundos que faltam, `segundosParaDesbloquear`. No servidor e na
+ * hidratação, `null`.
  */
-export function useAgora(_intervaloMs?: number): Date {
-  return useSyncExternalStore(ticker.assinar, ticker.agora, () => AGORA_NO_SERVIDOR);
+export function usePinBloqueadoAte(usuarioId?: string): Date | null {
+  const assinar = useCallback(
+    (aoMudar: () => void) =>
+      assinarDesbloqueioDoPin(
+        { lerAte: () => bloqueioSalvoDoPin(usuarioId), assinarMudancas: assinarMudancasDoPin },
+        aoMudar,
+      ),
+    [usuarioId],
+  );
+  const ate = useSyncExternalStore(
+    assinar,
+    () => bloqueioVigente(bloqueioSalvoDoPin(usuarioId), Date.now()),
+    () => null,
+  );
+  return useMemo(() => (ate === null ? null : new Date(ate)), [ate]);
 }
 
 /**

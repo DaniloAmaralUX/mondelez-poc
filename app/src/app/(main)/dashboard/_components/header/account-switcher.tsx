@@ -7,7 +7,6 @@ import { useRouter } from "next/navigation";
 
 import { cn } from "cn";
 import { Bell, Check, ListChecks, Lock, LogOut, MapPin } from "lucide-react";
-import { toast } from "sonner";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -56,9 +55,9 @@ export function AccountSwitcher({
     router.prefetch("/auth/login");
   }, [router]);
 
+  // Avisos com "Desfazer" da pessoa que sai não ficam no login para quem chega (o Toaster é do layout raiz): eles saem
+  // junto com a pessoa, na assinatura do store da <Plataforma /> (plataforma.tsx).
   const encerrar = () => {
-    // Avisos com "Desfazer" da pessoa que sai não ficam no login para quem chega (o Toaster é do layout raiz).
-    toast.dismiss();
     sair();
     router.replace("/auth/login");
   };

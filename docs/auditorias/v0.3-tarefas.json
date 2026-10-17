@@ -3,9 +3,29 @@
   "project": "Mondelez · Gestão de Rotinas Operacionais",
   "date": "2026-10-16",
   "version": "v0.3",
-  "screenshot_url": "C:/Users/dar/AppData/Local/Temp/v03/h/lideranca/shots/",
-  "viewports": ["820×1180 toque", "1180×820 toque (sidebar aberta e fechada)", "800×1280 toque", "1280×800 toque", "590×820 toque (Split View)", "1440×900 mouse"],
-  "roteiro": "Renata (201145, supervisão) depois do registro do operador com 1 NC e do relógio avançado 1 h (2 atrasadas, 3 abertas, 1 com NC, 2 feitas, 10 mais tarde). Toques emulados com hasTouch/isMobile; medidas em getBoundingClientRect.",
+  "reauditoria": {
+    "data": "2026-10-16",
+    "motivo": "Refeita depois das correções da fase H e da costura final. Cada item foi medido de novo no app atual (next dev, porta 3100).",
+    "resumo": { "pass": 22, "warn": 0, "fail": 0 },
+    "mudancas": "5 fail → pass (cópia pt-BR, atalhos no desktop, alvos no Split View, destino do toque, Concluir Revisar alertas). 3 warn → pass (rótulo do módulo, Fazer agora da liderança, badges no toque). Desfazer passou a ser exercitado no navegador."
+  },
+  "screenshot_url": "C:/Users/dar/AppData/Local/Temp/v03/h/reauditoria/shots/",
+  "viewports": ["820×1180 toque", "1180×820 toque (sidebar aberta)", "1280×800 toque", "590×820 toque (Split View)", "1440×900 mouse"],
+  "evidencias": {
+    "pasta": "C:/Users/dar/AppData/Local/Temp/v03/h/reauditoria",
+    "capturas": [
+      "shots/tarefas__ipad-retrato__1.png",
+      "shots/tarefas__ipad-paisagem__1.png",
+      "shots/tarefas__tab-paisagem__1.png",
+      "shots/tarefas__split__1.png",
+      "shots/tarefas__desktop__1.png",
+      "shots/tarefas__rotina-renata__ipad-retrato.png",
+      "shots/tarefas__rotina-renata__desktop.png"
+    ],
+    "medicoes": "shots/tarefas__*.json e tarefas.log",
+    "roteiro": "cenario.mjs (operador registra ppli-l4 com 1 NC, relógio +1 h, troca para Renata 201145 com PIN). tarefas.mjs: lista × tabela em 820/1180/1280/590, toque em tarefa sem tela (Hora x Hora) e com formulário, filtro Atrasada, Minha Rotina da Renata (Fazer agora, Atalhos), Concluir Revisar alertas + Desfazer, desktop com clique na célula de Sobrepeso. tarefas2.mjs: estado vazio (lista e tabela) e ordem da rotina da liderança no retrato.",
+    "rodada_anterior": "C:/Users/dar/AppData/Local/Temp/v03/h/lideranca"
+  },
   "macro_bets": [
     { "category": "accuracy", "description": "A liderança vê o posto inteiro e vai direto ao que está atrasado", "alignment": "strong" },
     { "category": "efficiency", "description": "Tabela do template no notebook; lista de linhas tocáveis quando a tabela não cabe", "alignment": "strong" }
@@ -17,57 +37,58 @@
   "visual_hierarchy": {
     "title": "Visual Hierarchy",
     "checks": [
-      { "label": "Resumo antes da lista", "status": "pass", "notes": "h1 'Tarefas do posto', contexto do turno e chips de contagem (atrasadas em vermelho com ping) antes da lista/tabela." },
-      { "label": "Lista no retrato", "status": "pass", "notes": "Card de 772 px (retrato) e 860 px (paisagem com sidebar) vira lista: linhas de 68 px, título 16 px, janela e criticidade 14 px, situação à direita, chevron só nas que abrem. 'Mais tarde' em cinza, sem chevron." },
-      { "label": "Tabela a partir de 896 px de card", "status": "pass", "notes": "1180 com sidebar fechada (card 1130), 1280 com sidebar (960) e 1440: 5 colunas sem rolagem horizontal; 'Colunas' só aparece com a tabela." },
-      { "label": "Rótulo do módulo repete o título", "status": "warn", "notes": "Na tabela, o badge 'Sobrepeso, refugo e reprocesso' vem antes do título 'Sobrepeso, refugo e reprocesso' (e 'Manutenção autônoma' / 'Manutenção autônoma · Loeschpack 4'): a mesma palavra duas vezes por linha." },
-      { "label": "Fazer agora da liderança", "status": "warn", "notes": "O card mostra 'Revisar alertas abertos · Atrasada' com o botão 'Registrar →', que só abre a lista de Alertas: o verbo não corresponde ao destino, e a tarefa não tem como ser concluída (ver Usability)." },
-      { "label": "Ordem em coluna única", "status": "pass", "notes": "Retrato e paisagem com sidebar: saudação, Fazer agora, Fim do turno, Tarefas, Linha do turno, Recados, passagem do turno anterior e Registros rápidos." }
+      { "label": "Resumo antes da lista", "status": "pass", "notes": "h1 \"Tarefas do posto\", contexto do turno e chips de contagem (\"2 atrasadas\", \"2 abertas\", \"1 com NC\", \"2 feitas\", \"10 mais tarde\") antes da lista ou da tabela." },
+      { "label": "Lista no retrato", "status": "pass", "notes": "Lista no retrato, no iPad paisagem com sidebar e no Split: linhas de 69 px. As tarefas que abrem (Rastreabilidade) são link com chevron. As que não têm tela (Hora x Hora, Sobrepeso) são texto, sem chevron." },
+      { "label": "Tabela a partir de 896 px de card", "status": "pass", "notes": "Tab 1280 com toque e desktop 1440: tabela sem rolagem horizontal. No iPad paisagem com a sidebar, o card fica abaixo de 896 e vira lista." },
+      { "label": "Rótulo do módulo repete o título", "status": "pass", "notes": "O badge do módulo só aparece quando o título não começa por ele: \"Sobrepeso, refugo e reprocesso\" e \"Hora x Hora\" sem badge repetido; \"Rastreabilidade de PA\" acima de \"Rastreabilidade · lote de envoltório\".", "historico": "warn → pass (2026-10-16)." },
+      { "label": "Fazer agora da liderança", "status": "pass", "notes": "\"Revisar alertas abertos · Atrasada\" mostra \"Abrir alertas\" (link contornado, 146×56) e \"Concluir\" (136×64). O verbo corresponde ao destino. Na lista, a mesma tarefa tem Abrir alertas 124×56 + Concluir 112×56.", "historico": "warn → pass (2026-10-16): antes era \"Registrar →\" levando à lista de Alertas." },
+      { "label": "Ordem em coluna única", "status": "pass", "notes": "Renata no retrato: saudação 88, Fazer agora 189, Fim do turno 438, passagem do turno anterior 682, Tarefas 793, Atalhos 953, Linha do turno 1085, Recados 1551." }
     ]
   },
   "visual_style": {
     "title": "Visual Style",
     "checks": [
-      { "label": "Densidade do desktop", "status": "pass", "notes": "Igual à v0.2: toolbar 32 px, cabeçalho 44 px, células py-3, select 32 px, paginação com gap-1, menus de 28 px, ações da linha 28×28." },
-      { "label": "Badges no toque", "status": "warn", "notes": "Na lista os badges de situação têm 14 px (toque:text-sm); na tabela do mesmo ecrã em 1280×800 e 1180×820 (toque) ficam com 12 px, assim como o badge do módulo (10 ocorrências de texto a 12 px)." },
-      { "label": "Cópia pt-BR", "status": "fail", "notes": "Chip de resumo '1 com nc' (a sigla perde as maiúsculas por toLowerCase) e '18 tarefa(s) no filtro.' com plural entre parênteses." },
-      { "label": "Atalhos da liderança no desktop", "status": "fail", "notes": "'Registros rápidos' em 5 colunas de 154 px: 'Tarefas do pos…' cortado (ev-rotina-desktop-atalhos.png). O título 'Registros rápidos' também não descreve atalhos de navegação (Alertas, Tarefas do posto)." }
+      { "label": "Densidade do desktop", "status": "pass", "notes": "Igual à v0.2: toolbar 32 px (filtro 256×32 com 14 px), cabeçalho 44, linhas 53, ações da linha 28×28, paginação 32." },
+      { "label": "Badges no toque", "status": "pass", "notes": "Na tabela com toque (Tab 1280×800), badges de situação e de módulo com 14 px. No desktop, 12 px.", "historico": "warn → pass (2026-10-16): eram 12 px na tabela com toque." },
+      { "label": "Cópia pt-BR", "status": "pass", "notes": "Chips \"1 com NC\" (sigla em maiúsculas). Rodapé \"17 tarefas no filtro.\" e \"2 tarefas no filtro.\" (com o filtro Atrasada).", "historico": "fail → pass (2026-10-16): eram \"1 com nc\" e \"tarefa(s)\"." },
+      { "label": "Atalhos da liderança no desktop", "status": "pass", "notes": "Título \"Atalhos\". 4 colunas de 197 px no desktop; \"Alertas\" e \"Tarefas do posto\" inteiros (nenhum texto com scrollWidth maior que a caixa).", "historico": "fail → pass (2026-10-16): \"Tarefas do pos…\" cortado em 5 colunas e título \"Registros rápidos\"." }
     ]
   },
   "accessibility": {
     "title": "Accessibility",
     "checks": [
-      { "label": "Alvos de toque", "status": "fail", "notes": "Tudo ≥ 56 px em 800–1280, exceto no Split View (590): 'Página anterior' e 'Próxima página' com 34×56 px, porque o template esconde 'Anterior'/'Próxima' abaixo de 640 px (ui/pagination.tsx:77/94) e a camada só dá largura mínima a links de ícone (ev-tarefas-split-paginacao.png)." },
-      { "label": "Espaço entre alvos", "status": "pass", "notes": "Filtro, Situação, Criticidade e Limpar com 12 px; paginação com 12 px; linhas da lista coladas por divisória (faixa tocável com padding interno, docs/12 §2 item 2)." },
-      { "label": "Campos ≥ 16 px", "status": "pass", "notes": "Filtrar tarefas 16 px/56 px no toque; 14 px/32 px no desktop como o template." },
-      { "label": "Menus no toque", "status": "pass", "notes": "Situação/Criticidade/Colunas/ações com itens de 48 px; ações da linha 56×56." },
-      { "label": "Caminho do teclado na tabela", "status": "pass", "notes": "A linha inteira abre com toque/clique; o link do título e o menu de ações são o caminho do teclado e do leitor de tela." },
-      { "label": "Hidratação", "status": "pass", "notes": "Lista e tabela no HTML, escolha por container query: nenhum erro ou aviso no console nas 6 viewports." }
+      { "label": "Alvos de toque", "status": "pass", "notes": "Tudo com 56 px ou mais em 590–1280 com toque. No Split View, Página anterior/Próxima medem 56×56, a 12 px dos números (56×56). Abaixo de 56 só as utilidades do header (48).", "historico": "fail → pass (2026-10-16): no Split eram 34×56." },
+      { "label": "Espaço entre alvos", "status": "pass", "notes": "0 pares a menos de 12 px no conteúdo. Paginação com 12 px. As linhas da lista encostam pela divisória (faixa tocável com padding interno, doc 12 §2 item 2)." },
+      { "label": "Campos ≥ 16 px", "status": "pass", "notes": "Filtrar tarefas com 16 px e 56 px de altura no toque, Linhas por página 72×56. No desktop, 14 px e 32 px, como o template." },
+      { "label": "Menus no toque", "status": "pass", "notes": "Itens do menu Situação com 48 px. Limpar 88×56." },
+      { "label": "Caminho do teclado na tabela", "status": "pass", "notes": "Só as tarefas que abrem têm título-link (e cursor pointer na linha). O menu de ações é o caminho do teclado e do leitor de tela." },
+      { "label": "Hidratação", "status": "pass", "notes": "0 erros e 0 avisos no console em todas as larguras, com toque e com mouse." }
     ]
   },
   "navigation": {
     "title": "Navigation",
     "checks": [
-      { "label": "Destino do toque na tarefa", "status": "fail", "notes": "Tocar em 'Hora x Hora · apontar caixas' (lista no retrato) ou na célula Janela de 'Sobrepeso, refugo e reprocesso' (tabela em 1280×800 e 1440×900) leva a /dashboard/rotina#tarefas, a Minha Rotina da própria Renata, onde a tarefa do operador não existe (ta-ipad-retrato-3-apos-linha.png). Vale também para 'Abrir' no menu de ações." },
-      { "label": "Tarefas com formulário", "status": "pass", "notes": "Linhas com checklist abrem /dashboard/checklist/<id> com prefetch." },
-      { "label": "Paginação e filtros", "status": "pass", "notes": "Filtrar por Atrasada → '2 tarefa(s) no filtro.' e botão Limpar de 56 px; volta à página 1 a cada filtro." }
+      { "label": "Destino do toque na tarefa", "status": "pass", "notes": "Tocar em \"Hora x Hora · apontar caixas\" (lista no retrato) e clicar na célula Janela de \"Sobrepeso, refugo e reprocesso\" (tabela no desktop) não navegam: a tela fica em /dashboard/tarefas. Nenhuma das duas é link nem tem cursor pointer.", "historico": "fail → pass (2026-10-16): levavam à Minha Rotina da própria Renata." },
+      { "label": "Tarefas com formulário", "status": "pass", "notes": "\"Rastreabilidade · lote de envoltório\" é link para /dashboard/checklist/rastreabilidade-envoltorio, com chevron na lista e título-link na tabela." },
+      { "label": "Paginação e filtros", "status": "pass", "notes": "Filtrar por Atrasada dá \"2 tarefas no filtro.\" com Limpar de 88×56. Paginação com 2 páginas." }
     ]
   },
   "usability": {
     "title": "Usability",
     "checks": [
-      { "label": "Concluir 'Revisar alertas abertos'", "status": "fail", "notes": "A tarefa da supervisão sup-alertas (e esp-nc-ppli da especialista) tem rota e nenhum formulário: temTela() a manda para /dashboard/alertas e nada no app chama confirmarTarefa para ela. Depois de assumir e registrar ação nos alertas, continua 'Atrasada · Venceu há 1 h 58 min' no Fazer agora e na Linha do turno; as linhas da lista são só links, sem Concluir." },
-      { "label": "Desfazer em vez de confirmar", "status": "pass", "notes": "Pelo código (use-concluir.ts), Concluir das tarefas sem tela da liderança (ex.: passagem de turno, já feita às 06:25 no seed) usa toast com Desfazer de 10 s; não exercitado no navegador nesta rodada." },
-      { "label": "Estados vazios", "status": "pass", "notes": "'Nenhuma tarefa encontrada.' na lista e na tabela." }
+      { "label": "Concluir \"Revisar alertas abertos\"", "status": "pass", "notes": "Concluir no Fazer agora fecha a tarefa da supervisão, com aviso \"Concluída · Revisar alertas abertos · Desfazer\" (Desfazer 103×56). O Fazer agora passa à próxima ocorrência (Aberta).", "historico": "fail → pass (2026-10-16): a tarefa não tinha como ser concluída e ficava atrasada para sempre." },
+      { "label": "Desfazer em vez de confirmar", "status": "pass", "notes": "Exercitado no navegador: Desfazer no aviso devolve \"Revisar alertas abertos\" a Atrasada no Fazer agora." },
+      { "label": "Estados vazios", "status": "pass", "notes": "Filtrar por \"zzzz\" mostra \"Nenhuma tarefa encontrada.\" na lista (retrato) e na tabela (desktop)." }
     ]
   },
-  "priority_fixes": [
-    { "rank": 1, "title": "Tarefa sem tela não leva à rotina de quem está olhando", "description": "tarefas/_components/data.ts:27: acrescentar ao Task `abrivel: !tarefa.futura && (tarefa.formularioId !== undefined || tarefa.rota !== undefined)` e usar `!task.abrivel` onde hoje se testa `task.futura`: linha-tarefa.tsx:42 (linha como texto, sem chevron), columns.tsx:112 (título sem link), tasks.tsx:99 (abrirLinha não navega; cursor-pointer só se abrivel) e o item 'Abrir' do menu de ações (disabled={!task.abrivel}).", "framework_reference": "31-patterns-navigation.md → Predictable Navigation" },
-    { "rank": 2, "title": "Revisar alertas precisa de Concluir", "description": "rotina/_components/use-concluir.ts: separar `temFormulario = tarefa.formularioId !== undefined` de `tarefa.rota`; em tasks-section.tsx (LinhaTarefa) e fazer-agora.tsx, para tarefa com rota e sem formulário mostrar o link 'Abrir alertas' (variant outline) e o botão primário 'Concluir', que chama confirmarTarefa com o toast de Desfazer já existente. Em fazer-agora.tsx:102 o rótulo 'Registrar' fica só para tarefa com formulário.", "framework_reference": "25-patterns-feedback.md → Progress Indicators" },
-    { "rank": 3, "title": "Paginação de 56 px no Split View", "description": "tasks.tsx:224 e :262: className={cn(\"toque:min-w-14\", !canPreviousPage && \"pointer-events-none opacity-50\")} (idem com canNextPage). Provado por CSS injetado: 'Próxima página' 56×56 a 12 px do '2', sem rolagem horizontal.", "framework_reference": "27-patterns-accessibility.md → Touch Targets" },
-    { "rank": 4, "title": "Cópia do resumo e do rodapé", "description": "tarefas-do-posto.tsx:50: guardar os rótulos já como devem aparecer ('atrasadas', 'abertas', 'com NC', 'feitas', 'mais tarde') e tirar o .toLowerCase(); tasks.tsx:179: `{n} {n === 1 ? \"tarefa\" : \"tarefas\"} no filtro.`", "framework_reference": "12-checklist-visual-style.md → Typography" },
-    { "rank": 5, "title": "Atalhos inteiros no desktop", "description": "rotina/_components/quick-actions.tsx:24: xl:grid-cols-5 → xl:grid-cols-4 (196 px por botão; o rótulo precisa de 112 px + ícone + padding = 156 px); título 'Atalhos' no lugar de 'Registros rápidos' (:23).", "framework_reference": "23-patterns-visual-hierarchy.md → Typography" },
-    { "rank": 6, "title": "Tabela no toque com a tipografia da lista", "description": "columns.tsx:130: <SituacaoBadge value={…} className=\"toque:h-6 toque:text-sm\" />; badge do módulo no título com toque:text-sm e só quando o título não começa pelo nome do módulo (mesma regra de fazer-agora.tsx: !titulo.startsWith(modulo.nome)).", "framework_reference": "22-patterns-cognitive-load.md → Minimalist Design" }
+  "priority_fixes": [],
+  "priority_fixes_resolvidas": [
+    "Tarefa sem tela não leva à rotina de quem está olhando (Task.abrivel).",
+    "Revisar alertas com Concluir (temFormulario × rota).",
+    "Paginação de 56 px no Split View.",
+    "Cópia do resumo e do rodapé.",
+    "Atalhos inteiros no desktop.",
+    "Tabela no toque com a tipografia da lista; módulo sem repetir o título."
   ],
-  "notes": "A troca tabela/lista por container query funciona como planejado (docs/12 §3.4) e o desktop não perdeu densidade. Os dois problemas de maior impacto são de fluxo, não de layout: a liderança é levada à própria rotina ao tocar numa tarefa do operador sem formulário, e a rotina 'Revisar alertas abertos' fica atrasada para sempre."
+  "notes": "Tela sem fail e sem warn. Os dois problemas de fluxo da rodada anterior (a liderança caía na própria rotina e \"Revisar alertas abertos\" ficava atrasada para sempre) estão corrigidos e foram exercitados por toque. A troca entre tabela e lista por container query continua como planejado, e o desktop não perdeu densidade."
 }

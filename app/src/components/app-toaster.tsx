@@ -23,8 +23,15 @@ function focoNumAviso(alvo: EventTarget | null) {
  *   continua (abre com o mouse) e só se abre também quando o Tab entra num aviso, para o botão focado não ficar coberto
  *   pelo da frente.
  *
+ * - Posição: abaixo do header do dashboard (`--avisos-topo`, src/styles/tablet.css), para um aviso nunca cobrir o
+ *   avatar, o menu ou o chip de envio; sem o header (login), o padrão do sonner. `mobileOffset` vale abaixo de 600 px
+ *   (Split View, celular), onde o sonner troca de regra.
+ *
  * O `{...props}` do wrapper vem depois do `theme` interno, então os valores daqui vencem.
  */
+const ABAIXO_DO_HEADER = { top: "var(--avisos-topo, 24px)" } as const;
+const ABAIXO_DO_HEADER_ESTREITO = { top: "var(--avisos-topo, 16px)" } as const;
+
 export function AppToaster(props: ComponentProps<typeof Toaster>) {
   const tema = usePreferencesStore((s) => s.resolvedThemeMode);
   const toque = useModoToque();
@@ -36,5 +43,13 @@ export function AppToaster(props: ComponentProps<typeof Toaster>) {
     return () => document.removeEventListener("focusin", aoFocar);
   }, []);
 
-  return <Toaster {...props} theme={tema} expand={toque || focoNosAvisos} />;
+  return (
+    <Toaster
+      offset={ABAIXO_DO_HEADER}
+      mobileOffset={ABAIXO_DO_HEADER_ESTREITO}
+      {...props}
+      theme={tema}
+      expand={toque || focoNosAvisos}
+    />
+  );
 }

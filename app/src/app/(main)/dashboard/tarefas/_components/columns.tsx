@@ -23,7 +23,8 @@ const statusStyles: Record<string, string> = {
   mais_tarde: "border-muted-foreground/20 bg-muted text-muted-foreground",
   a_fazer: "border-sky-500/20 bg-sky-500/10 text-sky-700 dark:text-sky-300",
   em_andamento: "border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-300",
-  atrasada: "border-destructive/20 bg-destructive/10 text-destructive",
+  // red-700 (red-400 no escuro), não text-destructive: sobre destructive/10 o token dava 3,97:1 (src/lib/status-legivel.ts).
+  atrasada: "border-destructive/20 bg-destructive/10 text-red-700 dark:text-red-400",
   com_nc: "border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-300",
   feita: "border-green-500/20 bg-green-500/10 text-green-700 dark:text-green-300",
 };

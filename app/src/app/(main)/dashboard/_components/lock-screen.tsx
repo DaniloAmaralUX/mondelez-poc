@@ -8,7 +8,7 @@ import { Clock, Lock, LogOut, UserRound, Users } from "lucide-react";
 import { createPortal, flushSync } from "react-dom";
 import { toast } from "sonner";
 
-import { PinPad } from "@/components/pin-pad";
+import { PinPad, useEsperaDoPin } from "@/components/pin-pad";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Field, FieldContent, FieldDescription, FieldError, FieldLabel, FieldTitle } from "@/components/ui/field";
@@ -116,8 +116,11 @@ export function LockScreen() {
  * - portal no `body`: o Radix já pôs aria-hidden nos irmãos do overlay quando ele abriu, e um nó criado depois fica
  *   fora disso; dentro da árvore do app o leitor de tela não chegaria a "Quem está no posto?";
  * - o toque e o Esc aqui não chegam ao `document`, onde o Radix decide fechar o overlay "por fora": o Sheet continua
- *   aberto, com o texto digitado, e volta como estava depois do PIN. A atividade (use-bloqueio.ts) segue contando,
- *   porque é ouvida na janela, na captura.
+ *   aberto por baixo. A atividade (use-bloqueio.ts) segue contando, porque é ouvida na janela, na captura.
+ * - o overlay só volta como estava se a mesma pessoa desbloquear. Os que guardam texto livre têm `key` pelo usuarioId
+ *   (Registrar desvio em checklist.tsx; Registrar ação e Resolver em alert-details.tsx): com outra pessoa eles
+ *   remontam fechados e vazios, e o texto de quem saiu não é enviado em nome de quem entrou (RNF-06). A busca do header
+ *   não envia nada e fica como está.
  */
 function DialogoDeBloqueio() {
   const router = useRouter();
@@ -144,8 +147,7 @@ function DialogoDeBloqueio() {
   useLayoutEffect(() => {
     const dialogo = dialogoRef.current;
     if (!dialogo) return;
-    // Avisos com "Desfazer" da pessoa anterior saem: quem chega não desfaz o registro de outra pessoa.
-    toast.dismiss();
+    // Os avisos com "Desfazer" da pessoa anterior já saíram no bloqueio (useAvisosSoDaPessoaAtual, plataforma.tsx).
     // Antes da pintura: o conteúdo de baixo não aparece nem por um quadro.
     if (!dialogo.open) dialogo.showModal();
     focarPin(dialogo);
@@ -178,8 +180,8 @@ function DialogoDeBloqueio() {
     };
   }, []);
 
+  // Os avisos saem com a pessoa (plataforma.tsx), antes de o login abrir.
   const sairDoPosto = () => {
-    toast.dismiss();
     sair();
     router.replace("/auth/login");
   };
@@ -266,6 +268,17 @@ function Identificacao({
 
   const outra = modo === "outra";
   const matriculaCompleta = matricula.length === TAMANHO_MATRICULA;
+  // Muitos PINs errados para a pessoa escolhida: o PIN pad espera, com a hora de liberar à vista (V03-SEC-02).
+  let pessoaDoPin = sugerida;
+  if (outra) pessoaDoPin = matriculaCompleta ? localRepository.usuarioPorMatricula(matricula) : undefined;
+  const espera = useEsperaDoPin(pessoaDoPin?.id);
+  const esperando = espera !== null;
+  const esperavaAntes = useRef(esperando);
+  // Ao liberar, o foco volta ao PIN: o fieldset desabilitado tinha tirado o foco dele.
+  useEffect(() => {
+    if (esperavaAntes.current && !esperando) pinPadRef.current?.focus();
+    esperavaAntes.current = esperando;
+  }, [esperando]);
 
   // Ao montar de novo com a tela já aberta (key mudou), o foco volta ao PIN. Na primeira montagem quem foca é o
   // diálogo (este efeito roda depois do showModal, então também funciona).
@@ -311,7 +324,8 @@ function Identificacao({
     if (!resultado.ok) {
       if (resultado.campo === "pin") {
         setPin("");
-        setErroPin(resultado.erro);
+        // Bloqueado por tentativas: a mensagem vem de useEsperaDoPin e some sozinha quando libera.
+        setErroPin(resultado.bloqueadoAte ? undefined : resultado.erro);
       } else {
         errarMatricula(resultado.erro);
       }
@@ -407,7 +421,8 @@ function Identificacao({
           }}
           onComplete={aoCompletarPin}
           tamanho={TAMANHO_PIN}
-          erro={erroPin}
+          erro={espera ?? erroPin}
+          desabilitado={esperando}
           // Teclado físico (notebook da liderança): os números vão para o PIN, salvo enquanto se digita a matrícula.
           capturarTeclado={!outra || matriculaCompleta}
         />

@@ -33,11 +33,17 @@ export const progressRingClasses: Record<StatusVisual, string> = {
   resolvido: "text-green-600",
 };
 
+/**
+ * Selo de estado no detalhe. Texto um tom acima do template no claro (700; 400 no escuro), como o Status das outras
+ * telas (src/lib/status-legivel.ts): com o 600 e o `text-destructive` sobre o fundo /10 o texto ficava abaixo de 4,5:1.
+ * Em tratamento fica no `text-primary` no claro (6,07:1); no escuro o primary do Linear é escuro (2,1:1 sobre
+ * primary/10), então o violet-400, o mesmo matiz.
+ */
 export const statusBadgeClasses: Record<StatusVisual, string> = {
-  critico: "border-destructive/20 bg-destructive/10 text-destructive",
-  atencao: "border-amber-500/20 bg-amber-500/10 text-amber-600 dark:text-amber-400",
-  tratamento: "border-primary/20 bg-primary/10 text-primary",
-  resolvido: "border-green-600/20 bg-green-600/10 text-green-600",
+  critico: "border-destructive/20 bg-destructive/10 text-red-700 dark:text-red-400",
+  atencao: "border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-400",
+  tratamento: "border-primary/20 bg-primary/10 text-primary dark:text-violet-400",
+  resolvido: "border-green-600/20 bg-green-600/10 text-green-700 dark:text-green-400",
 };
 
 export function getProgressRingClass(status: StatusVisual) {

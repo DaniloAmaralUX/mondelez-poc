@@ -26,6 +26,9 @@ import type { ChecklistFormValues } from "./data";
  *   lista de etapas (que rolava escondida). Anunciado ao mudar (aria-live).
  * - Progress dos itens respondidos, com nome e valor acessíveis (o Progress do template não repassa `value` ao Radix,
  *   então o aria-valuenow vai explícito).
+ * - Com pouca altura útil (paisagem com o teclado aberto no Android, src/styles/tablet.css) o cabeçalho encolhe: título
+ *   menor, sem a linha de metadados e com menos espaço, para o campo em foco caber acima da barra de ações. Voltar,
+ *   Registrar desvio, a etapa e o progresso continuam.
  */
 export function CabecalhoDoFoco({
   formulario,
@@ -54,7 +57,7 @@ export function CabecalhoDoFoco({
     resumo.naoConformes > 0 ? ` · ${resumo.naoConformes} não conforme${resumo.naoConformes > 1 ? "s" : ""}` : "";
 
   return (
-    <header className="flex flex-col gap-4">
+    <header className="flex flex-col gap-4 pouca-altura:gap-2">
       <div className="flex flex-wrap items-start gap-3">
         <Button asChild variant="outline" className="h-11 shrink-0">
           <Link prefetch href="/dashboard/rotina">
@@ -65,10 +68,10 @@ export function CabecalhoDoFoco({
         <div className="flex min-w-0 flex-1 basis-60 flex-col gap-2 self-center">
           {/* wrap-break-word: um código longo sem espaço no título (ex.: descrição de material do SAP) quebra dentro da
               coluna em vez de ser cortado na borda do conteúdo. */}
-          <h1 className="wrap-break-word text-balance font-medium @3xl/foco:text-3xl text-2xl leading-tight tracking-tight">
+          <h1 className="wrap-break-word text-balance font-medium @3xl/foco:text-3xl pouca-altura:@3xl/foco:text-lg pouca-altura:text-lg text-2xl leading-tight tracking-tight">
             {formulario.titulo}
           </h1>
-          {meta}
+          {meta && <div className="pouca-altura:hidden">{meta}</div>}
         </div>
         {acao}
       </div>

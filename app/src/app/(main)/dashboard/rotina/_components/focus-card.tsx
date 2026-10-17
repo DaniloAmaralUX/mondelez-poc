@@ -14,7 +14,7 @@ import { Duracao } from "./duracao";
 
 /** Tempo até o fim do turno, no lugar do timer de foco do template. */
 export function FocusCard() {
-  const agora = useAgora(5_000);
+  const agora = useAgora();
   const turno = turnoAtual(agora);
   const ajudaId = useId();
 

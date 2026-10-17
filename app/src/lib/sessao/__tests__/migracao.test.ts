@@ -38,8 +38,8 @@ const v2 = {
 };
 
 describe("migração do estado salvo", () => {
-  it("está na versão 3", () => {
-    expect(VERSAO_SESSAO).toBe(3);
+  it("está na versão 4", () => {
+    expect(VERSAO_SESSAO).toBe(4);
   });
 
   it("v2 → v3 preserva pessoa, posto, relógio, conclusões, registros e tratamentos", () => {
@@ -62,7 +62,10 @@ describe("migração do estado salvo", () => {
       ultimoUsuarioId: null,
       candidatoId: null,
       ultimaSincronizacao: null,
+      ultimaSincronizacaoSimulada: null,
       turnoDaSessao: "2026-10-16T1",
+      tentativasPin: {},
+      pinBloqueadoAte: {},
     });
     expect(v3).not.toHaveProperty("rede");
   });
@@ -89,5 +92,41 @@ describe("migração do estado salvo", () => {
     expect(migrarSessao(v2, 0, REAL)).toBeNull();
     expect(migrarSessao(null, 2, REAL)).toBeNull();
     expect(migrarSessao({ usuarioId: "u-alberto" }, 2, REAL)).toBeNull();
+  });
+});
+
+describe("migração v3 → v4", () => {
+  const v3 = {
+    ...migrarSessao(v2, 2, REAL),
+    // Sincronizou 10 min (reais) depois da ancoragem: no relógio da demo, 09:40.
+    ultimaSincronizacao: new Date(REAL + 10 * 60_000).toISOString(),
+  };
+
+  it("preserva o estado da v3 e começa as tentativas de PIN do zero", () => {
+    const v4 = migrarSessao(v3, 3, REAL);
+    expect(v4).toMatchObject({
+      usuarioId: "u-alberto",
+      relogio,
+      registros: v2.registros,
+      ultimaSincronizacao: v3.ultimaSincronizacao,
+      tentativasPin: {},
+      pinBloqueadoAte: {},
+    });
+  });
+
+  it("a última sincronização ganha a hora no relógio da demo, pela âncora salva", () => {
+    expect(migrarSessao(v3, 3, REAL)?.ultimaSincronizacaoSimulada).toBe(new Date(2026, 9, 16, 9, 40).toISOString());
+    expect(migrarSessao({ ...v3, ultimaSincronizacao: null }, 3, REAL)?.ultimaSincronizacaoSimulada).toBeNull();
+    expect(migrarSessao({ ...v3, relogio: undefined }, 3, REAL)?.ultimaSincronizacaoSimulada).toBeNull();
+  });
+
+  it("estado da v3 sem forma recomeça a demo", () => {
+    expect(migrarSessao(null, 3, REAL)).toBeNull();
+    expect(migrarSessao("v3", 3, REAL)).toBeNull();
+  });
+
+  it("na versão atual, o estado passa como está", () => {
+    const v4 = migrarSessao(v3, 3, REAL);
+    expect(migrarSessao(v4, 4, REAL)).toBe(v4);
   });
 });

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { useRouter } from "next/navigation";
 
@@ -11,7 +11,7 @@ import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
-import { PinPad } from "@/components/pin-pad";
+import { PinPad, useEsperaDoPin } from "@/components/pin-pad";
 import { Button } from "@/components/ui/button";
 import { Field, FieldError, FieldGroup, FieldLabel, FieldLegend, FieldSet } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -65,6 +65,18 @@ export function LoginForm() {
 
   const linhaId = form.watch("linhaId");
   const postoId = form.watch("postoId");
+  const matricula = form.watch("matricula");
+  // Muitos PINs errados para esta matrícula: o PIN pad espera, com a hora de liberar à vista (V03-SEC-02).
+  const pessoaDaMatricula =
+    matricula.length === TAMANHO_MATRICULA ? localRepository.usuarioPorMatricula(matricula) : undefined;
+  const espera = useEsperaDoPin(pessoaDaMatricula?.id);
+  // Ao liberar, o foco volta ao PIN: o fieldset desabilitado tinha tirado o foco dele.
+  const esperando = espera !== null;
+  const esperavaAntes = useRef(esperando);
+  useEffect(() => {
+    if (esperavaAntes.current && !esperando) pinPadRef.current?.focus();
+    esperavaAntes.current = esperando;
+  }, [esperando]);
   const postos = linhaId ? localRepository.postos(linhaId) : [];
   // Linha e Posto vêm antes da matrícula (onde, depois quem): o PIN entra sozinho no último número, então nada que se
   // escolhe fica depois dele. Com o teclado de 64 px, em paisagem Linha e Posto podem sair da vista quando o PIN
@@ -90,6 +102,12 @@ export function LoginForm() {
     if (!resultado.ok) {
       // Errou a matrícula ou o PIN: o PIN é digitado de novo (aparelho compartilhado, ninguém herda um PIN pela metade).
       form.setValue("pin", "");
+      // Bloqueado por tentativas: a mensagem vem de useEsperaDoPin e some sozinha quando libera; um erro no campo
+      // ficaria na tela depois disso.
+      if (resultado.campo === "pin" && resultado.bloqueadoAte) {
+        form.clearErrors("pin");
+        return;
+      }
       form.setError(resultado.campo, { message: resultado.erro }, { shouldFocus: true });
       return;
     }
@@ -237,13 +255,14 @@ export function LoginForm() {
               tamanho={TAMANHO_PIN}
               // PIN completo envia sozinho: menos um toque no tablet compartilhado.
               onComplete={() => void enviar()}
-              erro={fieldState.error?.message}
-              desabilitado={entrando}
+              erro={espera ?? fieldState.error?.message}
+              desabilitado={entrando || esperando}
             />
           )}
         />
       </FieldGroup>
-      <Button className="w-full" type="submit" disabled={entrando}>
+      {/* Ação primária do login: 64 px no toque, como Registrar e Resolver (docs/12 §5 item 1); 44 px no notebook. */}
+      <Button className="h-11 toque:h-16 w-full toque:text-base" type="submit" disabled={entrando}>
         {entrando ? "Entrando…" : "Entrar"}
       </Button>
     </form>

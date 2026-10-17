@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import { Clock } from "lucide-react";
 import { toast } from "sonner";
@@ -32,6 +32,18 @@ import { turnoAtual } from "@/domain/turno";
 import { formatarHora } from "@/lib/format";
 import { useAgora, useSessionHydrated, useSessionStore } from "@/stores/session/session-store";
 
+/** Depois do próximo quadro pintado, numa tarefa própria. */
+function depoisDoProximoQuadro(acao: () => void) {
+  // Aba oculta não pinta (o requestAnimationFrame não roda): a ação não fica esperando a aba voltar.
+  if (document.visibilityState !== "visible") {
+    setTimeout(acao, 0);
+    return;
+  }
+  requestAnimationFrame(() => {
+    setTimeout(acao, 0);
+  });
+}
+
 /**
  * Painel de demonstração (RF-13), no lugar do menu de repositórios do template. Só existe com a demonstração ligada
  * (`APP_CONFIG.demo.enabled`, padrão); com `NEXT_PUBLIC_DEMO=false` some para todos os perfis.
@@ -54,6 +66,16 @@ function PainelDaDemonstracao() {
   const resetarDemo = useSessionStore((s) => s.resetarDemo);
   const turno = turnoAtual(agora);
   const [confirmarReset, setConfirmarReset] = useState(false);
+  /**
+   * Ação do relógio escolhida no menu: roda só depois que o menu terminou de fechar e a tela pintou (critério 8). O item
+   * do Radix chama `onSelect` dentro de um `flushSync` no clique, e o fechamento do menu modal (pointer-events do body,
+   * trava de rolagem) faz o navegador recalcular o estilo da página inteira; somado ao salto do relógio (a tela toda
+   * muda de hora), virava uma tarefa longa só no Tab Active5. Assim o menu some, e a tela troca de hora logo depois.
+   */
+  const acaoDoRelogio = useRef<(() => void) | null>(null);
+  const escolherNoRelogio = (acao: () => void) => () => {
+    acaoDoRelogio.current = acao;
+  };
 
   return (
     <>
@@ -66,15 +88,24 @@ function PainelDaDemonstracao() {
             <Clock />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-60">
+        <DropdownMenuContent
+          align="end"
+          className="w-60"
+          // Chamado quando o conteúdo do menu sai da tela (fim da animação de saída), também ao fechar sem escolher.
+          onCloseAutoFocus={() => {
+            const acao = acaoDoRelogio.current;
+            acaoDoRelogio.current = null;
+            if (acao) depoisDoProximoQuadro(acao);
+          }}
+        >
           <DropdownMenuGroup>
             <DropdownMenuLabel>
               Relógio da demonstração
               <DropdownMenuShortcut className="tabular-nums">{formatarHora(agora)}</DropdownMenuShortcut>
             </DropdownMenuLabel>
-            <DropdownMenuItem onSelect={() => avancarRelogio(15)}>Avançar 15 min</DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => avancarRelogio(60)}>Avançar 1 hora</DropdownMenuItem>
-            <DropdownMenuItem onSelect={irParaFimDoTurno}>Ir para o fim do turno</DropdownMenuItem>
+            <DropdownMenuItem onSelect={escolherNoRelogio(() => avancarRelogio(15))}>Avançar 15 min</DropdownMenuItem>
+            <DropdownMenuItem onSelect={escolherNoRelogio(() => avancarRelogio(60))}>Avançar 1 hora</DropdownMenuItem>
+            <DropdownMenuItem onSelect={escolherNoRelogio(irParaFimDoTurno)}>Ir para o fim do turno</DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>

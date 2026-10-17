@@ -16,7 +16,9 @@ import {
 } from "@/components/ui/dialog";
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
+import { LIMITES } from "@/domain/limites";
 import type { AcaoAlerta, Alerta } from "@/domain/types";
+import { PRESSAO } from "@/lib/pressao";
 import { JANELA_DESFAZER_MS, useSessionStore, useUsuarioAtual } from "@/stores/session/session-store";
 
 type Acao = "acao" | "resolver";
@@ -35,8 +37,6 @@ const DIALOGO: Record<Acao, { titulo: string; descricao: string; botao: string; 
     sucesso: "Alerta resolvido",
   },
 };
-
-const PRESSAO = "transition-transform duration-150 ease-out active:scale-[0.97]";
 
 /**
  * Teclado físico e ponteiro fino (notebook da liderança): o cursor já pode ir para o campo ao abrir o diálogo. No
@@ -78,25 +78,23 @@ export function AlertActions({ alerta }: { readonly alerta: Alerta }) {
   }
 
   /**
-   * Registra e oferece "Desfazer". O desfazer tira a última ação da pessoa neste alerta, então só age se ela ainda for
-   * a que este aviso anunciou (mesmo tipo e mesmo texto): se outra ação veio depois (ex.: assumiu e já registrou uma
-   * ação, ou registrou duas ações seguidas), avisa em vez de apagar a errada.
+   * Registra e oferece "Desfazer". O desfazer tira só a ação que este aviso anunciou (pelo instante dela, `em`) e só se
+   * ela ainda for a última do histórico: se outra ação veio depois (ex.: assumiu e já registrou uma ação, ou outra pessoa
+   * agiu), o store recusa e o aviso explica, em vez de apagar a errada. Passados os 10 s, a mesma ação se desfaz pelo
+   * histórico do alerta (alert-details.tsx).
    */
   function registrar(tipo: AcaoAlerta["tipo"], textoDaAcao: string, aviso: string) {
-    tratarAlerta(alerta.id, tipo, textoDaAcao);
+    const acao = tratarAlerta(alerta.id, tipo, textoDaAcao);
+    if (!acao) return;
     toast.success(aviso, {
       description: alerta.titulo,
       duration: JANELA_DESFAZER_MS,
       action: {
         label: "Desfazer",
         onClick: () => {
-          const { tratamentos, usuarioId } = useSessionStore.getState();
-          const ultima = (tratamentos[alerta.id] ?? []).filter((a) => a.usuarioId === usuarioId).at(-1);
-          if (ultima?.tipo !== tipo || ultima.texto !== textoDaAcao) {
+          if (!desfazerTratamento(alerta.id, acao.em)) {
             toast.warning("Não deu para desfazer", { description: "Outra ação foi registrada depois desta." });
-            return;
           }
-          desfazerTratamento(alerta.id);
         },
       },
     });
@@ -186,7 +184,7 @@ export function AlertActions({ alerta }: { readonly alerta: Alerta }) {
                   ref={campoRef}
                   id={campoId}
                   rows={3}
-                  maxLength={500}
+                  maxLength={LIMITES.acaoDoAlerta}
                   className="wrap-anywhere"
                   value={texto}
                   onChange={(e) => {

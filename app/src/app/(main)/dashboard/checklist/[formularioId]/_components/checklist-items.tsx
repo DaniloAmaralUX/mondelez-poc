@@ -18,8 +18,9 @@ import { Input } from "@/components/ui/input";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { MAX_JUSTIFICATIVA, MAX_TEXTO_DO_ITEM, MIN_JUSTIFICATIVA, situacaoItem } from "@/domain/formulario-engine";
 import type { ItemFormulario, Resposta, ValorCnc } from "@/domain/types";
+import { PRESSAO } from "@/lib/pressao";
 
-import { type ChecklistFormValues, PRESSAO } from "./data";
+import type { ChecklistFormValues } from "./data";
 import { FaixaIndicador } from "./faixa-indicador";
 
 const SITUACAO_LABEL = { pendente: "Pendente", C: "Conforme", NC: "Não conforme", NA: "Não se aplica" } as const;
@@ -30,8 +31,9 @@ const OPCOES: { valor: ValorCnc; rotulo: string; aria: string; ativo: string }[]
     valor: "C",
     rotulo: "C",
     aria: "Conforme",
+    // green-800 (e green-400 no escuro): sobre green-600/10 o green-700 dava 4,42:1, abaixo de 4,5:1.
     ativo:
-      "data-[state=on]:border-green-600/40 data-[state=on]:bg-green-600/10 data-[state=on]:text-green-700 dark:data-[state=on]:text-green-400",
+      "data-[state=on]:border-green-600/40 data-[state=on]:bg-green-600/10 data-[state=on]:text-green-800 dark:data-[state=on]:text-green-400",
   },
   {
     valor: "NC",

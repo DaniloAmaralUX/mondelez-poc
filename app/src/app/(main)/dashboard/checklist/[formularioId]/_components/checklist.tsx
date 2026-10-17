@@ -20,6 +20,7 @@ import { validarRespostas } from "@/domain/formulario-engine";
 import type { Equipamento, Formulario, Registro, SyncStatus, TarefaInstancia } from "@/domain/types";
 import { useTarefas } from "@/hooks/use-turno";
 import { formatarHora } from "@/lib/format";
+import { STATUS_LEGIVEL } from "@/lib/status-legivel";
 import {
   gravarSessaoAgora,
   JANELA_DESFAZER_MS,
@@ -99,11 +100,6 @@ function valoresIniciais(
   return { ...RASCUNHO_VAZIO, equipamentoId: tarefa?.equipamentoId };
 }
 
-/** Desfazer do "Descartar": o rascunho volta como estava, com quem começou e quando. */
-function restaurarRascunho(tarefaId: string, rascunho: RascunhoSalvo) {
-  useSessionStore.setState((s) => ({ rascunhos: { ...s.rascunhos, [tarefaId]: rascunho } }));
-}
-
 function ChecklistEditor({
   formulario,
   tarefa,
@@ -123,6 +119,7 @@ function ChecklistEditor({
   const salvarRascunho = useSessionStore((s) => s.salvarRascunho);
   const descartarRascunho = useSessionStore((s) => s.descartarRascunho);
   const assumirRascunho = useSessionStore((s) => s.assumirRascunho);
+  const restaurarRascunho = useSessionStore((s) => s.restaurarRascunho);
   const registrarChecklist = useSessionStore((s) => s.registrarChecklist);
   const desfazerRegistro = useSessionStore((s) => s.desfazerRegistro);
   const tarefaId = tarefa?.id;
@@ -248,8 +245,13 @@ function ChecklistEditor({
       duration: JANELA_DESFAZER_MS,
       action: {
         label: "Desfazer",
+        // O rascunho volta como estava, com quem começou e quando. O store recusa se o tablet bloqueou ou se quem está
+        // no posto não é quem descartou.
         onClick: () => {
-          restaurarRascunho(tarefaId, anterior);
+          if (!restaurarRascunho(tarefaId, anterior)) {
+            toast.info("Não dá para desfazer", { description: "Só quem descartou traz o rascunho de volta." });
+            return;
+          }
           recomecar();
         },
       },
@@ -262,15 +264,18 @@ function ChecklistEditor({
     <FormProvider {...form}>
       {/* @container/foco: o modo foco se ajusta à área útil (sidebar aberta ou não, retrato, Split View). Altura mínima
           da tela abaixo do header (menos o padding do conteúdo: 16 px, 24 px a partir de md) para a barra de ações
-          ficar no rodapé também numa etapa curta, sempre no mesmo lugar. */}
+          ficar no rodapé também numa etapa curta, sempre no mesmo lugar. Com pouca altura útil (teclado do Android em
+          paisagem), menos espaço entre os blocos. */}
       <div
         data-checklist-foco
-        className="@container/foco flex min-h-[calc(100dvh-var(--dashboard-header-height)-2rem)] flex-col gap-5 md:min-h-[calc(100dvh-var(--dashboard-header-height)-3rem)]"
+        className="@container/foco flex min-h-[calc(100dvh-var(--dashboard-header-height)-2rem)] flex-col gap-5 pouca-altura:gap-3 md:min-h-[calc(100dvh-var(--dashboard-header-height)-3rem)]"
       >
         <CabecalhoDoFoco
           formulario={formulario}
           etapa={etapa}
-          acao={preencher ? <RegistrarDesvio formulario={formulario} /> : undefined}
+          // key: na troca de pessoa com o Sheet aberto, ele remonta fechado e vazio; a justificativa digitada por quem
+          // saiu não é registrada em nome de quem entrou (RNF-06). A mesma pessoa volta como estava.
+          acao={preencher ? <RegistrarDesvio key={usuario?.id ?? ""} formulario={formulario} /> : undefined}
           meta={
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant="outline" className={META}>
@@ -290,7 +295,7 @@ function ChecklistEditor({
                 </Badge>
               )}
               {preencher && rascunho && (
-                <Status variant="success" className="toque:text-sm">
+                <Status variant="success" className={cn("toque:text-sm", STATUS_LEGIVEL)}>
                   <StatusIndicator className="before:hidden" />
                   <StatusLabel>Rascunho salvo no tablet</StatusLabel>
                 </Status>

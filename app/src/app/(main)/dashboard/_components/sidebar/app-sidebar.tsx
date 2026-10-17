@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/sidebar";
 import { APP_CONFIG } from "@/config/app-config";
 import { paraUsuarioDoShell } from "@/data/users";
+import { usePonteiroGrossoReal } from "@/hooks/use-modo-toque";
 import { sidebarItems } from "@/navigation/sidebar/sidebar-items";
 import { usePreferencesStore } from "@/stores/preferences/preferences-provider";
 import { useUsuarioAtual } from "@/stores/session/session-store";
@@ -28,23 +29,6 @@ import { useUsuarioAtual } from "@/stores/session/session-store";
 import { NavMain, useFecharSidebarMovel } from "./nav-main";
 import { NavUser } from "./nav-user";
 import { SupportCard } from "./support-card";
-
-const PONTEIRO_GROSSO = "(pointer: coarse)";
-
-function assinarPonteiro(aoMudar: () => void) {
-  const mql = window.matchMedia(PONTEIRO_GROSSO);
-  mql.addEventListener("change", aoMudar);
-  return () => mql.removeEventListener("change", aoMudar);
-}
-
-/** Toque como ponteiro principal. No servidor e na hidratação vale `false`, igual ao HTML gerado. */
-function usePonteiroGrosso() {
-  return React.useSyncExternalStore(
-    assinarPonteiro,
-    () => window.matchMedia(PONTEIRO_GROSSO).matches,
-    () => false,
-  );
-}
 
 /** Fecha o Sheet da sidebar quando a rota muda por fora dela (busca, aviso de alerta, botões da tela). */
 function useFecharSidebarAoNavegar() {
@@ -72,7 +56,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   );
 
   const usuario = useUsuarioAtual();
-  const toque = usePonteiroGrosso();
+  const toque = usePonteiroGrossoReal();
   const { isMobile, openMobile, setOpenMobile } = useSidebar();
   const fecharSidebar = useFecharSidebarMovel();
   useFecharSidebarAoNavegar();

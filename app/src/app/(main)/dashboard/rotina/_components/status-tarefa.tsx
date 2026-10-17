@@ -3,6 +3,7 @@ import { cn } from "cn";
 import { Status, StatusIndicator, StatusLabel } from "@/components/ui/status";
 import type { TarefaInstancia } from "@/domain/types";
 import { formatarHora } from "@/lib/format";
+import { STATUS_LEGIVEL } from "@/lib/status-legivel";
 
 type Variante = "default" | "success" | "error" | "warning" | "info";
 
@@ -15,7 +16,8 @@ export function statusDaTarefa(tarefa: TarefaInstancia): { variante: Variante; r
 }
 
 /**
- * Ponto + rótulo. Texto em text-sm: tela do operador.
+ * Ponto + rótulo. Texto em text-sm: tela do operador. Cores de texto um tom acima do Status do template
+ * (`STATUS_LEGIVEL`): "Atrasada" dava 3,97:1 e "Feita" 2,9:1 sobre o fundo do selo.
  *
  * `pulsar`: só no foco da tela ("Fazer agora") e só no atraso, o único estado que pede atenção agora. Nas linhas da
  * lista o ponto vermelho fica fixo: com vários atrasos, um pulso em cada linha repetia o selo "Atrasada" e o
@@ -32,7 +34,7 @@ export function StatusTarefa({
 }) {
   const { variante, rotulo } = statusDaTarefa(tarefa);
   return (
-    <Status variant={variante} className={cn("text-sm", className)}>
+    <Status variant={variante} className={cn("text-sm", STATUS_LEGIVEL, className)}>
       <StatusIndicator className={variante === "error" && pulsar ? undefined : "before:hidden"} />
       <StatusLabel>{rotulo}</StatusLabel>
     </Status>

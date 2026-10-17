@@ -8,6 +8,8 @@ import { motion } from "motion/react";
 
 import { Button } from "@/components/ui/button";
 import { FieldDescription, FieldError, FieldLegend, FieldSet } from "@/components/ui/field";
+import { agoraSimulado } from "@/lib/clock";
+import { usePinBloqueadoAte, useSessionStore } from "@/stores/session/session-store";
 
 const TECLAS = ["1", "2", "3", "4", "5", "6", "7", "8", "9"] as const;
 
@@ -26,6 +28,22 @@ const TREMIDA = { x: [0, -10, 10, -6, 6, 0] };
 const TRANSICAO_DA_TREMIDA = { duration: 0.3, ease: "easeOut" } as const;
 
 type TeclaFisica = Pick<KeyboardEvent, "key" | "repeat" | "ctrlKey" | "metaKey" | "altKey">;
+
+const HORA_COM_SEGUNDOS = new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+
+/**
+ * Espera depois de muitos PINs errados para a pessoa (V03-SEC-02; contagem e prazo no store, src/lib/sessao/pin.ts).
+ * Devolve a mensagem para o `erro` do PinPad, ou null. Hora fixa ("às 07:43:12") e não contagem regressiva: o PIN pad
+ * fica desabilitado até o store liberar sozinho no instante certo (`usePinBloqueadoAte`), sem relógio por segundo. O
+ * prazo é em horário real (o relógio da demo não encurta a espera); aqui aparece no horário da demonstração, o mesmo do
+ * resto da tela.
+ */
+export function useEsperaDoPin(usuarioId: string | undefined): string | null {
+  const ate = usePinBloqueadoAte(usuarioId);
+  const relogio = useSessionStore((s) => s.relogio);
+  if (!ate) return null;
+  return `Muitas tentativas. Tente de novo às ${HORA_COM_SEGUNDOS.format(agoraSimulado(relogio, ate.getTime()))}.`;
+}
 
 function emCampoDeTexto(alvo: EventTarget | null): boolean {
   if (!(alvo instanceof HTMLElement)) return false;

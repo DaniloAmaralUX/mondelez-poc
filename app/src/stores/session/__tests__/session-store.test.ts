@@ -6,7 +6,7 @@ import { LIMITES } from "@/domain/limites";
 import type { Formulario, Rascunho, TarefaInstancia } from "@/domain/types";
 import { agoraSimulado } from "@/lib/clock";
 
-import { JANELA_DESFAZER_MS, useSessionStore } from "../session-store";
+import { ESPERA_PIN_MS, JANELA_DESFAZER_MS, MAX_TENTATIVAS_PIN, useSessionStore } from "../session-store";
 
 // Integração do store em node: sem window o persist não lê nem grava o IndexedDB; o cookie vai para um document falso.
 const formulario = localRepository.formulario("ppli-l4") as Formulario;
@@ -32,6 +32,8 @@ beforeEach(() => {
   vi.setSystemTime(new Date("2026-10-16T13:00:00.000Z"));
   estado().resetarDemo();
   estado().sair();
+  // A contagem de PINs errados sobrevive ao "Resetar dados" (de propósito): entre os testes, começa do zero.
+  useSessionStore.setState({ tentativasPin: {}, pinBloqueadoAte: {} });
   if (estado().simularSemRede) estado().alternarRede();
   estado().definirRedeNavegador("online");
   expect(estado().entrarComPin("u-alberto", PIN_DEMO).ok).toBe(true);
@@ -125,12 +127,28 @@ describe("última sincronização", () => {
     expect(estado().ultimaSincronizacao).not.toBe(primeira);
   });
 
+  it("também fica no relógio da demo; sem rede, avançar o relógio não muda a hora da última", () => {
+    estado().tentarEnviarDeNovo();
+    const simulada = estado().ultimaSincronizacaoSimulada;
+    expect(simulada).toBe(agoraSimulado(estado().relogio).toISOString());
+
+    estado().alternarRede();
+    estado().avancarRelogio(60);
+    estado().tentarEnviarDeNovo();
+    expect(estado().ultimaSincronizacaoSimulada).toBe(simulada);
+
+    // Com a rede de volta, o salto do relógio renova já (sem esperar os 50 s): o chip não fica 1 h atrás.
+    estado().alternarRede();
+    expect(Date.parse(estado().ultimaSincronizacaoSimulada ?? "") - Date.parse(simulada ?? "")).toBe(60 * 60_000);
+  });
+
   it("resetar a demo cancela as janelas de desfazer abertas (nada chega à fila depois)", () => {
     registrar();
     estado().resetarDemo();
     vi.advanceTimersByTime(JANELA_DESFAZER_MS + ENVIO_MS);
     expect(estado().registros).toEqual({});
     expect(estado().ultimaSincronizacao).toBeNull();
+    expect(estado().ultimaSincronizacaoSimulada).toBeNull();
   });
 });
 
@@ -261,9 +279,143 @@ describe("alertas", () => {
     estado().entrarComPin("u-renata", PIN_DEMO);
     estado().tratarAlerta("nc:reg-x", "assumir", "Assumido");
     estado().tratarAlerta("nc:reg-x", "acao", "Troca do mordente");
-    estado().desfazerTratamento("nc:reg-x");
+    expect(estado().desfazerTratamento("nc:reg-x")).toBe(true);
     expect(estado().tratamentos["nc:reg-x"]?.map((a) => a.tipo)).toEqual(["assumir"]);
-    estado().desfazerTratamento("nc:reg-x");
+    expect(estado().desfazerTratamento("nc:reg-x")).toBe(true);
     expect(estado().tratamentos["nc:reg-x"]).toBeUndefined();
+    expect(estado().desfazerTratamento("nc:reg-x")).toBe(false);
+  });
+
+  it("tratar devolve a ação; o desfazer com o instante dela não apaga uma ação mais nova", () => {
+    estado().entrarComPin("u-renata", PIN_DEMO);
+    const assumir = estado().tratarAlerta("nc:reg-x", "assumir", "Assumido");
+    expect(assumir).toMatchObject({ tipo: "assumir", usuarioId: "u-renata" });
+    vi.advanceTimersByTime(1000);
+    estado().tratarAlerta("nc:reg-x", "acao", "Troca do mordente");
+    expect(estado().desfazerTratamento("nc:reg-x", assumir?.em)).toBe(false);
+    expect(estado().tratamentos["nc:reg-x"]).toHaveLength(2);
+  });
+
+  it("o Desfazer que ficou na tela não age com o tablet bloqueado nem com outra pessoa", () => {
+    estado().entrarComPin("u-renata", PIN_DEMO);
+    const acao = estado().tratarAlerta("nc:reg-x", "assumir", "Assumido");
+    estado().bloquear("inatividade");
+    expect(estado().desfazerTratamento("nc:reg-x", acao?.em)).toBe(false);
+    expect(estado().tratarAlerta("nc:reg-x", "acao", "Bloqueado")).toBeUndefined();
+
+    // Outra pessoa da liderança no posto: o "Assumir" da Renata não é dela.
+    estado().entrarComPin("u-graziela", PIN_DEMO);
+    expect(estado().desfazerTratamento("nc:reg-x", acao?.em)).toBe(false);
+    expect(estado().desfazerTratamento("nc:reg-x")).toBe(false);
+    expect(estado().tratamentos["nc:reg-x"]).toHaveLength(1);
+
+    estado().entrarComPin("u-renata", PIN_DEMO);
+    expect(estado().desfazerTratamento("nc:reg-x", acao?.em)).toBe(true);
+  });
+});
+
+describe("tentativas de PIN", () => {
+  const errar = (vezes: number, usuarioId = "u-graziela") => {
+    let ultimo = estado().entrarComPin(usuarioId, "0000");
+    for (let i = 1; i < vezes; i++) ultimo = estado().entrarComPin(usuarioId, "0000");
+    return ultimo;
+  };
+
+  it("no 5º PIN errado seguido o PIN da pessoa fica bloqueado por 60 s, até para o PIN certo", () => {
+    estado().bloquear("troca", "u-graziela");
+    expect(errar(MAX_TENTATIVAS_PIN - 2)).toEqual({ ok: false, campo: "pin", erro: "PIN incorreto." });
+    expect(errar(1)).toEqual({
+      ok: false,
+      campo: "pin",
+      erro: "PIN incorreto. Mais um erro bloqueia o PIN por 1 minuto.",
+    });
+    expect(errar(1)).toEqual({
+      ok: false,
+      campo: "pin",
+      erro: "Muitas tentativas. Tente de novo em 60 s.",
+      bloqueadoAte: new Date(Date.now() + ESPERA_PIN_MS).toISOString(),
+    });
+
+    vi.advanceTimersByTime(20_000);
+    expect(estado().entrarComPin("u-graziela", PIN_DEMO)).toMatchObject({
+      ok: false,
+      campo: "pin",
+      erro: "Muitas tentativas. Tente de novo em 40 s.",
+    });
+    expect(estado()).toMatchObject({ bloqueado: true, usuarioId: "u-alberto" });
+    // Outra pessoa não herda o bloqueio.
+    expect(estado().entrarComPin("u-alberto", PIN_DEMO).ok).toBe(true);
+  });
+
+  it("a espera é em tempo real: avançar o relógio da demo não encurta", () => {
+    errar(MAX_TENTATIVAS_PIN);
+    estado().avancarRelogio(60);
+    expect(estado().entrarComPin("u-graziela", PIN_DEMO).ok).toBe(false);
+    vi.advanceTimersByTime(ESPERA_PIN_MS);
+    expect(estado().entrarComPin("u-graziela", PIN_DEMO).ok).toBe(true);
+    expect(estado().tentativasPin).toEqual({});
+    expect(estado().pinBloqueadoAte).toEqual({});
+  });
+
+  it("o acerto zera a contagem; o login com matrícula conta junto com a tela de bloqueio", () => {
+    errar(MAX_TENTATIVAS_PIN - 1);
+    expect(estado().tentativasPin).toEqual({ "u-graziela": MAX_TENTATIVAS_PIN - 1 });
+    const graziela = localRepository.usuario("u-graziela");
+    if (!graziela) throw new Error("seed sem u-graziela");
+    estado().sair();
+    const contexto = { plantaId: "chocolate", linhaId: "bis-2", postoId: "bis-2-embalagem" };
+    expect(estado().entrar(graziela.matricula, "9999", contexto)).toMatchObject({ bloqueadoAte: expect.any(String) });
+    vi.advanceTimersByTime(ESPERA_PIN_MS);
+    expect(estado().entrar(graziela.matricula, PIN_DEMO, contexto).ok).toBe(true);
+    expect(estado().tentativasPin).toEqual({});
+  });
+
+  it("matrícula ou pessoa desconhecida não conta tentativa", () => {
+    estado().entrarComPin("u-ninguem", "0000");
+    estado().sair();
+    estado().entrar("000000", "0000", { plantaId: "chocolate", linhaId: "bis-2", postoId: "bis-2-embalagem" });
+    expect(estado().tentativasPin).toEqual({});
+  });
+
+  it("resetar a demo não zera a contagem (senão o reset virava atalho para mais tentativas)", () => {
+    errar(MAX_TENTATIVAS_PIN);
+    estado().resetarDemo();
+    expect(estado().pinBloqueadoAte["u-graziela"]).toBeDefined();
+  });
+});
+
+describe("restaurar rascunho (desfazer do Descartar)", () => {
+  it("devolve o rascunho com autor e início, só para quem descartou e com o tablet desbloqueado", () => {
+    estado().salvarRascunho(tarefa.id, valores);
+    const anterior = estado().rascunhos[tarefa.id];
+    if (!anterior) throw new Error("rascunho não salvo");
+    estado().descartarRascunho(tarefa.id);
+
+    estado().bloquear("inatividade");
+    expect(estado().restaurarRascunho(tarefa.id, anterior)).toBe(false);
+    estado().entrarComPin("u-graziela", PIN_DEMO);
+    expect(estado().restaurarRascunho(tarefa.id, anterior)).toBe(false);
+    expect(estado().rascunhos[tarefa.id]).toBeUndefined();
+
+    estado().entrarComPin("u-alberto", PIN_DEMO);
+    expect(estado().restaurarRascunho(tarefa.id, anterior)).toBe(true);
+    expect(estado().rascunhos[tarefa.id]).toEqual(anterior);
+    // Uma vez só: o mesmo aviso não restaura de novo.
+    expect(estado().restaurarRascunho(tarefa.id, anterior)).toBe(false);
+  });
+
+  it("sem descarte nesta aba não há o que restaurar", () => {
+    estado().salvarRascunho(tarefa.id, valores);
+    const anterior = estado().rascunhos[tarefa.id];
+    if (!anterior) throw new Error("rascunho não salvo");
+    expect(estado().restaurarRascunho("outra-tarefa", anterior)).toBe(false);
+  });
+});
+
+describe("desfazer conclusão", () => {
+  it("devolve true só quando desfez", () => {
+    estado().confirmarTarefa("tarefa-y");
+    expect(estado().desfazerConclusao("tarefa-y")).toBe(true);
+    expect(estado().desfazerConclusao("tarefa-y")).toBe(false);
   });
 });

@@ -23,12 +23,13 @@ import {
 import { descreverResposta, resumirRespostas, situacaoItem, validarRespostas } from "@/domain/formulario-engine";
 import type { Formulario, Registro, Resposta, TarefaInstancia } from "@/domain/types";
 import { useDeslocamentoDoTeclado } from "@/hooks/use-visual-viewport";
+import { PRESSAO } from "@/lib/pressao";
 import { JANELA_DESFAZER_MS } from "@/stores/session/session-store";
 
 import { ChecklistItems } from "./checklist-items";
 import { ChecklistNotes } from "./checklist-notes";
 import { ChecklistPreview } from "./checklist-preview";
-import { type ChecklistFormValues, PRESSAO, rolagem } from "./data";
+import { type ChecklistFormValues, rolagem } from "./data";
 import { useAvisosDaTela } from "./use-avisos-da-tela";
 
 export const ETAPA_REVISAR = "revisar";
@@ -79,9 +80,10 @@ export function irParaItem(itemId: string) {
  * Checklist em etapas (padrão de steppers do UI Audit): um grupo por vez, revisão no fim e uma barra fixa com a próxima
  * ação sempre ao alcance do polegar (modo foco, docs/12 §3.2 e §3.4).
  *
- * Lista de etapas só com 720 px ou mais de área útil (container `foco`); abaixo disso ela some e quem indica a etapa é
- * o cabeçalho ("Etapa X de Y · Nome"), em vez de uma lista que rolava escondida e só se alcançava por arrasto. As
- * etapas continuam no DOM para os painéis manterem o nome acessível (aria-labelledby).
+ * Lista de etapas só com 720 px ou mais de área útil (container `foco`) e altura de 600 px ou mais (pouca-altura:,
+ * paisagem com o teclado do Android aberto); fora disso ela some e quem indica a etapa é o cabeçalho ("Etapa X de Y ·
+ * Nome"), em vez de uma lista que rolava escondida e só se alcançava por arrasto. As etapas continuam no DOM para os
+ * painéis manterem o nome acessível (aria-labelledby).
  */
 export function ChecklistStepper({
   formulario,
@@ -191,9 +193,9 @@ export function ChecklistStepper({
       onValueChange={trocarEtapa}
       onValidate={onValidate}
       // flex-1: com etapa curta, a barra de ações (mt-auto) desce até o rodapé em vez de ficar no meio da tela.
-      className="flex flex-1 scroll-mt-24 flex-col gap-5"
+      className="flex flex-1 scroll-mt-24 flex-col gap-5 pouca-altura:gap-3"
     >
-      <StepperList className="@max-[45rem]/foco:hidden">
+      <StepperList className="@max-[45rem]/foco:hidden pouca-altura:hidden">
         {todas.map((e, posicao) => {
           const ehRevisar = e.value === ETAPA_REVISAR;
           const respondidos = e.itens.filter((item) => situacaoItem(item, respostas[item.id]) !== "pendente").length;
@@ -425,10 +427,11 @@ function ResumoDaRevisao({
           </div>
         ))}
       </div>
+      {/* wrap-anywhere: uma justificativa colada sem espaços (código, lote) quebra dentro do cartão em vez de vazar. */}
       {ncs.length > 0 && (
         <ul className="flex flex-col gap-1 text-sm">
           {ncs.map((item) => (
-            <li key={item.id} className="text-destructive">
+            <li key={item.id} className="wrap-anywhere text-destructive">
               {item.texto}
               {/* Centerline: o valor digitado e o padrão, para conferir um erro de digitação antes de registrar. */}
               {item.tipo === "numero" && item.faixa && (

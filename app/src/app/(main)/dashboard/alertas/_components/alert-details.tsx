@@ -3,7 +3,7 @@
 import Link from "next/link";
 
 import { cn } from "cn";
-import { AlertTriangleIcon, Copy, MessageSquareText, Send, ShieldAlert, Star } from "lucide-react";
+import { AlertTriangleIcon, Clock, Copy, MessageSquareText, Send, ShieldAlert, Star, Undo2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -23,7 +23,7 @@ import {
   TimelineTitle,
 } from "@/components/ui/timeline";
 import { localRepository } from "@/data/repository";
-import type { Alerta } from "@/domain/types";
+import type { AcaoAlerta, Alerta, Registro } from "@/domain/types";
 import { formatarHora } from "@/lib/format";
 import { getInitials } from "@/lib/utils";
 import { useAgora, useSessionStore } from "@/stores/session/session-store";
@@ -55,6 +55,15 @@ function EmptyAlertOverview() {
   );
 }
 
+/**
+ * O aviso no Teams sai do servidor, quando o registro chega lá (RF-07). Enquanto o registro com a NC está no tablet
+ * (janela de desfazer, fila, sem rede ou erro), o selo e o histórico dizem "aguardando envio": dizer "enviado" faria a
+ * liderança achar que a especialista já foi avisada. Sem registro (atraso), o alerta nasce no servidor pelo prazo.
+ */
+function envioPendente(registro: Registro | undefined) {
+  return registro !== undefined && registro.syncStatus !== "sincronizado";
+}
+
 function useOrigem(alerta: Alerta) {
   const registros = useSessionStore((s) => s.registros);
   const registro = alerta.registroId ? registros[alerta.registroId] : undefined;
@@ -72,6 +81,7 @@ function AlertOverview({ alerta, tituloId }: { alerta: Alerta; tituloId?: string
   const equipamento = alerta.equipamentoId ? localRepository.equipamento(alerta.equipamentoId) : undefined;
   const responsavel = alerta.responsavelId ? localRepository.usuario(alerta.responsavelId) : undefined;
   const itemCritico = alerta.itensNaoConformes.some((i) => i.critico);
+  const aguardandoEnvio = envioPendente(registro);
 
   return (
     <div className="flex flex-col gap-4">
@@ -226,7 +236,9 @@ function AlertOverview({ alerta, tituloId }: { alerta: Alerta; tituloId?: string
           <div className="flex flex-wrap gap-2">
             {[
               ...(itemCritico ? [{ icon: ShieldAlert, label: "Item crítico" }] : []),
-              { icon: Send, label: "Teams enviado" },
+              aguardandoEnvio
+                ? { icon: Clock, label: "Teams aguardando envio" }
+                : { icon: Send, label: "Teams enviado" },
               { icon: MessageSquareText, label: "Supervisão e especialista" },
             ].map(({ icon: TagIcon, label }) => (
               <Badge
@@ -245,14 +257,47 @@ function AlertOverview({ alerta, tituloId }: { alerta: Alerta; tituloId?: string
   );
 }
 
+/** Ações da liderança que o "Desfazer" do histórico pode tirar (o envio e o encerramento automático são do sistema). */
+const DESFAZIVEIS: ReadonlySet<AcaoAlerta["tipo"]> = new Set(["assumir", "acao", "resolver"]);
+
+/**
+ * "Desfazer" além dos 10 s do aviso (WCAG 2.2.1, V03-A11Y-03): a última ação do histórico, se for da pessoa no posto,
+ * mostra "Desfazer" enquanto ninguém agir depois dela. Outra pessoa assumir, registrar ou resolver (ou a tarefa ser
+ * concluída no posto) fecha essa porta: desfazer apagaria uma ação que não é a última do histórico. É o mesmo desfazer
+ * do aviso, sem prazo e sem regra nova; o store recusa se o tablet estiver bloqueado ou se a ação for de outra pessoa.
+ */
+function useDesfazerDoHistorico(alerta: Alerta) {
+  const usuarioId = useSessionStore((s) => s.usuarioId);
+  const desfazerTratamento = useSessionStore((s) => s.desfazerTratamento);
+  const ultima = alerta.acoes.at(-1);
+  const podeDesfazer =
+    ultima !== undefined && usuarioId !== null && ultima.usuarioId === usuarioId && DESFAZIVEIS.has(ultima.tipo);
+
+  function desfazer() {
+    if (!ultima || !desfazerTratamento(alerta.id, ultima.em)) {
+      toast.warning("Não deu para desfazer", { description: "Outra ação foi registrada depois desta." });
+      return;
+    }
+    toast.info("Ação desfeita", { description: alerta.titulo });
+  }
+
+  return { ultimaId: podeDesfazer ? `${ultima.tipo}-${ultima.em}` : null, desfazer };
+}
+
 /** Ciclo do alerta como linha do tempo vertical: quem fez o quê e quando (substitui a faixa de 420 px da v0). */
 function AlertHistory({ alerta }: { alerta: Alerta }) {
+  const { registro } = useOrigem(alerta);
+  const aguardandoEnvio = envioPendente(registro);
+  const { ultimaId, desfazer } = useDesfazerDoHistorico(alerta);
   const eventos = [
     { id: "criado", titulo: "Alerta gerado", texto: alerta.descricao, em: alerta.criadoEm, autor: undefined },
     ...alerta.acoes.map((acao) => ({
       id: `${acao.tipo}-${acao.em}`,
-      titulo: ACAO_LABEL[acao.tipo],
-      texto: acao.texto,
+      titulo: acao.tipo === "envio" && aguardandoEnvio ? "Envio pendente" : ACAO_LABEL[acao.tipo],
+      texto:
+        acao.tipo === "envio" && aguardandoEnvio
+          ? "Aguardando o registro chegar ao servidor para avisar a Supervisão e a Especialista via Teams (simulado)."
+          : acao.texto,
       em: new Date(acao.em),
       autor: acao.usuarioId ? localRepository.usuario(acao.usuarioId) : undefined,
     })),
@@ -278,6 +323,13 @@ function AlertHistory({ alerta }: { alerta: Alerta }) {
                 {evento.texto}
                 {evento.autor && ` · ${evento.autor.nome}`}
               </TimelineDescription>
+              {/* Tamanho do template no notebook; no toque a camada leva o botão a 56 px (src/styles/tablet.css). */}
+              {evento.id === ultimaId && (
+                <Button type="button" variant="outline" size="sm" className="mt-2 w-fit" onClick={desfazer}>
+                  <Undo2 data-icon="inline-start" />
+                  Desfazer<span className="sr-only">: {evento.titulo}</span>
+                </Button>
+              )}
             </TimelineContent>
           </TimelineItem>
         ))}

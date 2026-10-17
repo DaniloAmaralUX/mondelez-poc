@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { localRepository } from "@/data/repository";
 import { PIN_DEMO } from "@/data/seed";
 import type { Formulario, TarefaInstancia } from "@/domain/types";
+import { VERSAO_SESSAO } from "@/lib/sessao/migracao";
 
 // Integração do store com a persistência de verdade: cada "aba" é uma importação nova do módulo (vi.resetModules), com
 // o IndexedDB, o BroadcastChannel e a Web Locks API falsos e compartilhados entre elas.
@@ -292,6 +293,23 @@ describe("carga do IndexedDB", () => {
     expect(b.estado().registros[registro?.id ?? ""]?.syncStatus).toBe("local");
   });
 
+  it("antes da carga o estado é o do dia fixo da hidratação; sem nada salvo, a demo começa hoje", async () => {
+    // Já é outro dia (17/10): o estado antes da carga continua no dia fixo do HTML do servidor (16/10), igual ao do
+    // servidor em qualquer dia e fuso; a carga sem nada salvo troca pela demo de hoje.
+    vi.setSystemTime(new Date(2026, 9, 17, 13, 0));
+    vi.resetModules();
+    const m: typeof import("../session-store") = await import("../session-store");
+    // O estado inicial é o que o useSessionStore usa no servidor e na hidratação (getServerSnapshot do zustand).
+    const chavesAntes = Object.keys(m.useSessionStore.getInitialState().conclusoes);
+    expect(chavesAntes.length).toBeGreaterThan(0);
+    expect(chavesAntes.every((k) => k.includes("@2026-10-16T1"))).toBe(true);
+
+    for (let i = 0; i < 20 && !m.useSessionStore.persist.hasHydrated(); i++) await vi.advanceTimersByTimeAsync(0);
+    const depois = m.useSessionStore.getState();
+    expect(Object.keys(depois.conclusoes).every((k) => k.includes("@2026-10-17T1"))).toBe(true);
+    expect(new Date(depois.relogio.simulado).getDate()).toBe(17);
+  });
+
   it("a chave da v0.2 é migrada, gravada no banco novo e apagada", async () => {
     const relogio = { simulado: "2026-10-16T10:40:00.000Z", real: Date.now() };
     compartilhado.legado.set(
@@ -315,7 +333,7 @@ describe("carga do IndexedDB", () => {
     expect(a.estado()).toMatchObject({ usuarioId: "u-alberto", simularSemRede: true });
     await vi.advanceTimersByTimeAsync(1000);
 
-    expect(compartilhado.novo.get(CHAVE)).toMatchObject({ version: 3 });
+    expect(compartilhado.novo.get(CHAVE)).toMatchObject({ version: VERSAO_SESSAO });
     expect(salvo().rascunhos).toMatchObject({ "tarefa-x": { observacao: "Lote 3", iniciadoPor: "u-alberto" } });
     expect(compartilhado.legado.has(CHAVE)).toBe(false);
   });

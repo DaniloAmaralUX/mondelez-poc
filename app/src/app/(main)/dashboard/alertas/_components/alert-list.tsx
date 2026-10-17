@@ -17,6 +17,7 @@ import type { Alerta, EstadoAlerta } from "@/domain/types";
 import { useModoToque } from "@/hooks/use-modo-toque";
 import { formatarHora } from "@/lib/format";
 import { ICONE_MODULO } from "@/lib/modulo-icones";
+import { STATUS_LEGIVEL } from "@/lib/status-legivel";
 import { getInitials } from "@/lib/utils";
 import { useAgora } from "@/stores/session/session-store";
 
@@ -82,7 +83,7 @@ function AlertCard({ alerta, active, explicito = true, onSelectAlert, agora }: A
       <div className="flex items-center justify-between gap-3">
         <div>#{alerta.regra}</div>
 
-        <Status variant={STATUS_VARIANTE[status]} className="toque:text-sm">
+        <Status variant={STATUS_VARIANTE[status]} className={cn("toque:text-sm", STATUS_LEGIVEL)}>
           <StatusIndicator className={status === "critico" ? undefined : "before:hidden"} />
           <StatusLabel>{STATUS_LABEL[status]}</StatusLabel>
         </Status>

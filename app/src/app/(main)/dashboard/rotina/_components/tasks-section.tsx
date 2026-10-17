@@ -16,6 +16,7 @@ import { useMinhasTarefas } from "@/hooks/use-turno";
 import { formatarHora } from "@/lib/format";
 import { ICONE_MODULO } from "@/lib/modulo-icones";
 import { descreverPrazo } from "@/lib/prazo";
+import { PRESSAO } from "@/lib/pressao";
 import { hrefDaTarefa } from "@/lib/rotas";
 import { useAgora, useSessionStore } from "@/stores/session/session-store";
 
@@ -39,9 +40,6 @@ const VAZIO: Record<Filtro, string> = {
 // Saída rápida e sem salto quando a tarefa muda de grupo (oportunidades de movimento, item 1).
 const SAIDA = { duration: 0.18, ease: [0.23, 1, 0.32, 1] } as const;
 const SAI_COM_ESCALA = { opacity: 0, scale: 0.98 } as const;
-
-// Retorno de toque; com prefers-reduced-motion o retorno fica, sem a transição (docs/12 §5 item 10).
-const PRESSAO = "transition-transform duration-150 ease-out active:scale-[0.97] motion-reduce:transition-none";
 
 export function TasksSection() {
   const tarefas = useMinhasTarefas();

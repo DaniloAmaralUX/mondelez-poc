@@ -2,7 +2,7 @@
 
 import { useId } from "react";
 
-import { format, isToday, isYesterday, subDays } from "date-fns";
+import { format, subDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { CalendarDays, FileText } from "lucide-react";
 
@@ -11,15 +11,16 @@ import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle }
 import { recados } from "@/data/seed";
 import { useAgora } from "@/stores/session/session-store";
 
-function formatarData(date: Date) {
-  if (isToday(date)) return "Hoje";
-  if (isYesterday(date)) return "Ontem";
-  return format(date, "d 'de' MMM", { locale: ptBR });
+/** Pelo relógio da demo: isToday/isYesterday do date-fns comparam com o dia real e erravam depois da meia-noite simulada. */
+function formatarData(hoje: Date, diasAtras: number) {
+  if (diasAtras === 0) return "Hoje";
+  if (diasAtras === 1) return "Ontem";
+  return format(subDays(hoje, diasAtras), "d 'de' MMM", { locale: ptBR });
 }
 
 /** Agenda da fábrica e recados (RM-16). */
 export function RecentNotesCard() {
-  const hoje = useAgora(60_000);
+  const hoje = useAgora();
   const ajudaId = useId();
 
   return (
@@ -47,7 +48,7 @@ export function RecentNotesCard() {
                     wrap-anywhere quebra um e-mail ou endereço longo dentro da coluna. */}
                 <div className="wrap-anywhere font-medium text-sm leading-tight">{recado.titulo}</div>
                 <div className="text-muted-foreground text-xs toque:text-sm">
-                  {formatarData(subDays(hoje, recado.diasAtras))} · {recado.autor}
+                  {formatarData(hoje, recado.diasAtras)} · {recado.autor}
                 </div>
               </div>
             </div>

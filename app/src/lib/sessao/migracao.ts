@@ -5,10 +5,13 @@ import { agoraSimulado, type ClockAnchor } from "@/lib/clock";
 import type { MotivoBloqueio } from "./bloqueio";
 import type { RascunhoSalvo } from "./rascunho";
 
-/** Versão do estado salvo no IndexedDB. v3 = v0.3 (sessão compartilhada, fila com desfazer, rede real). */
-export const VERSAO_SESSAO = 3;
+/**
+ * Versão do estado salvo no IndexedDB. v3 = v0.3 (sessão compartilhada, fila com desfazer, rede real); v4 = tentativas
+ * de PIN por pessoa e a última sincronização também no relógio da demo.
+ */
+export const VERSAO_SESSAO = 4;
 
-/** O que fica salvo no tablet (v3). Rede do navegador e rede efetiva não são salvas: vêm do aparelho ao abrir. */
+/** O que fica salvo no tablet (v4). Rede do navegador e rede efetiva não são salvas: vêm do aparelho ao abrir. */
 export interface SessaoPersistida {
   usuarioId: string | null;
   /** Posto lembrado pelo tablet: sobrevive à troca de pessoa e ao sair. */
@@ -29,9 +32,21 @@ export interface SessaoPersistida {
   candidatoId: string | null;
   /** Última sincronização com o servidor (ISO, horário real do aparelho). */
   ultimaSincronizacao: string | null;
+  /**
+   * A mesma sincronização no relógio da demo (ISO simulado): é a hora que o chip mostra. Converter a real pela âncora
+   * atual errava depois de avançar o relógio (a sincronização das 07:40 aparecia como 08:40).
+   */
+  ultimaSincronizacaoSimulada: string | null;
   /** Turno simulado em que a pessoa atual entrou; base do bloqueio na virada de turno. */
   turnoDaSessao: string | null;
+  /** PINs errados seguidos por pessoa (lib/sessao/pin.ts). Sobrevive à recarga: recarregar não zera a contagem. */
+  tentativasPin: Record<string, number>;
+  /** Até quando o PIN de cada pessoa está bloqueado (ISO, horário real). */
+  pinBloqueadoAte: Record<string, string>;
 }
+
+/** O estado salvo pela v3, antes dos campos da v4. */
+type SessaoV3 = Omit<SessaoPersistida, "ultimaSincronizacaoSimulada" | "tentativasPin" | "pinBloqueadoAte">;
 
 /** Estado salvo pela v0.2 (`version: 2`). */
 interface SessaoV2 {
@@ -49,7 +64,8 @@ function ehObjeto(valor: unknown): valor is Record<string, unknown> {
   return typeof valor === "object" && valor !== null;
 }
 
-function ehSessaoV2(valor: unknown): valor is SessaoV2 {
+/** Tem o relógio da demo na forma esperada: o mínimo para aproveitar um estado salvo. */
+function temRelogio(valor: unknown): valor is { relogio: ClockAnchor } {
   return (
     ehObjeto(valor) &&
     ehObjeto(valor.relogio) &&
@@ -58,12 +74,16 @@ function ehSessaoV2(valor: unknown): valor is SessaoV2 {
   );
 }
 
+function ehSessaoV2(valor: unknown): valor is SessaoV2 {
+  return temRelogio(valor);
+}
+
 /**
  * v2 → v3: preserva posto, pessoa, relógio, conclusões, registros, tratamentos e rascunhos; a simulação de rede vira
  * `simularSemRede`; os rascunhos ganham autor (a pessoa logada na v0.2; "" quando não havia ninguém) e início (agora,
  * no relógio da demo).
  */
-function v2ParaV3(v2: SessaoV2, realAgora: number): SessaoPersistida {
+function v2ParaV3(v2: SessaoV2, realAgora: number): SessaoV3 {
   const agora = agoraSimulado(v2.relogio, realAgora);
   const usuarioId = v2.usuarioId ?? null;
   const rascunhos: Record<string, RascunhoSalvo> = {};
@@ -95,6 +115,21 @@ function v2ParaV3(v2: SessaoV2, realAgora: number): SessaoPersistida {
 }
 
 /**
+ * v3 → v4: tentativas de PIN começam do zero; a última sincronização no relógio da demo é a real convertida pela âncora
+ * salva (exata enquanto o relógio não foi avançado depois dela, a melhor estimativa que o estado v3 permite).
+ */
+function v3ParaV4(v3: SessaoV3): SessaoPersistida {
+  const real = v3.ultimaSincronizacao ? Date.parse(v3.ultimaSincronizacao) : Number.NaN;
+  const simulada = Number.isFinite(real) && temRelogio(v3) ? agoraSimulado(v3.relogio, real).getTime() : Number.NaN;
+  return {
+    ...v3,
+    ultimaSincronizacaoSimulada: Number.isFinite(simulada) ? new Date(simulada).toISOString() : null,
+    tentativasPin: {},
+    pinBloqueadoAte: {},
+  };
+}
+
+/**
  * Migração incremental do estado salvo. Devolve `null` quando não dá para aproveitar (versões < 2 não têm registros
  * nem alertas, ou o conteúdo não tem a forma esperada): o store recomeça a demo.
  */
@@ -109,6 +144,10 @@ export function migrarSessao(
     if (!ehSessaoV2(estado)) return null;
     estado = v2ParaV3(estado, realAgora);
   }
-  // Próximas versões: `if (versao <= 3) estado = v3ParaV4(estado)`.
+  if (versao <= 3) {
+    if (!ehObjeto(estado)) return null;
+    estado = v3ParaV4(estado as unknown as SessaoV3);
+  }
+  // Próximas versões: `if (versao <= 4) estado = v4ParaV5(estado)`.
   return ehObjeto(estado) ? (estado as unknown as SessaoPersistida) : null;
 }

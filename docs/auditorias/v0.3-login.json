@@ -3,24 +3,31 @@
   "project": "Mondelez · Gestão de Rotinas Operacionais",
   "date": "2026-10-16",
   "version": "v0.3",
-  "viewports": ["iPad retrato 820×1180 (toque)", "iPad paisagem 1180×820 (toque)"],
+  "reauditoria": {
+    "data": "2026-10-16",
+    "motivo": "Refeita depois das correções da fase H e da costura final. Cada item foi medido de novo no app atual (next dev, porta 3100).",
+    "resumo": { "pass": 23, "warn": 0, "fail": 0 },
+    "mudancas": "3 itens passaram de warn para pass: ordem do formulário, ação primária, trocar de posto."
+  },
+  "viewports": ["iPad retrato 820×1180 (toque)", "iPad paisagem 1180×820 (toque)", "Split View 590×820 (toque)", "conferência: desktop 1440×900 (mouse)"],
   "evidencias": {
-    "pasta": "C:/Users/dar/AppData/Local/Temp/v03/h/ui-audit-operador",
+    "pasta": "C:/Users/dar/AppData/Local/Temp/v03/h/reauditoria",
     "capturas": [
       "shots/login__ipad-retrato__1-inicial.png",
       "shots/login__ipad-retrato__2-matricula.png",
-      "shots/login__ipad-retrato__4-pin-errado.png",
-      "shots/login__ipad-retrato__5-linha-posto.png",
+      "shots/login__ipad-retrato__3-pin-errado.png",
       "shots/login__ipad-paisagem__1-inicial.png",
       "shots/login__ipad-paisagem__2-matricula.png",
-      "shots/login__ipad-paisagem__4-pin-errado.png"
+      "shots/login__split__1-inicial.png",
+      "shots/login__toast-bom-turno__sistema-dark.png"
     ],
-    "medicoes": "shots/login__*.json (alvos, pares a menos de 12 px, fonte dos campos, texto < 14 px, contraste)",
-    "roteiro": "login.mjs: toque na matrícula, digitação 104233, PIN errado 1111 por toque nas teclas, rolagem até Linha/Posto, PIN 1234 por toque"
+    "medicoes": "shots/login__*.json (alvos, pares a menos de 12 px, fontes dos campos, texto < 14 px, contraste WCAG) e saida.log",
+    "roteiro": "login.mjs: toque na matrícula, 104233, PIN errado 1111 por toque, PIN 1234 por toque; aviso Bom turno com o sistema claro e escuro. login2.mjs: Entrar, título, indicadores e painel primário, também no desktop.",
+    "rodada_anterior": "C:/Users/dar/AppData/Local/Temp/v03/h/ui-audit-operador"
   },
   "macro_bets": [
     { "category": "velocity", "description": "Entrar com crachá e 4 toques no PIN, sem teclado do sistema", "alignment": "strong" },
-    { "category": "accuracy", "description": "Registro com autor e posto certos no tablet compartilhado", "alignment": "moderate" }
+    { "category": "accuracy", "description": "Registro com autor e posto certos no tablet compartilhado", "alignment": "strong" }
   ],
   "jtbd": [
     { "user": "Operador de embalagem, de luva, no totem do posto", "situation": "início do turno ou troca no posto", "motivation": "entrar no tablet do posto sem digitar muito", "outcome": "começar a rotina no posto certo, com os registros em meu nome" }
@@ -28,50 +35,51 @@
   "visual_hierarchy": {
     "title": "Visual Hierarchy",
     "checks": [
-      { "label": "Título e instrução", "status": "pass", "notes": "\"Entrar no posto\" 30 px e a instrução em 16 px no toque; a primeira dobra mostra o que fazer." },
-      { "label": "Ordem do formulário × ordem da tarefa", "status": "warn", "notes": "Linha e Posto vêm depois do PIN, que envia sozinho no 4º número. Em paisagem a coluna tem 1133 px de conteúdo para 804 px visíveis e a legenda \"Linha\" começa em y = 829 (abaixo da dobra de 820): trocar o posto exige rolar para baixo, escolher e voltar ao teclado antes do último número. A própria descrição do PIN admite o contorno: \"Para trocar, escolha abaixo antes do último número.\" O posto lembrado cobre o caso comum, por isso warn." },
-      { "label": "Posto escolhido visível junto do PIN", "status": "pass", "notes": "\"Entrando em Bis 2 · Embalagem\" ligado ao teclado por aria-describedby." },
-      { "label": "Ação primária", "status": "warn", "notes": "O PIN completo envia (ação principal sem botão). \"Entrar\" é o caminho de reserva e mede 350×56 px: o piso do operador, não os 64 px das primárias (regra do projeto). §3.4 do doc 12 fixa 56 px para o Entrar; registrar como exceção consciente ou subir para 64." },
-      { "label": "Agrupamento e alinhamento", "status": "pass", "notes": "Coluna única de 350 px: SSO (só na demonstração), matrícula, PIN, Linha, Posto, Entrar." },
-      { "label": "Faixas do template em fluxo", "status": "pass", "notes": "Demonstração e rodapé saíram do absolute: nada se sobrepõe aos campos quando a coluna rola em paisagem." }
+      { "label": "Título e instrução", "status": "pass", "notes": "\"Entrar no posto\" com 30 px e instrução com 16 px no toque (14 px no desktop). A primeira dobra mostra o que fazer." },
+      { "label": "Ordem do formulário × ordem da tarefa", "status": "pass", "notes": "A ordem agora é onde e depois quem. Posições no retrato: Linha y 310, Posto 402, Matrícula 494, PIN 591. Em paisagem e no Split: 288, 380, 472, 569. Depois da matrícula, a coluna rola e o teclado do PIN fica inteiro na tela (405–812 de 820 em paisagem), com Linha ainda visível. Nada fica para escolher depois do PIN, que envia sozinho. A frase \"Para trocar, escolha abaixo antes do último número\" saiu.", "historico": "warn → pass (2026-10-16): Linha e Posto vieram para antes da matrícula." },
+      { "label": "Posto escolhido visível junto do PIN", "status": "pass", "notes": "\"Entrando em Bis 2 · Embalagem.\" fica ligado ao fieldset do PIN por aria-describedby." },
+      { "label": "Ação primária", "status": "pass", "notes": "O PIN completo envia sozinho. \"Entrar\" é o caminho de reserva e mede 350×64 no toque (376×64 no Split) e 350×44 no desktop.", "historico": "warn → pass (2026-10-16): Entrar passou de 56 para 64 px no toque." },
+      { "label": "Agrupamento e alinhamento", "status": "pass", "notes": "Coluna única de 350 px: SSO (só na demonstração), Linha, Posto, Matrícula, PIN, Entrar." },
+      { "label": "Faixas do template em fluxo", "status": "pass", "notes": "A faixa de demonstração (y 8) e o rodapé ficam no fluxo. No retrato o documento tem a altura da tela (1180) e nada se sobrepõe aos campos. Em paisagem só a coluna rola (1120/804)." }
     ]
   },
   "visual_style": {
     "title": "Visual Style",
     "checks": [
-      { "label": "Fidelidade ao login v2 do template", "status": "pass", "notes": "Painel primário só em lg (paisagem); coluna do formulário igual ao template." },
-      { "label": "Teclado numérico", "status": "pass", "notes": "10 teclas de 109×64 px, 12 px entre teclas nos dois eixos; Apagar com rótulo acessível." },
-      { "label": "Escolhas grandes de Linha e Posto", "status": "pass", "notes": "ToggleGroup 79×56 (Bis 1–4) e 169×56 (Embalagem/Processo), 12 px entre opções; selecionada com borda, fundo primário suave e ✓ (não só cor)." },
-      { "label": "Estado de erro", "status": "pass", "notes": "PIN errado: indicadores ficam com borda destrutiva, o teclado treme 360 ms (só transform, desligado com reduzir movimento) e o PIN é limpo." },
-      { "label": "Indicadores do PIN", "status": "pass", "notes": "20 px no toque; preenchidos em primário." }
+      { "label": "Fidelidade ao login v2 do template", "status": "pass", "notes": "Painel primário só em paisagem e no desktop (582×804 a partir de x 590 no iPad paisagem). Ausente no retrato e no Split. A coluna do formulário é igual à do template." },
+      { "label": "Teclado numérico", "status": "pass", "notes": "10 teclas de 109×64 (117×64 no Split), com 12 px entre teclas nos dois eixos. Apagar tem rótulo acessível." },
+      { "label": "Escolhas grandes de Linha e Posto", "status": "pass", "notes": "ToggleGroup com 79×56 (Bis 1–4) e 169×56 (Embalagem/Processo), 12 px entre opções. A selecionada tem borda, fundo primário suave e ✓ visível (não só cor)." },
+      { "label": "Estado de erro", "status": "pass", "notes": "Com o PIN errado, aparece \"PIN incorreto.\" com role=alert e os indicadores ficam com borda destrutiva. A tremida é só transform (translateX medido durante a animação, desligado com reduzir movimento). O PIN é limpo e a matrícula fica." },
+      { "label": "Indicadores do PIN", "status": "pass", "notes": "20 px no toque, 16 px no desktop. Preenchidos em primário." }
     ]
   },
   "accessibility": {
     "title": "Accessibility",
     "checks": [
-      { "label": "Alvos ≥ 56 px", "status": "pass", "notes": "0 de 20 alvos abaixo de 56 px nas duas orientações (pointer: coarse confirmado)." },
-      { "label": "Espaço ≥ 12 px entre alvos", "status": "pass", "notes": "0 pares a menos de 12 px." },
-      { "label": "Campos ≥ 16 px", "status": "pass", "notes": "Matrícula com 16 px e 56 px de altura; inputmode numeric, autocomplete off, autocorrect off, enterkeyhint next." },
-      { "label": "Contraste", "status": "pass", "notes": "Nenhum texto abaixo de 4,5:1 com o sistema em modo claro. O aviso \"Bom turno\" que aparece ao entrar fica ilegível com o sistema em modo escuro (1,23:1); ver v0.3-rotina.json." },
-      { "label": "Texto ≥ 14 px", "status": "pass", "notes": "Nenhum texto abaixo de 14 px." },
-      { "label": "PIN para leitor de tela", "status": "pass", "notes": "fieldset com legenda \"PIN\"; a contagem (\"2 de 4 números\") vai para aria-live; os dígitos nunca são anunciados; erro com role=alert, renovado a cada tentativa." },
-      { "label": "Foco", "status": "pass", "notes": "Ao completar 6 números o foco vai ao fieldset do PIN (medido: FIELDSET, legenda PIN) e o anel aparece em volta dos indicadores; o teclado do sistema fecha." }
+      { "label": "Alvos ≥ 56 px", "status": "pass", "notes": "0 de 20 alvos abaixo de 56 px em retrato, paisagem e Split. pointer: coarse confirmado." },
+      { "label": "Espaço ≥ 12 px entre alvos", "status": "pass", "notes": "0 pares a menos de 12 px nas três telas." },
+      { "label": "Campos ≥ 16 px", "status": "pass", "notes": "Matrícula com 16 px e 56 px de altura, inputmode=numeric, autocomplete=off, autocorrect=off, enterkeyhint=next." },
+      { "label": "Contraste", "status": "pass", "notes": "Nenhum texto abaixo de 4,5:1 no login. O aviso \"Bom turno\" que aparece ao entrar segue o tema do app: com o sistema escuro e o app claro, data-sonner-theme=light e a descrição \"Operador de Embalagem\" fica com rgb(63,63,63) sobre branco, 10,53:1. Antes era 1,23:1." },
+      { "label": "Texto ≥ 14 px", "status": "pass", "notes": "Nenhum texto abaixo de 14 px no toque." },
+      { "label": "PIN para leitor de tela", "status": "pass", "notes": "fieldset com legenda \"PIN\". A contagem vai para aria-live (medido: \"3 de 4 números\") e os dígitos nunca são anunciados. O erro tem role=alert." },
+      { "label": "Foco", "status": "pass", "notes": "Com 6 números na matrícula, o foco vai para o fieldset do PIN (medido: FIELDSET, legenda PIN) e o teclado do sistema fecha." }
     ]
   },
   "forms": {
     "title": "Forms",
     "checks": [
-      { "label": "Avanço automático", "status": "pass", "notes": "Matrícula → PIN ao 6º número; PIN envia ao 4º." },
-      { "label": "Erro de PIN", "status": "pass", "notes": "\"PIN incorreto.\" abaixo do teclado; matrícula mantida, PIN limpo para nova tentativa." },
-      { "label": "Posto lembrado", "status": "pass", "notes": "Bis 2 · Embalagem já escolhidos ao abrir (padrão do store, depois o contexto do IndexedDB)." },
-      { "label": "Trocar de posto", "status": "warn", "notes": "Possível, mas fora da ordem natural (ver hierarquia)." },
-      { "label": "Sem teclado do sistema para o PIN", "status": "pass", "notes": "Não há input no PIN: o iPad não abre o teclado alfanumérico." }
+      { "label": "Avanço automático", "status": "pass", "notes": "Matrícula → PIN no 6º número. O PIN envia no 4º (entrou em /dashboard/rotina nas três telas)." },
+      { "label": "Erro de PIN", "status": "pass", "notes": "\"PIN incorreto.\" abaixo do teclado. A matrícula fica (104233) e o PIN é limpo para a nova tentativa." },
+      { "label": "Posto lembrado", "status": "pass", "notes": "Bis 2 · Embalagem já escolhidos ao abrir." },
+      { "label": "Trocar de posto", "status": "pass", "notes": "As escolhas ficam antes da matrícula, na ordem natural. Trocar o posto já não depende de rolar para baixo do teclado antes do último número.", "historico": "warn → pass (2026-10-16): mesma correção da ordem do formulário." },
+      { "label": "Sem teclado do sistema para o PIN", "status": "pass", "notes": "0 inputs dentro do fieldset do PIN: o iPad não abre o teclado alfanumérico." }
     ]
   },
-  "priority_fixes": [
-    { "rank": 1, "title": "Linha e Posto antes do PIN", "description": "Em login-form.tsx, mover os Controllers de linhaId e postoId (linhas 175–246) para antes do Controller da matrícula (linha 112), ou trocar os dois FieldSets por uma linha-resumo acima do PIN (\"Bis 2 · Embalagem\" + botão \"Trocar posto\" de 56 px que revela as escolhas). Com isso a descrição do PIN volta a ser só \"Entrando em Bis 2 · Embalagem.\" (linhas 73–76). Em paisagem o posto passa a ser decidido antes do número que envia.", "framework_reference": "22-patterns-cognitive-load.md → Simplified Forms" },
-    { "rank": 2, "title": "Entrar com 64 px no toque, ou exceção registrada", "description": "login-form.tsx linha 248: className=\"w-full toque:h-16 toque:text-base\". Se a decisão for manter 56 px (doc 12 §3.4), anotar no doc 12 que o Entrar é reserva do envio automático.", "framework_reference": "27-patterns-accessibility.md → Touch Targets" },
-    { "rank": 3, "title": "Aviso de boas-vindas legível em qualquer tema do sistema", "description": "Mesma correção do Toaster descrita em v0.3-rotina.json (rank 1).", "framework_reference": "27-patterns-accessibility.md → Color Contrast" }
+  "priority_fixes": [],
+  "priority_fixes_resolvidas": [
+    "Linha e Posto antes do PIN: feito (Linha/Posto antes da matrícula).",
+    "Entrar com 64 px no toque: feito (350×64).",
+    "Aviso de boas-vindas legível em qualquer tema do sistema: feito (AppToaster com o tema do app)."
   ],
-  "notes": "Tela pronta para o tablet: sem rolagem horizontal, sem alvo abaixo de 56 px, sem campo abaixo de 16 px. O único ponto estrutural é a ordem Linha/Posto × PIN com envio automático, que só pesa em paisagem e na troca de posto."
+  "notes": "Tela sem fail e sem warn. Pronta para o tablet: sem rolagem horizontal, nenhum alvo abaixo de 56 px, nenhum campo abaixo de 16 px. O limite de tentativas de PIN (espera depois de vários erros) entrou depois da rodada anterior e não foi exercitado aqui: só 1 PIN errado por contexto."
 }

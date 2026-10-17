@@ -3,73 +3,261 @@
   "project": "Mondelez · Gestão de Rotinas Operacionais",
   "date": "2026-10-16",
   "version": "v0.3",
-  "screenshot_url": "C:/Users/dar/AppData/Local/Temp/v03/h/lideranca/shots/",
-  "viewports": ["820×1180 toque", "1180×820 toque (sidebar aberta e fechada)", "800×1280 toque", "1280×800 toque", "590×820 toque (Split View)", "1440×900 mouse"],
-  "roteiro": "Operação 104233 registrou ppli-l4 com 1 NC justificado (mordentes), janela de desfazer de 10 s esgotada, relógio avançado 1 h; troca para Renata 201145 pelo menu da pessoa com PIN. Medidas por getBoundingClientRect/getComputedStyle em puppeteer-core + Edge com hasTouch/isMobile (pointer: coarse). Scripts em C:/Users/dar/AppData/Local/Temp/v03/h/lideranca/.",
+  "reauditoria": {
+    "data": "2026-10-16",
+    "motivo": "Refeita depois das correções da fase H e da costura final. Cada item foi medido de novo no app atual (next dev, porta 3100).",
+    "resumo": {
+      "pass": 26,
+      "warn": 2,
+      "fail": 0
+    },
+    "mudancas": "4 fail → pass (cards na coluna, abas do desktop, contraste do aviso, filtro Resolvidos). 1 warn → pass (copiar). 2 itens novos: contraste do selo \"Em tratamento\" (fail, 4,42:1, que passou a pass no ajuste seguinte com STATUS_LEGIVEL cobrindo info: 5,75:1 no card e 5,62:1 no escuro) e texto de 12 px no detalhe com toque (warn). Continua warn: dois h1 lado a lado."
+  },
+  "screenshot_url": "C:/Users/dar/AppData/Local/Temp/v03/h/reauditoria/shots/",
+  "viewports": [
+    "820×1180 toque",
+    "1180×820 toque (sidebar aberta)",
+    "1280×800 toque",
+    "590×820 toque (Split View)",
+    "1440×900 mouse",
+    "1280×800 mouse"
+  ],
+  "evidencias": {
+    "pasta": "C:/Users/dar/AppData/Local/Temp/v03/h/reauditoria",
+    "capturas": [
+      "shots/alertas__ipad-paisagem__1-lista.png",
+      "shots/alertas__ipad-paisagem__2-detalhe.png",
+      "shots/alertas__ipad-paisagem__3-assumir.png",
+      "shots/alertas__ipad-paisagem__4-dialogo.png",
+      "shots/alertas__ipad-retrato__5-detalhe-pilha.png",
+      "shots/alertas__split__6-detalhe.png",
+      "shots/alertas__ipad-retrato__7-alerta-novo.png",
+      "shots/alertas__desktop__1-lista.png",
+      "shots/alertas__desktop-1280__1-lista.png",
+      "shots/alertas__sistema-escuro__assumir.png"
+    ],
+    "medicoes": "shots/alertas__*.json e alertas.log",
+    "roteiro": "cenario.mjs: o operador 104233 registra ppli-l4 com 1 NC justificada (mordentes), a janela de desfazer de 10 s acaba, o relógio avança 1 h e a troca para Renata (201145) é feita pelo menu da pessoa, com PIN. alertas.mjs: arranjo em 1180/1280 toque, retrato e Split; detalhe do NC; Assumir + Desfazer; diálogo vazio; rotação; Voltar; aviso de alerta novo + Ver; desktop 1440/1280 com clique em Resolvidos, Copiar e Assumir; sistema escuro.",
+    "rodada_anterior": "C:/Users/dar/AppData/Local/Temp/v03/h/lideranca"
+  },
   "macro_bets": [
-    { "category": "accuracy", "description": "Desvio tratado em minutos, com responsável e histórico auditável", "alignment": "strong" },
-    { "category": "efficiency", "description": "Mesmo shell do template; só a densidade e o arranjo mudam por ponteiro e largura útil", "alignment": "moderate" }
+    {
+      "category": "accuracy",
+      "description": "Desvio tratado em minutos, com responsável e histórico auditável",
+      "alignment": "strong"
+    },
+    {
+      "category": "efficiency",
+      "description": "Mesmo shell do template; só a densidade e o arranjo mudam por ponteiro e largura útil",
+      "alignment": "strong"
+    }
   ],
   "jtbd": [
-    { "user": "Supervisora de produção", "situation": "andando pela linha com o tablet em retrato ou no totem em paisagem", "motivation": "ver o desvio mais urgente, assumir e registrar o que foi feito", "outcome": "prova de tratamento sem voltar à sala" },
-    { "user": "Supervisora de produção", "situation": "no notebook da sala, com mouse", "motivation": "varrer a lista de alertas por estado", "outcome": "nenhum alerta esquecido no fim do turno" }
+    {
+      "user": "Supervisora de produção",
+      "situation": "andando pela linha com o tablet em retrato ou no totem em paisagem",
+      "motivation": "ver o desvio mais urgente, assumir e registrar o que foi feito",
+      "outcome": "prova de tratamento sem voltar à sala"
+    },
+    {
+      "user": "Supervisora de produção",
+      "situation": "no notebook da sala, com mouse",
+      "motivation": "varrer a lista de alertas por estado",
+      "outcome": "nenhum alerta esquecido no fim do turno"
+    }
   ],
   "visual_hierarchy": {
     "title": "Visual Hierarchy",
     "checks": [
-      { "label": "Leitura do card na lista lado a lado", "status": "fail", "notes": "Em 1180×820, 1280×800 e 1440×900 o card tem 481 px numa coluna de 359 px: 'Responsável, ninguém assumiu' (x 602–722) e 'Idade 1 h 2 min desde 07:42' (x 613–756) ficam cortados na borda da coluna (x 631). O filho do viewport do ScrollArea do Radix tem 'display: table' inline e cresce até o min-content do card (513 px). Shots: alertas-ipad-paisagem.png, ev-alertas-lista-desktop.png." },
-      { "label": "Abas de estado no desktop", "status": "fail", "notes": "A soma mínima das 4 abas (70+80+118+97 px + 3×4 px) é 377 px e a lista tem 327 px úteis: com flex-wrap a 4ª aba ('Resolvidos (0)', y 198–253) é desenhada sobre a busca (y 207–239) e a faixa de abas passa de 32 px (v0.2) para 63 px. Shot: ev-alertas-lista-desktop.png." },
-      { "label": "Ações de tratamento à mão", "status": "pass", "notes": "Barra no rodapé do detalhe em todas as larguras: paisagem y 731–820 dentro do painel; Split View grudada na borda de baixo; retrato logo após o conteúdo." },
-      { "label": "Ação primária", "status": "pass", "notes": "Resolver é a única preenchida, 64 px no toque; Assumir e Registrar ação 56 px contornados." },
-      { "label": "Detalhe em paisagem com sidebar aberta", "status": "pass", "notes": "Painel de 548 px: cabeçalho em coluna, grade de 2 colunas com rótulo 'Alerta' visível, 'A-NC · RN-02' sem quebra, sem rolagem horizontal (critério 4)." },
-      { "label": "Detalhe no retrato", "status": "pass", "notes": "788 px: grade de 5 colunas, faixa âmbar com itens fora do padrão e linha do tempo; título #A-NC 20 px." },
-      { "label": "Ordem por urgência", "status": "pass", "notes": "Abertos e críticos primeiro; reordenação desliza (motion layout só quando a posição muda)." }
+      {
+        "label": "Leitura do card na lista lado a lado",
+        "status": "pass",
+        "notes": "O filho do viewport do ScrollArea ficou com display:block. Toque (1180 e 1280): coluna 272–632, cards 288–615, conteúdo até 602. Desktop (1440 e 1280): coluna 272–692, cards 288–675, conteúdo até 662. \"Responsável, ninguém assumiu\" e \"Idade\" ficam inteiros.",
+        "historico": "fail → pass (2026-10-16): o card tinha 481 px numa coluna de 359 e o texto era cortado."
+      },
+      {
+        "label": "Abas de estado no desktop",
+        "status": "pass",
+        "notes": "A lista tem 420 px no desktop e as 4 abas cabem numa linha de 32 px em y 136 (Todos 80, Abertos 80, Em tratamento 118, Resolvidos 97). A busca fica abaixo, em y 176. Igual em 1440 e em 1280.",
+        "historico": "fail → pass (2026-10-16): a 4ª aba ficava sobre a busca."
+      },
+      {
+        "label": "Ações de tratamento à mão",
+        "status": "pass",
+        "notes": "Barra no rodapé do detalhe: paisagem y 731–820 dentro do painel, Split 731–820, retrato 898–987 logo depois do conteúdo."
+      },
+      {
+        "label": "Ação primária",
+        "status": "pass",
+        "notes": "Resolver é a única preenchida, com 138×64 no toque. Assumir (97×56) e Registrar ação (139×56) são contornados."
+      },
+      {
+        "label": "Detalhe em paisagem com sidebar aberta",
+        "status": "pass",
+        "notes": "Painel de 548 px (648 no Tab 1280), sem rolagem horizontal. \"A-NC · RN-02\" sem quebra."
+      },
+      {
+        "label": "Detalhe no retrato",
+        "status": "pass",
+        "notes": "Pilha: só o detalhe, h1 #A-NC, Voltar 82×56 e barra de ações depois do conteúdo."
+      },
+      {
+        "label": "Ordem por urgência",
+        "status": "pass",
+        "notes": "#A-NC (crítico, aberto) primeiro, depois os atrasos críticos. A reordenação animada não foi exercitada nesta rodada."
+      }
     ]
   },
   "visual_style": {
     "title": "Visual Style",
     "checks": [
-      { "label": "Fidelidade ao Logistics do template", "status": "pass", "notes": "Lista + detalhe lado a lado a partir de 896 px de área útil; pilha com Voltar abaixo disso, sem Sheet sobre a lista (docs/12 §3.4)." },
-      { "label": "Densidade do desktop (fora as abas)", "status": "pass", "notes": "Fora as abas (achado em Visual Hierarchy), o desktop mantém o template: busca 32 px, Copiar 28 px, Abrir o registro 28 px, ações 44 px como na v0.2, diálogo 384 px com botões de 32 px, toast com Desfazer de 24 px." },
-      { "label": "Abas no toque", "status": "pass", "notes": "Variante segmentada em grade 2×2 na lista de 360 px e Split View, 4 em linha no retrato; 56 px por aba e 12 px entre elas." },
-      { "label": "Barras opacas no toque", "status": "pass", "notes": "Barra de ações e Voltar opacos (data-touch-bar), sem blur." },
-      { "label": "Movimento", "status": "pass", "notes": "Pressão de 0,97 nos botões de ação; diálogo do template; sem animação contínua além do ping do crítico, que respeita prefers-reduced-motion (tablet.css)." }
+      {
+        "label": "Fidelidade ao Logistics do template",
+        "status": "pass",
+        "notes": "Lista + detalhe lado a lado com área útil de 896 px ou mais (360+548 no iPad paisagem, 420+748 no desktop). Pilha com Voltar abaixo disso (retrato e Split), sem Sheet sobre a lista."
+      },
+      {
+        "label": "Densidade do desktop",
+        "status": "pass",
+        "notes": "Igual ao template: abas de 24 px numa faixa de 32, busca 361×32 com 14 px, Copiar 28×28, Abrir o registro 28, ações de 44 px, Desfazer do aviso 63×24."
+      },
+      {
+        "label": "Abas no toque",
+        "status": "pass",
+        "notes": "Grade 2×2 de 155×56 na lista de 360 px (270×56 no Split), 4 em linha de 187×56 no retrato, 12 px entre elas."
+      },
+      {
+        "label": "Barras opacas no toque",
+        "status": "pass",
+        "notes": "Barra de ações lab(100), backdrop-filter none. No desktop, 95% com blur(8px) do template."
+      },
+      {
+        "label": "Movimento",
+        "status": "pass",
+        "notes": "Pressão (PRESSAO de src/lib/pressao.ts, com motion-reduce:transition-none) em Assumir, Registrar ação e Resolver. O ping do crítico respeita prefers-reduced-motion (medido na rotina: 1 iteração de 0,01 ms)."
+      }
     ]
   },
   "accessibility": {
     "title": "Accessibility",
     "checks": [
-      { "label": "Alvos de toque", "status": "pass", "notes": "Nenhum alvo do conteúdo abaixo de 56 px em 590–1280 com toque (só as utilidades do header, 48 px por decisão). Copiar 56×56, Voltar 82×56, cards ≥ 190 px de altura." },
-      { "label": "Espaço entre alvos", "status": "pass", "notes": "Barra de ações com 12 px; Cancelar × primária com 16 px no diálogo (lado a lado e empilhados no Split View)." },
-      { "label": "Campos ≥ 16 px", "status": "pass", "notes": "Busca de alertas 16 px/54 px dentro do grupo de 56 px; textarea 16 px/80 px. Desktop 14 px como o template." },
-      { "label": "Foco ao trocar de painel", "status": "pass", "notes": "Pilha: foco no h1 do detalhe ao abrir, rolagem no topo; Voltar devolve o foco ao card. Lado a lado: foco fica no card tocado." },
-      { "label": "Diálogo Registrar ação/Resolver", "status": "pass", "notes": "Toque: topo a 8 % (y 94 no retrato, 66 na paisagem), foco no título para o teclado virtual não subir sozinho; enviar vazio mostra 'Escreva o que foi feito antes de continuar.' junto do campo e foca o campo. Desktop: foco direto no campo." },
-      { "label": "Contraste do texto do toast", "status": "fail", "notes": "Com o sistema em modo escuro e o app em claro, a descrição de 'Você assumiu o alerta' e do aviso de alerta novo sai rgb(232,232,232) sobre branco: 1,23:1. O Toaster segue o tema do sistema, não o do app (ver v0.3-shell.json, achado do Toaster). Shot: ev-toast-os-dark.png." },
-      { "label": "Desfazer em vez de confirmar", "status": "pass", "notes": "Assumir sem confirmação, toast top-center com Desfazer 95×44 e Fechar 44×44 (16 px); Desfazer volta o estado a Aberto e o botão Assumir reaparece." },
-      { "label": "Semântica", "status": "warn", "notes": "Lado a lado há dois h1 visíveis ('Alertas' e '#A-NC'); na pilha só um. Aceitável para o foco na pilha, mas registrado." }
+      {
+        "label": "Alvos de toque",
+        "status": "pass",
+        "notes": "Nenhum alvo do conteúdo abaixo de 56 px em 590–1280 com toque. Abaixo de 56 só as utilidades do header (48) e o campo de busca (54, dentro do grupo de 56). Copiar 56×56, Voltar 82×56, cards de 194 px."
+      },
+      {
+        "label": "Espaço entre alvos",
+        "status": "pass",
+        "notes": "Abas com 12 px. Barra de ações com 12 px. No diálogo, Cancelar 82×56 e Registrar ação 160×64."
+      },
+      {
+        "label": "Campos ≥ 16 px",
+        "status": "pass",
+        "notes": "Busca de alertas com 16 px no toque. Textarea do diálogo com 16 px e 80 px de altura, maxLength 500. Desktop com 14 px, como o template."
+      },
+      {
+        "label": "Foco ao trocar de painel",
+        "status": "pass",
+        "notes": "Pilha (Split): foco no h1 #A-NC ao abrir. Voltar devolve o foco ao card #A-NC. Lado a lado: o foco fica no card tocado."
+      },
+      {
+        "label": "Diálogo Registrar ação/Resolver",
+        "status": "pass",
+        "notes": "Toque: topo em y 66 na paisagem (8%), foco no título (H2) para o teclado virtual não subir sozinho. Enviar vazio mostra \"Escreva o que foi feito antes de continuar.\" e leva o foco à textarea."
+      },
+      {
+        "label": "Contraste do texto do aviso",
+        "status": "pass",
+        "notes": "Com o sistema escuro e o app claro, data-sonner-theme=light. A descrição \"1 item não conforme em PPLI e Centerlining · Loeschpack 4\" fica com rgb(63,63,63) sobre branco, 10,53:1.",
+        "historico": "fail → pass (2026-10-16): era 1,23:1."
+      },
+      {
+        "label": "Desfazer em vez de confirmar",
+        "status": "pass",
+        "notes": "Assumir sem confirmação, com aviso e Desfazer de 103×56 no toque (antes 95×44). Desfazer volta o alerta a Aberto e o botão Assumir reaparece."
+      },
+      {
+        "label": "Semântica",
+        "status": "warn",
+        "notes": "Continua. Lado a lado há dois h1 visíveis (\"Alertas\" e \"#A-NC\"); na pilha, só um."
+      },
+      {
+        "label": "Contraste do selo \"Em tratamento\"",
+        "status": "pass",
+        "notes": "Selo \"Em tratamento\" (Status info) com STATUS_LEGIVEL, que agora cobre info (text-blue-700; escuro blue-400): 5,75:1 no card em paisagem e 6,05:1 na lista do retrato e do Split no claro; 5,62:1 no escuro. Selo do detalhe 6,06:1 (claro) e 6,77:1 (escuro).",
+        "historico": "novo na reauditoria (2026-10-16). fail → pass (2026-10-17): o Status info do template dava 4,42:1 no card com fundo."
+      },
+      {
+        "label": "Texto ≥ 14 px no detalhe (toque)",
+        "status": "warn",
+        "notes": "No detalhe, com toque: selos \"Crítico\" do cabeçalho e da linha do autor, \"Item crítico\", \"Teams enviado\" e \"Supervisão e especialista\" com 12 px; \"Abrir o registro\" com 12,8 px. Os cards da lista já usam 14 px. É uma tela da liderança, mas o mesmo critério dos badges de Tarefas (14 px no toque) vale aqui.",
+        "historico": "novo na reauditoria (2026-10-16)."
+      }
     ]
   },
   "navigation": {
     "title": "Navigation",
     "checks": [
-      { "label": "Seleção pela URL", "status": "pass", "notes": "Tocar num card grava ?alerta= sem ida ao servidor; Voltar remove; 'Ver' do aviso de alerta novo abre o detalhe já na pilha do retrato." },
-      { "label": "Rotação", "status": "pass", "notes": "Escolhido na paisagem → retrato abre o detalhe do escolhido com Voltar; sem escolha → paisagem mostra o primeiro." },
-      { "label": "Saída do detalhe na pilha", "status": "pass", "notes": "Voltar de 56 px grudado sob o header, sem sobrepor o cabeçalho do alerta." },
-      { "label": "Filtro Resolvidos no desktop", "status": "fail", "notes": "elementFromPoint no texto 'Resolvidos (0)' devolve o input da busca: tocar na aba foca a busca." }
+      {
+        "label": "Seleção pela URL",
+        "status": "pass",
+        "notes": "Tocar num card grava ?alerta=nc%3Areg-… sem ida ao servidor. Voltar remove o parâmetro. \"Ver\" do aviso de alerta novo abre ?alerta=atraso%3A… já na pilha do retrato."
+      },
+      {
+        "label": "Rotação",
+        "status": "pass",
+        "notes": "Alerta escolhido na paisagem → no retrato abre o detalhe do escolhido, com Voltar."
+      },
+      {
+        "label": "Saída do detalhe na pilha",
+        "status": "pass",
+        "notes": "Voltar de 82×56 em y 72, logo abaixo do header de 64, sem cobrir o cabeçalho do alerta."
+      },
+      {
+        "label": "Filtro Resolvidos no desktop",
+        "status": "pass",
+        "notes": "elementFromPoint no centro de \"Resolvidos (0)\" devolve a aba, e o clique a ativa (data-state=active).",
+        "historico": "fail → pass (2026-10-16): o clique caía na busca."
+      }
     ]
   },
   "usability": {
     "title": "Usability",
     "checks": [
-      { "label": "Aviso de alerta novo", "status": "pass", "notes": "Ao avançar 1 h como liderança surge toast 'Hora x Hora · apontar caixas não registrada no prazo' com Ver 56×44." },
-      { "label": "Copiar código do alerta", "status": "warn", "notes": "O título mostra '#A-NC', mas o botão copia o id interno 'nc:reg-mvau93on' (alert-details.tsx:95), que não aparece em lugar nenhum da tela." }
+      {
+        "label": "Aviso de alerta novo",
+        "status": "pass",
+        "notes": "Ao avançar 1 h como liderança, surge \"Hora x Hora · apontar caixas não registrada no prazo · Tarefa obrigatória sem registro.\" com Ver de 64×56. Ver abre o detalhe com Voltar."
+      },
+      {
+        "label": "Copiar código do alerta",
+        "status": "pass",
+        "notes": "\"Copiar referência do alerta\" copia \"A-NC · Embalagem · 07:40\", o mesmo código do título (#A-NC), e confirma com o aviso \"Referência do alerta copiada\".",
+        "historico": "warn → pass (2026-10-16): antes copiava o id interno nc:reg-…"
+      }
     ]
   },
   "priority_fixes": [
-    { "rank": 1, "title": "Card da lista inteiro na coluna", "description": "alert-list.tsx:235: <ScrollArea className=\"@4xl/content:h-0 @4xl/content:flex-1 [&_[data-slot=scroll-area-viewport]>div]:block!\">. Sobrescreve o 'display: table' inline do Radix sem editar ui/. Provado por CSS injetado: card 288–615 px dentro da coluna que termina em 631 (ev-alertas-fix1-desktop.png).", "framework_reference": "23-patterns-visual-hierarchy.md → Proximity" },
-    { "rank": 2, "title": "Abas do desktop numa linha, sem sobrepor a busca", "description": "alertas.tsx:106: acrescentar pointer-fine:@4xl/content:grid-cols-[420px_minmax(0,1fr)] (420 px comporta as 4 abas: 377 + 32 px de padding); alert-list.tsx:203: voltar à lista da v0.2, className=\"w-full border-b px-4\" (sem flex-wrap/h-auto/min-h-8). Provado em 1440 e 1280 com mouse: as 4 abas na mesma linha, faixa de 32 px, detalhe com 748/588 px (ev-alertas-fix420-1440.png).", "framework_reference": "20-patterns-chunking.md → Tabs" },
-    { "rank": 3, "title": "Toast no tema do app", "description": "Ver v0.3-shell.json, prioridade 1: o Toaster precisa receber theme={resolvedThemeMode}.", "framework_reference": "27-patterns-accessibility.md → Color Contrast" },
-    { "rank": 4, "title": "Copiar o que a tela mostra", "description": "alert-details.tsx:95: copiar um código legível (ex.: `${alerta.regra} · ${posto?.nome} · ${formatarHora(alerta.criadoEm)}`) ou trocar o rótulo para 'Copiar identificador do alerta'.", "framework_reference": "25-patterns-feedback.md → Contextual Help" }
+    {
+      "rank": 1,
+      "title": "Selos do detalhe com 14 px no toque",
+      "description": "alert-details.tsx: toque:text-sm nos Badge/Status do cabeçalho (statusBadgeClasses), na linha do autor e nos três selos da faixa \"Itens fora do padrão\", e no botão \"Abrir o registro\" (toque:text-sm; a altura no toque já passa de 56 px).",
+      "framework_reference": "12-checklist-visual-style.md → Typography"
+    },
+    {
+      "rank": 2,
+      "title": "Um h1 por vista",
+      "description": "alert-details.tsx: o título do alerta vira h2 quando a lista está ao lado (mesmo container query que decide lista + detalhe) e continua h1 na pilha. Ou aceitar e registrar.",
+      "framework_reference": "27-patterns-accessibility.md → Semantic HTML"
+    }
   ],
-  "notes": "O fluxo de toque da supervisora está completo e dentro dos critérios 1, 2, 4 e 5 em retrato, paisagem e Split View. Os dois defeitos de layout (cards cortados e abas sobre a busca) aparecem nos arranjos lado a lado, inclusive no notebook da liderança, onde as abas são regressão da v0.3 (a lista caiu de 400 para 360 px e ganhou flex-wrap). Não verificável no navegador: teclado virtual real cobrindo o diálogo no iPad (checklist de aparelho, docs/12 fase H)."
+  "priority_fixes_resolvidas": [
+    "Card da lista inteiro na coluna (display:block no filho do viewport).",
+    "Abas do desktop numa linha (lista de 420 px), sem sobrepor a busca.",
+    "Aviso no tema do app (AppToaster).",
+    "Copiar o que a tela mostra (referência legível).",
+    "Selo \"Em tratamento\" legível (STATUS_LEGIVEL com info: text-blue-700; escuro blue-400): 5,75:1 no card e 6,05:1 na lista no claro, 5,62:1 no escuro."
+  ],
+  "notes": "Os quatro fail da rodada anterior estão corrigidos e medidos, inclusive no notebook da liderança. Entrou um fail novo, de cor: o selo info \"Em tratamento\", que só aparece depois de Assumir e por isso não foi medido antes; ele foi corrigido no ajuste seguinte (STATUS_LEGIVEL com info, 5,75:1) e a tela ficou sem fail. Observação sem status: o aviso de Assumir (10 s) fica sobre o canto do detalhe em paisagem e cobre o botão Copiar enquanto dura; ele tem X de 44 px e some sozinho. Não verificável no navegador: teclado virtual real cobrindo o diálogo no iPad (checklist de aparelho do doc 13)."
 }

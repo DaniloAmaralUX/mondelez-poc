@@ -31,7 +31,15 @@ export function useConcluirTarefa() {
     toast.success("Concluída", {
       description: tarefa.titulo,
       duration: JANELA_DESFAZER_MS,
-      action: { label: "Desfazer", onClick: () => desfazerConclusao(tarefa.id) },
+      action: {
+        label: "Desfazer",
+        onClick: () => {
+          // O store recusa se o tablet bloqueou ou se quem está no posto não é quem concluiu.
+          if (!desfazerConclusao(tarefa.id)) {
+            toast.info("Não dá para desfazer", { description: "Só quem concluiu desfaz a conclusão." });
+          }
+        },
+      },
     });
   };
 }

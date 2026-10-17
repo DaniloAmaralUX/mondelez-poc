@@ -2,8 +2,10 @@
 
 import { useEffect, useMemo, useSyncExternalStore } from "react";
 
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useOffline } from "next/offline";
+
+import { toast } from "sonner";
 
 import { localRepository } from "@/data/repository";
 import type { Perfil } from "@/domain/types";
@@ -39,9 +41,16 @@ function rotasDoTablet(postoId: string | undefined, perfil: Perfil | undefined):
  * menu da pessoa só existe aberto, então nenhum `<Link prefetch>` de Alertas ou Tarefas chegava a montar e, sem rede,
  * a navegação ficava esperando a conexão. Roda com pessoa no posto e rede; de novo quando a rede volta (`ativo` vira
  * true) e quando o Next avisa que o que guardou venceu (`onInvalidate`). Só em produção: o `next dev` não faz prefetch.
+ *
+ * Roda também a cada troca de tela. O prefetch completo só busca os segmentos que não estão na tela atual (o Next 16.4
+ * compara a rota com a árvore em uso, `diffRouteTreeAgainstCurrent` em segment-cache/scheduler.js): pedido na própria
+ * Minha Rotina, ele não guardava nada, e sem rede o "Registrar" do checklist ficava parado esperando a conexão para
+ * voltar a ela. Repetido ao sair da Rotina, ela entra no cache; o que já está no cache não gera pedido. A Rotina aberta
+ * no início (ou antes da queda) fica no cache de navegação por `staleTimes.dynamic` (next.config.mjs).
  */
 function usePrefetchDoTablet(ativo: boolean) {
   const router = useRouter();
+  const pathname = usePathname();
   const postoId = useSessionStore((s) => s.contexto?.postoId);
   const perfil = useUsuarioAtual()?.perfil;
   const rotas = useMemo(() => rotasDoTablet(postoId, perfil), [postoId, perfil]);
@@ -53,11 +62,27 @@ function usePrefetchDoTablet(ativo: boolean) {
       if (encerrado || !navigator.onLine) return;
       router.prefetch(href, { kind: PREFETCH_COMPLETO, onInvalidate: () => buscar(href) });
     };
-    for (const href of rotas) buscar(href);
+    // As rotas que não são a tela atual: a atual o prefetch não guarda (ver acima).
+    for (const href of rotas) if (href !== pathname) buscar(href);
     return () => {
       encerrado = true;
     };
-  }, [ativo, rotas, router]);
+  }, [ativo, rotas, router, pathname]);
+}
+
+/**
+ * Avisos da pessoa anterior saem quando o tablet troca de pessoa (também por outra aba) ou bloqueia: quem chega não lê
+ * nem toca o "Desfazer" de outra pessoa (V03-SEC-03; os desfazer do store também recusam). Na assinatura do store, e
+ * não num efeito do React, para os avisos saírem dentro da própria mudança, antes do aviso que a tela mostra logo
+ * depois ("Agora com Renata"). Só depois da carga do IndexedDB: a pessoa que volta com a sessão salva não é uma troca.
+ */
+function useAvisosSoDaPessoaAtual(ativo: boolean) {
+  useEffect(() => {
+    if (!ativo) return;
+    return useSessionStore.subscribe((s, anterior) => {
+      if (s.usuarioId !== anterior.usuarioId || (s.bloqueado && !anterior.bloqueado)) toast.dismiss();
+    });
+  }, [ativo]);
 }
 
 function assinarConexao(aoMudar: () => void) {
@@ -112,7 +137,8 @@ function useTelaAcesa(ativo: boolean) {
  * - sincronização ao abrir, ao voltar o foco e a cada minuto (no ticker único do relógio);
  * - aviso entre abas (BroadcastChannel → reler o IndexedDB);
  * - prefetch completo das rotas do tablet com rede (`usePrefetchDoTablet`);
- * - Wake Lock de tela enquanto há pessoa no posto e o tablet não está bloqueado.
+ * - Wake Lock de tela enquanto há pessoa no posto e o tablet não está bloqueado;
+ * - avisos (toasts) fechados na troca de pessoa e no bloqueio (`useAvisosSoDaPessoaAtual`).
  */
 export function Plataforma() {
   const hidratado = useSessionHydrated();
@@ -147,6 +173,7 @@ export function Plataforma() {
 
   usePrefetchDoTablet(hidratado && logado && conectado && !offlineNoNext);
   useTelaAcesa(hidratado && emUso);
+  useAvisosSoDaPessoaAtual(hidratado);
 
   return null;
 }

@@ -263,6 +263,12 @@ html:has([data-landing-page]) {
   display: none;
 }
 
+/*
+ * Impressão do template (Invoice), com uma diferença: o registro do checklist pode passar de uma folha (9 itens, NC com
+ * justificativa, observação longa). Com a altura fixa de 11in e overflow hidden, o que passava da folha sumia e o
+ * rodapé ficava por cima das linhas. Aqui a folha tem no mínimo 11in e cresce; o navegador quebra em páginas e uma
+ * linha da tabela não é cortada ao meio.
+ */
 @media print {
   @page {
     size: Letter;
@@ -272,9 +278,10 @@ html:has([data-landing-page]) {
   html,
   body {
     width: 8.5in !important;
-    height: 11in !important;
+    height: auto !important;
+    min-height: 11in;
     margin: 0 !important;
-    overflow: hidden !important;
+    overflow: visible !important;
   }
 
   body > *:not([data-print-root]) {
@@ -284,17 +291,28 @@ html:has([data-landing-page]) {
   [data-print-root] {
     display: block !important;
     width: 8.5in !important;
-    height: 11in !important;
+    height: auto !important;
+    min-height: 11in;
     margin: 0 !important;
-    overflow: hidden !important;
+    overflow: visible !important;
     background: white !important;
   }
 
+  /* clone: a margem interna da folha se repete no topo e no pé de cada página (@page sem margem, como no template). */
   [data-print-root] [data-print-paper] {
     width: 8.5in !important;
-    height: 11in !important;
+    height: auto !important;
+    min-height: 11in;
     margin: 0 !important;
     box-shadow: none !important;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+  }
+
+  /* Linhas da tabela, resumo e rodapé inteiros numa página. */
+  [data-print-paper] section > div,
+  [data-print-paper] footer {
+    break-inside: avoid;
   }
 
   [data-print-root] [data-print-paper],

@@ -16,14 +16,19 @@ export function modoToque(): boolean {
   return window.matchMedia(PONTEIRO_GROSSO).matches;
 }
 
-function assinarModoToque(aoMudar: () => void) {
+function assinarPonteiro(aoMudar: () => void) {
   const consulta = window.matchMedia(PONTEIRO_GROSSO);
   consulta.addEventListener("change", aoMudar);
+  return () => consulta.removeEventListener("change", aoMudar);
+}
+
+function assinarModoToque(aoMudar: () => void) {
+  const soltarPonteiro = assinarPonteiro(aoMudar);
   // O override da demonstração muda o atributo do <html> sem recarregar.
   const observador = new MutationObserver(aoMudar);
   observador.observe(document.documentElement, { attributes: true, attributeFilter: ["data-density"] });
   return () => {
-    consulta.removeEventListener("change", aoMudar);
+    soltarPonteiro();
     observador.disconnect();
   };
 }
@@ -35,4 +40,15 @@ function assinarModoToque(aoMudar: () => void) {
  */
 export function useModoToque(): boolean {
   return useSyncExternalStore(assinarModoToque, modoToque, () => false);
+}
+
+const ponteiroGrosso = () => window.matchMedia(PONTEIRO_GROSSO).matches;
+
+/**
+ * Só o ponteiro do aparelho (`pointer: coarse`), sem o override `html[data-density]`: para o que depende do dedo de
+ * verdade, e não da densidade da tela. Ex.: a sidebar não recolhe em ícones no toque porque o tooltip dos rótulos não
+ * abre com o dedo, e com o mouse ele abre mesmo com a densidade de toque ligada. No servidor e na hidratação, `false`.
+ */
+export function usePonteiroGrossoReal(): boolean {
+  return useSyncExternalStore(assinarPonteiro, ponteiroGrosso, () => false);
 }
