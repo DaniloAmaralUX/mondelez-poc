@@ -65,14 +65,17 @@
 /* Superfícies                                                                                                       */
 /* ---------------------------------------------------------------------------------------------------------------- */
 
-/* Card branco sobre o fundo agrupado: sombra macia e contorno de meio pixel no lugar do ring de 1 px. */
-:root[data-theme-preset="apple"] [data-slot="card"] {
+/*
+ * Card branco sobre o fundo agrupado: sombra macia e contorno de meio pixel no lugar do ring de 1 px. Cards usados como
+ * painel de página (rounded-none, ex.: a coluna da lista de alertas) ficam de fora: são área, não objeto.
+ */
+:root[data-theme-preset="apple"] [data-slot="card"]:not(.rounded-none) {
   box-shadow:
     0 0 0 0.5px var(--hairline),
     var(--shadow-sm);
 }
 
-.dark:root[data-theme-preset="apple"] [data-slot="card"] {
+.dark:root[data-theme-preset="apple"] [data-slot="card"]:not(.rounded-none) {
   box-shadow: 0 0 0 0.5px var(--hairline);
 }
 

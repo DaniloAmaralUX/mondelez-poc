@@ -35,7 +35,7 @@ export function FocusCard() {
           {formatarHora(turno.inicio)}–{formatarHora(turno.fim)}
         </CardDescription>
         <CardAction>
-          <Button variant="secondary" size="sm" disabled aria-describedby={ajudaId}>
+          <Button variant="secondary" size="sm" className="toque:text-sm" disabled aria-describedby={ajudaId}>
             Passar turno
           </Button>
         </CardAction>

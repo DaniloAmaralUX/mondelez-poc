@@ -125,7 +125,7 @@ export function LoginForm() {
   return (
     // v0.4 (docs/14): com o card largo (notebook, iPad em paisagem) o formulário vira duas colunas, quem e onde à
     // esquerda e o PIN com o Entrar à direita, e cabe na altura da tela sem rolar. A ordem do DOM não muda.
-    <form noValidate onSubmit={enviar} className="grid gap-4 @[32rem]/login:grid-cols-2 @[32rem]/login:gap-x-10">
+    <form noValidate onSubmit={enviar} className="grid @[32rem]/login:grid-cols-2 gap-4 @[32rem]/login:gap-x-10">
       <FieldGroup className="gap-4">
         <Controller
           control={form.control}
@@ -149,7 +149,7 @@ export function LoginForm() {
                 }}
                 aria-describedby={fieldState.invalid ? "login-linha-erro" : undefined}
                 // Na coluna estreita do formulário em duas colunas, 2 × 2 em vez de 3 + 1.
-                className="w-full flex-wrap @[32rem]/login:grid @[32rem]/login:grid-cols-2"
+                className="@[32rem]/login:grid w-full @[32rem]/login:grid-cols-2 flex-wrap"
               >
                 {localRepository.linhas(PLANTA_ID).map((linha) => (
                   <ToggleGroupItem key={linha.id} value={linha.id} className={OPCAO}>

@@ -3,13 +3,24 @@
 import Link from "next/link";
 
 import { cn } from "cn";
-import { AlertTriangleIcon, Clock, Copy, MessageSquareText, Send, ShieldAlert, Star, Undo2 } from "lucide-react";
+import {
+  AlertTriangleIcon,
+  Clock,
+  Copy,
+  MessageSquareText,
+  PanelRight,
+  Send,
+  ShieldAlert,
+  Star,
+  Undo2,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import { Separator } from "@/components/ui/separator";
 import {
   Timeline,
@@ -47,11 +58,18 @@ type AlertDetailsProps = {
   tituloId?: string;
 };
 
+/** v0.4 (docs/14): estado vazio do template (Empty) no lugar da caixa tracejada, centralizado no painel como no Mail. */
 function EmptyAlertOverview() {
   return (
-    <div className="grid min-h-48 place-items-center rounded-lg border border-dashed text-muted-foreground text-sm">
-      Selecione um alerta para ver os detalhes.
-    </div>
+    <Empty className="h-full min-h-64">
+      <EmptyHeader>
+        <EmptyMedia variant="icon">
+          <PanelRight />
+        </EmptyMedia>
+        <EmptyTitle>Nenhum alerta aberto aqui</EmptyTitle>
+        <EmptyDescription>Selecione um alerta na lista para ver o que aconteceu e tratar.</EmptyDescription>
+      </EmptyHeader>
+    </Empty>
   );
 }
 

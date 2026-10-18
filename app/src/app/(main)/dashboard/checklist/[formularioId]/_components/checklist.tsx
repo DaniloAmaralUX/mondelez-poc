@@ -268,7 +268,7 @@ function ChecklistEditor({
           paisagem), menos espaço entre os blocos. */}
       <div
         data-checklist-foco
-        className="@container/foco flex min-h-[calc(100dvh-var(--dashboard-header-height)-2rem)] flex-col gap-5 pouca-altura:gap-3 md:min-h-[calc(100dvh-var(--dashboard-header-height)-3rem)]"
+        className="@container/foco mx-auto flex min-h-[calc(100dvh-var(--dashboard-header-height)-2rem)] w-full max-w-5xl flex-col gap-5 pouca-altura:gap-3 md:min-h-[calc(100dvh-var(--dashboard-header-height)-3rem)]"
       >
         <CabecalhoDoFoco
           formulario={formulario}

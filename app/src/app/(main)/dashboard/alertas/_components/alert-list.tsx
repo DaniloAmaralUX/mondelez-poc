@@ -3,11 +3,12 @@
 import * as React from "react";
 
 import { cn } from "cn";
-import { Bell, Search, SlidersHorizontal } from "lucide-react";
+import { Bell, BellOff, Search, SlidersHorizontal } from "lucide-react";
 import { motion } from "motion/react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Status, StatusIndicator, StatusLabel } from "@/components/ui/status";
@@ -15,13 +16,12 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { localRepository } from "@/data/repository";
 import type { Alerta, EstadoAlerta } from "@/domain/types";
 import { useModoToque } from "@/hooks/use-modo-toque";
-import { formatarHora } from "@/lib/format";
+import { formatarHora, primeiroNome } from "@/lib/format";
 import { ICONE_MODULO } from "@/lib/modulo-icones";
 import { STATUS_LEGIVEL } from "@/lib/status-legivel";
-import { getInitials } from "@/lib/utils";
 import { useAgora } from "@/stores/session/session-store";
 
-import { STATUS_LABEL, STATUS_VARIANTE, statusVisual } from "./alerta-estilos";
+import { STATUS_LABEL, STATUS_VARIANTE, type StatusVisual, statusVisual } from "./alerta-estilos";
 import { idadeDoAlerta, progressoDoAlerta } from "./idade";
 
 type Filtro = "todos" | EstadoAlerta;
@@ -52,12 +52,25 @@ type AlertListProps = {
   alertas: Alerta[];
 };
 
-const DESTAQUE_ATIVO = "border-primary bg-muted/50 ring-1 ring-primary/40";
+/** Cor do bloco do ícone e da barra de escalonamento por estado (mesmas cores do selo). */
+const TINTA: Record<StatusVisual, { bloco: string; barra: string }> = {
+  critico: { bloco: "bg-destructive/10 text-red-700 dark:text-red-400", barra: "bg-destructive" },
+  atencao: { bloco: "bg-amber-500/12 text-amber-700 dark:text-amber-400", barra: "bg-amber-500" },
+  tratamento: { bloco: "bg-primary/10 text-primary dark:text-violet-400", barra: "bg-primary" },
+  resolvido: { bloco: "bg-green-600/10 text-green-700 dark:text-green-400", barra: "bg-green-600" },
+};
+
+const DESTAQUE_ATIVO = "bg-primary/[0.06] ring-2 ring-primary/50";
 // Sem escolha explícita, o primeiro alerta só está "aberto" quando o detalhe está ao lado (@4xl/content); na pilha do
 // retrato a lista aparece sozinha e nenhum card fica marcado.
-const DESTAQUE_PADRAO =
-  "@4xl/content:border-primary @4xl/content:bg-muted/50 @4xl/content:ring-1 @4xl/content:ring-primary/40";
+const DESTAQUE_PADRAO = "@4xl/content:bg-primary/[0.06] @4xl/content:ring-2 @4xl/content:ring-primary/50";
 
+/**
+ * Linha da caixa de alertas. v0.4 (docs/14): no lugar do card de remessa da tela Logistics (linha tracejada, caixas com
+ * número e iniciais), uma linha no padrão do Mail: ícone do módulo tingido pelo estado, o que aconteceu como título,
+ * onde (linha, posto, regra) como subtítulo, e embaixo o selo, quem está com ele e a idade. A barra fina mostra quanto
+ * do prazo de escalonamento já passou, a mesma informação da linha tracejada.
+ */
 function AlertCard({ alerta, active, explicito = true, onSelectAlert, agora }: AlertCardProps) {
   const progresso = progressoDoAlerta(alerta, agora);
   const status = statusVisual(alerta);
@@ -65,80 +78,52 @@ function AlertCard({ alerta, active, explicito = true, onSelectAlert, agora }: A
   const posto = localRepository.posto(alerta.postoId);
   const linha = posto ? localRepository.linhas("chocolate").find((l) => l.id === posto.linhaId) : undefined;
   const responsavel = alerta.responsavelId ? localRepository.usuario(alerta.responsavelId) : undefined;
+  const onde = [linha?.nome, posto?.nome, `#${alerta.regra}`].filter(Boolean).join(" · ");
 
   return (
     // Sem blur() no clique: o foco fica no item (teclado e leitor de tela sabem onde estão). Ativo = alerta aberto no
-    // detalhe; a borda primária ganha um anel para ser vista de longe, no tablet do posto. active:bg-muted/70: retorno
-    // no toque, onde o hover não existe e o flash do navegador está desligado (src/styles/tablet.css).
+    // detalhe, com anel no acento para ser visto de longe no tablet do posto. active:bg-muted/70: retorno no toque, onde
+    // o hover não existe e o flash do navegador está desligado (src/styles/tablet.css).
     <button
       type="button"
       aria-current={active && explicito ? "true" : undefined}
       onClick={() => onSelectAlert(alerta.id)}
       className={cn(
-        "flex w-full flex-col gap-5 rounded-xl border p-3 text-left transition-colors",
+        "flex w-full gap-3 rounded-xl bg-card p-3 text-left shadow-xs ring-1 ring-foreground/5 transition-colors",
         "hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 active:bg-muted/70",
         active && (explicito ? DESTAQUE_ATIVO : DESTAQUE_PADRAO),
       )}
     >
-      <div className="flex items-center justify-between gap-3">
-        <div>#{alerta.regra}</div>
+      <span aria-hidden className={cn("grid size-10 shrink-0 place-items-center rounded-lg", TINTA[status].bloco)}>
+        <Icon className="size-5" />
+      </span>
 
-        <Status variant={STATUS_VARIANTE[status]} className={cn("toque:text-sm", STATUS_LEGIVEL)}>
-          <StatusIndicator className={status === "critico" ? undefined : "before:hidden"} />
-          <StatusLabel>{STATUS_LABEL[status]}</StatusLabel>
-        </Status>
-      </div>
-
-      {/* No toque, nada de leitura abaixo de 14 px (docs/12 §3.3): rótulos e marcas passam de text-xs a text-sm. */}
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-1.5">
-          <div className="grid size-7 toque:size-8 shrink-0 place-items-center rounded-xs text-xs toque:text-sm outline">
-            {linha?.nome.replace(/\D/g, "")}
-          </div>
-          <div className="flex min-w-0 flex-col gap-0.5">
-            <div className="font-medium text-sm leading-none">{linha?.nome},</div>
-            <div className="truncate text-muted-foreground text-sm">{posto?.nome}</div>
-          </div>
-        </div>
-
-        <div className="flex min-w-0 items-center gap-1.5 text-right">
-          <div className="flex min-w-0 flex-col gap-0.5">
-            <div className="font-medium text-sm leading-none">Responsável,</div>
-            <div className="truncate text-muted-foreground text-sm">{responsavel?.nome ?? "ninguém assumiu"}</div>
-          </div>
-          <div className="grid size-7 toque:size-8 shrink-0 place-items-center rounded-xs text-xs toque:text-sm outline">
-            {responsavel ? getInitials(responsavel.nome) : "—"}
-          </div>
-        </div>
-      </div>
-
-      <div className="flex items-center gap-0.5">
-        <span
-          className="h-px min-w-0 border-foreground border-t border-dashed"
-          style={{ flexGrow: progresso, flexBasis: 0 }}
-        />
-        <Icon className="size-3.5" />
-        <span
-          className="h-px min-w-0 border-border border-t border-dashed"
-          style={{ flexGrow: 100 - progresso, flexBasis: 0 }}
-        />
-      </div>
-
-      <div className="flex items-center justify-between gap-4">
-        <div className="min-w-0">
-          <div className="text-muted-foreground text-xs toque:text-sm leading-none">Alerta</div>
-          <div className="truncate text-sm tracking-tight">{alerta.titulo}</div>
-        </div>
-        <div className="shrink-0 text-right">
-          <div className="text-muted-foreground text-xs toque:text-sm leading-none">Idade</div>
-          <div className="text-sm tabular-nums tracking-tight">
-            {idadeDoAlerta(alerta, agora)}
-            <span className="ml-1 font-normal text-muted-foreground text-sm">
-              desde {formatarHora(alerta.criadoEm)}
-            </span>
-          </div>
-        </div>
-      </div>
+      {/* No toque, nada de leitura abaixo de 14 px (docs/12 §3.3). */}
+      <span className="flex min-w-0 flex-1 flex-col gap-1">
+        <span className="flex items-baseline justify-between gap-3">
+          <span className="truncate font-semibold text-[0.9375rem] leading-snug">{alerta.titulo}</span>
+          <time
+            dateTime={alerta.criadoEm.toISOString()}
+            className="shrink-0 text-muted-foreground text-xs toque:text-sm tabular-nums"
+          >
+            {formatarHora(alerta.criadoEm)}
+          </time>
+        </span>
+        <span className="truncate text-muted-foreground text-sm">{onde}</span>
+        <span className="mt-1 flex items-center justify-between gap-3">
+          <Status variant={STATUS_VARIANTE[status]} className={cn("toque:text-sm", STATUS_LEGIVEL)}>
+            <StatusIndicator className={status === "critico" ? undefined : "before:hidden"} />
+            <StatusLabel>{STATUS_LABEL[status]}</StatusLabel>
+          </Status>
+          <span className="min-w-0 truncate text-right text-muted-foreground text-xs toque:text-sm">
+            {responsavel ? `Com ${primeiroNome(responsavel.nome)}` : "Ninguém assumiu"} ·{" "}
+            <span className="text-foreground tabular-nums">{idadeDoAlerta(alerta, agora)}</span>
+          </span>
+        </span>
+        <span className="mt-1.5 h-1 overflow-hidden rounded-full bg-muted" aria-hidden>
+          <span className={cn("block h-full rounded-full", TINTA[status].barra)} style={{ width: `${progresso}%` }} />
+        </span>
+      </span>
     </button>
   );
 }
@@ -160,10 +145,10 @@ export function AlertList({ alertas, selectedAlertId, selecaoExplicita, onSelect
   return (
     // @container/lista: as abas decidem o arranjo pela largura da própria lista (360 px ao lado do detalhe, a tela
     // inteira na pilha do retrato), não pelo viewport.
-    <Card className="@container/lista h-full rounded-none ring-0">
+    <Card className="@container/lista h-full rounded-none bg-transparent ring-0">
       <CardHeader>
         {/* h1 da tela (UI Audit 10.5): a lista é a entrada de Alertas; o detalhe tem o próprio título. */}
-        <CardTitle className="font-normal text-xl">
+        <CardTitle className="text-2xl">
           <h1>Alertas</h1>
         </CardTitle>
         {/* Botão desabilitado sem explicação não serve no toque (não há tooltip): o motivo fica escrito, como em Recados. */}
@@ -238,9 +223,21 @@ export function AlertList({ alertas, selectedAlertId, selecaoExplicita, onSelect
         <ScrollArea className="[&_[data-slot=scroll-area-viewport]>div]:block! @4xl/content:h-0 @4xl/content:flex-1">
           <div key={`${filtro}|${termo}`} className="flex flex-col gap-4 px-4 py-1">
             {visiveis.length === 0 && (
-              <div className="grid min-h-32 place-items-center rounded-lg border border-dashed text-muted-foreground text-sm">
-                {alertas.length === 0 ? "Nenhum alerta neste turno." : "Nenhum alerta neste filtro."}
-              </div>
+              <Empty className="min-h-48 p-6">
+                <EmptyHeader>
+                  <EmptyMedia variant="icon">
+                    <BellOff />
+                  </EmptyMedia>
+                  <EmptyTitle>
+                    {alertas.length === 0 ? "Nenhum alerta neste turno" : "Nenhum alerta neste filtro"}
+                  </EmptyTitle>
+                  <EmptyDescription>
+                    {alertas.length === 0
+                      ? "Atrasos e não conformidades aparecem aqui assim que acontecem."
+                      : "Troque a aba ou limpe a busca para ver os outros."}
+                  </EmptyDescription>
+                </EmptyHeader>
+              </Empty>
             )}
             {visiveis.map((alerta, indice) => (
               // Reordenação por estado e criticidade desliza em vez de pular (oportunidades de movimento, item 4).

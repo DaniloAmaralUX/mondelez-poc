@@ -34,7 +34,7 @@ export default function LoginPage() {
 
       {/* v0.4 (docs/14): o formulário fica num card branco sobre o fundo cinza (tela de entrada do Apple ID); no celular,
           sem card, ocupando a largura. A marca aparece aqui quando o painel da direita some (abaixo de xl). */}
-      <div className="mx-auto my-auto flex w-full flex-col justify-center space-y-8 px-6 py-8 @container/login lg:space-y-6 sm:w-[420px] lg:w-[680px] xl:w-[640px] sm:rounded-[1.75rem] sm:bg-card sm:p-10 lg:p-8 sm:shadow-[0_0_0_0.5px_var(--hairline),var(--shadow-md)]">
+      <div className="@container/login mx-auto my-auto flex w-full flex-col justify-center space-y-8 px-6 py-8 sm:w-[420px] sm:rounded-[1.75rem] sm:bg-card sm:p-10 sm:shadow-[0_0_0_0.5px_var(--hairline),var(--shadow-md)] lg:w-[680px] lg:space-y-6 lg:p-8 xl:w-[640px]">
         <div className="flex flex-col items-center gap-3 text-center">
           {/* Em tela baixa (iPad em paisagem) a marca sai para o card caber sem rolar. */}
           <MarcaDoApp tamanho="lg" className="mb-1 xl:hidden [@media(max-height:56rem)]:hidden" />

@@ -81,7 +81,7 @@ export function FazerAgora() {
         <div
           aria-hidden
           className={cn(
-            "row-span-2 grid size-12 place-items-center rounded-xl toque:size-14",
+            "row-span-2 grid size-12 toque:size-14 place-items-center rounded-xl",
             atrasada ? "bg-destructive/10 text-destructive" : "bg-primary/10 text-primary",
           )}
         >

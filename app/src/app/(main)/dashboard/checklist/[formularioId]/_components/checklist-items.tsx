@@ -86,7 +86,12 @@ export function ChecklistItems({
 
   return (
     // Container query: a linha do item se divide pela largura do painel, não do viewport (sidebar aberta ou não).
-    <div data-checklist-itens className="@container/itens flex flex-col gap-3">
+    // v0.4 (docs/14): os itens da etapa numa lista agrupada (inset grouped do iOS), um card com divisórias finas, em vez
+    // de um card por item.
+    <div
+      data-checklist-itens
+      className="@container/itens flex flex-col divide-y divide-border/70 overflow-hidden rounded-xl bg-card shadow-sm ring-1 ring-foreground/5"
+    >
       {itens.map((item) => (
         <ItemRow
           key={item.id}
@@ -125,15 +130,12 @@ function ItemRow({
   const idAjudaJustificativa = `justificativa-ajuda-${item.id}`;
 
   return (
-    // Um item por cartão. scroll-mt: abaixo do header do dashboard (64 px no toque); scroll-mb: acima da barra fixa
+    // Uma linha da lista agrupada. scroll-mt: abaixo do header do dashboard (64 px no toque); scroll-mb: acima da barra fixa
     // (64 px de ação + 24 de respiro + 12 da borda), para o item que recebe foco ou é rolado até a vista não ficar sob ela.
     <div
       id={`item-${item.id}`}
       data-invalid={erro ? true : undefined}
-      className={cn(
-        "flex scroll-mt-24 scroll-mb-36 flex-col gap-3 rounded-xl border bg-card p-3 transition-colors",
-        erro && "border-destructive/50",
-      )}
+      className={cn("flex scroll-mt-24 scroll-mb-36 flex-col gap-3 p-4 transition-colors", erro && "bg-destructive/5")}
     >
       <div className="flex @2xl/itens:flex-row flex-col @2xl/itens:items-center gap-3">
         <div className="flex min-w-0 flex-1 gap-3">

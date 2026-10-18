@@ -391,7 +391,7 @@ function BarraDeAcoes({ children }: { children: React.ReactNode }) {
       data-touch-bar="true"
       style={{ "--teclado": `${teclado}px` } as React.CSSProperties}
       // mt-auto: com etapa curta, a barra fica no rodapé da área do modo foco (que ocupa a altura da tela).
-      className="sticky bottom-[calc(var(--teclado,0px)+max(--spacing(3),env(safe-area-inset-bottom)))] z-10 mt-auto flex items-center gap-3 rounded-2xl bg-card/85 p-3 shadow-lg ring-1 ring-foreground/5 backdrop-blur-xl backdrop-saturate-150 pointer-coarse:bg-card"
+      className="sticky bottom-[calc(var(--teclado,0px)+max(--spacing(3),env(safe-area-inset-bottom)))] z-10 mt-auto flex items-center gap-3 rounded-2xl bg-card/85 pointer-coarse:bg-card p-3 shadow-lg ring-1 ring-foreground/5 backdrop-blur-xl backdrop-saturate-150"
     >
       {children}
     </div>

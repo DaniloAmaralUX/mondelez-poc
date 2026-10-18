@@ -30,8 +30,8 @@ export function Greeting() {
   return (
     // Com pouca altura útil (paisagem com o teclado do Android aberto, src/styles/tablet.css), título e turno menores.
     <header className="flex flex-col gap-1.5 pouca-altura:gap-1">
-      <p className="font-semibold text-muted-foreground text-sm first-letter:uppercase toque:text-base">{data}</p>
-      <h1 className="pouca-altura:text-2xl text-[2rem] text-foreground leading-[1.1] @min-[60rem]/content:text-[2.125rem]">
+      <p className="font-semibold text-muted-foreground text-sm toque:text-base first-letter:uppercase">{data}</p>
+      <h1 className="@min-[60rem]/content:text-[2.125rem] pouca-altura:text-2xl text-[2rem] text-foreground leading-[1.1]">
         {saudacao(agora)}, {usuario ? primeiroNome(usuario.nome) : ""}.
       </h1>
       <p className="pouca-altura:text-base text-lg text-muted-foreground leading-snug">

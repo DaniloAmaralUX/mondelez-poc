@@ -23,6 +23,7 @@
 | [11 · v0.2: componentes e layout](11-v0.2-componentes-e-layout.md) | Auditoria da v0, bibliotecas, componentes de registries, decisões por tela, movimento e resultado da v0.2 |
 | [12 · v0.3: tablet-first](12-v0.3-tablet-first.md) | Estudo e plano: usuário do tablet, princípios, decisões, backlog em fases A–H e critérios de aceite |
 | [13 · v0.3: resultado](13-v0.3-tablet-first-resultado.md) | O que mudou por fase e na costura final, decisões e porquês, desvios do template, critérios de aceite, auditorias, pendências e decisões de produto pendentes, verificação em aparelho real e como testar no desktop |
+| [14 · v0.4: estética Apple](14-v0.4-estetica-apple.md) | Tema Apple pelo mecanismo de presets, refinamento por data-slot, composição de cada tela no notebook e no iPad (paisagem e retrato), decisões com antes/depois/porquê, verificação e capturas |
 
 Auditorias UI Audit por tela em `auditorias/` (`v0-*.json` e `v0.3-*.json`). Auditoria do código para tablet e receitas técnicas da v0.3 em `pesquisa/`.
 

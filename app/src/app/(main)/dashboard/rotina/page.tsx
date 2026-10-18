@@ -26,20 +26,20 @@ export const metadata: Metadata = {
  */
 export default function Page() {
   return (
-    <div className="flex flex-col gap-6 @min-[60rem]/content:gap-8">
+    <div className="flex flex-col @min-[60rem]/content:gap-8 gap-6">
       <Greeting />
 
-      <div className="grid gap-6 @2xl/content:grid-cols-12">
-        <div className="min-w-0 @2xl/content:col-span-8 empty:hidden">
+      <div className="grid @2xl/content:grid-cols-12 gap-6">
+        <div className="@2xl/content:col-span-8 min-w-0 empty:hidden">
           <FazerAgora />
         </div>
-        <div className="min-w-0 @2xl/content:col-span-4 empty:hidden">
+        <div className="@2xl/content:col-span-4 min-w-0 empty:hidden">
           <FocusCard />
         </div>
       </div>
 
-      <div className="grid gap-6 @min-[60rem]/content:grid-cols-12">
-        <section className="flex min-w-0 flex-col gap-6 @min-[60rem]/content:col-span-8">
+      <div className="grid @min-[60rem]/content:grid-cols-12 gap-6">
+        <section className="@min-[60rem]/content:col-span-8 flex min-w-0 flex-col gap-6">
           <div className="min-w-0 empty:hidden">
             <QuoteCard />
           </div>
@@ -54,7 +54,7 @@ export default function Page() {
 
         <aside
           aria-label="Turno e recados"
-          className="grid min-w-0 items-start gap-6 @2xl/content:grid-cols-2 @min-[60rem]/content:col-span-4 @min-[60rem]/content:grid-cols-1"
+          className="@min-[60rem]/content:col-span-4 grid min-w-0 @2xl/content:grid-cols-2 @min-[60rem]/content:grid-cols-1 items-start gap-6"
         >
           <div className="min-w-0 empty:hidden">
             <LinhaDoTurno />
