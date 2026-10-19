@@ -1,3 +1,5 @@
+export { cn } from "cn";
+
 /** Partículas de nomes em português que não entram nas iniciais. */
 const PARTICULAS = new Set(["da", "das", "de", "di", "do", "dos", "du", "e"]);
 

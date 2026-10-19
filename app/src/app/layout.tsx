@@ -13,6 +13,16 @@ import { ThemeBootScript } from "@/scripts/theme-boot";
 import { PreferencesStoreProvider } from "@/stores/preferences/preferences-provider";
 
 import "./globals.css";
+import { Raleway } from "next/font/google";
+
+import { cn } from "@/lib/utils";
+
+/*
+ * Fonte do preset shadcn b1GxyjtZo (estilo luma, base olive), aplicado na v0.7. Vale para o tema "default" do template;
+ * no tema Mondelēz (o padrão) o body troca --font-sans pela pilha da marca (tema-mondelez.css). Sem pré-carga: no
+ * tablet da fábrica ela não é usada e não deve gastar rede.
+ */
+const raleway = Raleway({ subsets: ["latin"], variable: "--font-sans", preload: false });
 
 export const metadata: Metadata = {
   title: APP_CONFIG.meta.title,
@@ -53,6 +63,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
       data-sidebar-collapsible={sidebar_collapsible}
       data-font={font}
       suppressHydrationWarning
+      className={cn("font-sans", raleway.variable)}
     >
       <head>
         {/* Applies theme and layout preferences on load to avoid flicker and unnecessary server rerenders. */}
