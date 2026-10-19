@@ -44,6 +44,14 @@ export const THEME_PRESET_OPTIONS = [
     },
   },
   {
+    label: "Mondelēz",
+    value: "mondelez",
+    primary: {
+      light: "oklch(0.3558 0.1324 307.7)",
+      dark: "oklch(0.56 0.13 308)",
+    },
+  },
+  {
     label: "Soft Pop",
     value: "soft-pop",
     primary: {

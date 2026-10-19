@@ -1,0 +1,173 @@
+/*
+ * Marca Mondelēz International sobre o acabamento do tema Apple (v0.6, docs/19). Só age com
+ * data-theme-preset="mondelez"; cores em src/styles/presets/mondelez.css. Fora de @layer, como tema-apple.css, e
+ * importada depois dele: as regras de mesma especificidade daqui vencem.
+ *
+ * Fontes do brand book (2019): MDLZ Bite Type nos títulos, com parcimônia; Bw Surco no texto; Calibri como alternativa
+ * em sites e intranet. As duas primeiras são fontes proprietárias da Mondelēz: o projeto não copia os arquivos, só as
+ * usa quando estão instaladas no aparelho (local()). Sem elas, Calibri (Windows) e Carlito, a versão aberta com as
+ * mesmas métricas da Calibri (next/font, SIL OFL), que é o que os tablets Android e o iPad mostram.
+ */
+
+@font-face {
+  font-family: "MDLZ Bite Type";
+  src: local("MDLZ BITE TYPE"), local("MDLZ Bite Type"), local("MDLZBITETYPE-Regular");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Bw Surco";
+  src: local("Bw Surco"), local("BwSurco-Regular");
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Bw Surco";
+  src: local("Bw Surco Bold"), local("BwSurco-Bold");
+  font-weight: 700;
+  font-display: swap;
+}
+
+/* No body, onde o next/font declara --font-carlito (layout.tsx): no :root a variável ainda não existe. */
+:root[data-theme-preset="mondelez"] body {
+  --fonte-texto-marca: "Bw Surco", Calibri, var(--font-carlito), system-ui, sans-serif;
+  --fonte-titulo-marca: "MDLZ Bite Type", "Bw Surco", Calibri, var(--font-carlito), system-ui, sans-serif;
+}
+
+:root[data-theme-preset="mondelez"] {
+  /* Linha fina com o roxo da marca, no lugar do preto a 6 %. */
+  --hairline: oklch(0.28 0.06 308 / 8%);
+}
+
+.dark:root[data-theme-preset="mondelez"] {
+  --hairline: oklch(1 0 0 / 9%);
+}
+
+/* ---------------------------------------------------------------------------------------------------------------- */
+/* Tipografia                                                                                                        */
+/* ---------------------------------------------------------------------------------------------------------------- */
+
+/* Como no tema Apple, só quando a fonte é a padrão: quem escolhe outra no menu de layout continua com ela. */
+:root[data-theme-preset="mondelez"][data-font="inter"] body {
+  --font-sans: var(--fonte-texto-marca);
+}
+
+/*
+ * A Calibri tem o "x" bem mais baixo que a Inter (0,47 contra 0,55 da altura do corpo): no mesmo tamanho o texto fica
+ * menor, e as telas foram medidas com a Inter. `font-size-adjust` iguala a altura do "x" (0,5) sem mexer nos tamanhos
+ * das telas: o texto do chão de fábrica não encolhe com a troca de fonte.
+ */
+:root[data-theme-preset="mondelez"][data-font="inter"] body {
+  font-size-adjust: ex-height 0.5;
+  font-feature-settings: normal;
+}
+
+/* Calibri e Surco já são justas: o aperto de -0,021em do tema Apple colaria as letras nos títulos. */
+:root[data-theme-preset="mondelez"] :is(h1, h2) {
+  letter-spacing: -0.008em;
+}
+
+/* Títulos de tela no roxo da marca (como no material da Mondelēz), na fonte de título. No escuro ficam no creme: o
+   roxo sobre o fundo escuro não chega a 4,5:1. */
+:root[data-theme-preset="mondelez"][data-font="inter"] :is([data-slot="sidebar-inset"], main) h1 {
+  font-family: var(--fonte-titulo-marca);
+  font-weight: 700;
+}
+
+:root[data-theme-preset="mondelez"]:not(.dark) :is([data-slot="sidebar-inset"], main) h1 {
+  color: var(--primary);
+}
+
+/* ---------------------------------------------------------------------------------------------------------------- */
+/* Sidebar: o campo roxo da sinalização da marca, com o logo em branco                                               */
+/* ---------------------------------------------------------------------------------------------------------------- */
+
+/*
+ * Dentro da sidebar os tokens do conteúdo viram os da sidebar: o botão "Registrar agora" (bg-primary) passa a branco
+ * com texto roxo, e texto secundário fica num lilás claro sólido (6,8:1 sobre o roxo). Os cards da sidebar (pedido de
+ * ajuda) voltam aos tokens do conteúdo logo abaixo.
+ */
+:root[data-theme-preset="mondelez"] [data-sidebar="sidebar"] {
+  --foreground: var(--sidebar-foreground);
+  --primary: var(--sidebar-primary);
+  --primary-foreground: var(--sidebar-primary-foreground);
+  --muted-foreground: oklch(0.828 0.033 311.4);
+  --accent: var(--sidebar-accent);
+  --accent-foreground: var(--sidebar-accent-foreground);
+  --border: var(--sidebar-border);
+  --input: oklch(1 0 0 / 24%);
+  --ring: var(--sidebar-ring);
+  --background: oklch(1 0 0 / 10%);
+  --hairline: oklch(1 0 0 / 12%);
+}
+
+.dark:root[data-theme-preset="mondelez"] [data-sidebar="sidebar"] {
+  --muted-foreground: oklch(0.806 0.017 311);
+}
+
+:root[data-theme-preset="mondelez"] [data-sidebar="sidebar"] [data-slot="card"] {
+  --foreground: oklch(0.2686 0 0);
+  --primary: oklch(0.3558 0.1324 307.7);
+  --primary-foreground: oklch(1 0 0);
+  --muted-foreground: oklch(0.5103 0 0);
+  --accent: oklch(0.943 0.022 310.4);
+  --accent-foreground: oklch(0.3558 0.1324 307.7);
+  --border: oklch(0.9 0.022 78);
+  --input: oklch(0.855 0.024 78);
+  --ring: oklch(0.4879 0.1069 309.6 / 55%);
+  --background: oklch(1 0 0);
+  --hairline: oklch(0.28 0.06 308 / 8%);
+  color: var(--card-foreground);
+}
+
+.dark:root[data-theme-preset="mondelez"] [data-sidebar="sidebar"] [data-slot="card"] {
+  --foreground: oklch(0.9663 0.0176 81.3);
+  --primary: oklch(0.56 0.13 308);
+  --muted-foreground: oklch(0.75 0.015 308);
+  --accent: oklch(0.29 0.045 308);
+  --accent-foreground: oklch(0.9663 0.0176 81.3);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 16%);
+  --ring: oklch(0.7 0.1 310 / 60%);
+  --background: oklch(0.165 0.022 308);
+  --hairline: oklch(1 0 0 / 9%);
+}
+
+/* Item ativo: pílula branca translúcida, como a seleção da sinalização sobre o roxo. */
+:root[data-theme-preset="mondelez"] [data-sidebar="sidebar"] [data-slot="sidebar-menu-button"][data-active="true"] {
+  background-color: oklch(1 0 0 / 16%);
+}
+
+/* ---------------------------------------------------------------------------------------------------------------- */
+/* Formas da marca                                                                                                   */
+/* ---------------------------------------------------------------------------------------------------------------- */
+
+/*
+ * "(im)perfect shapes" das iniciativas internas (brand book): forma arredondada um pouco irregular, que lembra as gotas
+ * do logo. Usada no ícone do app (marca-do-app.tsx) e nas formas decorativas do login.
+ */
+:root[data-theme-preset="mondelez"] [data-slot="marca-do-app"] {
+  border-radius: 46% 54% 50% 50% / 54% 48% 52% 46%;
+}
+
+/* ---------------------------------------------------------------------------------------------------------------- */
+/* Shell                                                                                                             */
+/* ---------------------------------------------------------------------------------------------------------------- */
+
+/* O vidro do tema Apple satura 180 %: sobre o creme isso puxa para o salmão. Aqui o vidro só desfoca. A mistura é
+   em oklab: em oklch o transparent não tem matiz e o creme virava rosa (matiz 0). */
+@media (pointer: fine) {
+  :root[data-theme-preset="mondelez"][data-navbar-style="sticky"] [data-slot="sidebar-inset"] > header {
+    background-color: color-mix(in oklab, var(--background) 85%, transparent);
+    backdrop-filter: blur(20px);
+  }
+}
+
+/*
+ * Abas inativas: o template usa o texto a 60 % (text-foreground/60), que sobre o creme dá 3,9:1. O texto secundário
+ * sólido (Cool Grey #666) dá 4,9:1 sobre o fundo das abas e 5,2:1 sobre o creme. No escuro o template já usa ele.
+ */
+:root[data-theme-preset="mondelez"]:not(.dark) [data-slot="tabs-trigger"]:not([data-state="active"]):not(:hover) {
+  color: var(--muted-foreground);
+}

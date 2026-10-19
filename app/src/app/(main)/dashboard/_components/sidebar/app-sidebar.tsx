@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 
 import { useShallow } from "zustand/react/shallow";
 
+import { LogoMondelez } from "@/components/marca/logo-mondelez";
 import { MarcaDoApp } from "@/components/marca-do-app";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import {
@@ -77,11 +78,27 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild>
+            {/* v0.6 (docs/19): logo Mondelēz na cor do texto da sidebar (branco no roxo do tema Mondelēz), com o nome
+                do app embaixo. Recolhida em ícones, fica só o ícone do app. O botão do
+                template força size-4 em todo svg dentro dele; daí o ! na largura do logo. */}
+            <SidebarMenuButton
+              asChild
+              className="h-auto flex-col items-start gap-1.5 px-3 py-3 group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-0!"
+            >
               {/* prefetch: Minha Rotina em cache para voltar a ela sem rede (lib/rotas.ts). */}
-              <Link prefetch href="/dashboard/rotina" onClick={fecharSidebar}>
-                <MarcaDoApp tamanho="sm" className="-ml-1" />
-                <span className="font-semibold text-base">{APP_CONFIG.name}</span>
+              <Link
+                prefetch
+                href="/dashboard/rotina"
+                onClick={fecharSidebar}
+                aria-label={`${APP_CONFIG.name}, Minha Rotina`}
+              >
+                <MarcaDoApp tamanho="sm" className="hidden group-data-[collapsible=icon]:grid" />
+                <span className="py-1 group-data-[collapsible=icon]:hidden">
+                  <LogoMondelez cor="texto" decorativo className="h-auto! w-32!" />
+                </span>
+                <span className="font-semibold text-sidebar-foreground/85 text-sm tracking-wide group-data-[collapsible=icon]:hidden">
+                  {APP_CONFIG.name}
+                </span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

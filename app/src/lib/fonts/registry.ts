@@ -1,4 +1,5 @@
 import {
+  Carlito,
   DM_Sans,
   Figtree,
   Geist,
@@ -20,7 +21,8 @@ import {
 import localFont from "next/font/local";
 
 /*
- * Pré-carregadas em toda rota só a fonte do tema Linear (Inter) e a mono do tema (Geist Mono). As outras famílias do
+ * Pré-carregadas em toda rota só a fonte do tema Mondelēz (Carlito, abaixo) e a mono do tema (Geist Mono); a Inter do
+ * tema Apple saiu da pré-carga na v0.6. As outras famílias do
  * seletor de fontes do template ficam com `preload: false`: continuam declaradas (mesmas variáveis CSS) e só baixam
  * quando alguém as escolhe. Poupa a rede instável do chão de fábrica.
  */
@@ -28,6 +30,18 @@ import localFont from "next/font/local";
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
+  preload: false,
+});
+
+/*
+ * Fonte do tema Mondelēz (padrão, v0.6, docs/19): Carlito, a versão aberta (SIL OFL) com as mesmas métricas da Calibri,
+ * a alternativa que o brand book da Mondelēz indica para sites e intranet. Fica fora do seletor de fontes: entra pela
+ * pilha do tema (src/styles/tema-mondelez.css), depois das fontes da marca instaladas no aparelho.
+ */
+const carlito = Carlito({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  variable: "--font-carlito",
 });
 
 const notoSans = Noto_Sans({
@@ -231,9 +245,7 @@ export type FontKey = keyof typeof fontRegistry;
 
 export const fontKeys = Object.keys(fontRegistry) as FontKey[];
 
-export const fontVars = Object.values(fontRegistry)
-  .map(({ font }) => font.variable)
-  .join(" ");
+export const fontVars = [carlito.variable, ...Object.values(fontRegistry).map(({ font }) => font.variable)].join(" ");
 
 export const fontOptions = fontKeys.map((key) => ({
   key,

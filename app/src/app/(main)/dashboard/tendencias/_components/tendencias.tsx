@@ -218,13 +218,20 @@ export function Tendencias() {
                     </th>
                     {linha.porTurno.map((n, i) => {
                       const intensidade = n / dados.maxMapa;
+                      // Duas faixas, sem o meio: no roxo médio nem o texto escuro nem o branco chegam a 4,5:1 (v0.6,
+                      // docs/19). Até a metade, tom claro (≤ 36 %) com texto escuro; acima, roxo forte (≥ 68 %) com
+                      // texto branco.
+                      const mistura =
+                        intensidade > 0.5
+                          ? Math.round(68 + (intensidade - 0.5) * 54)
+                          : Math.round(8 + intensidade * 56);
                       return (
                         <td
                           // biome-ignore lint/suspicious/noArrayIndexKey: as colunas são os três turnos, fixas
                           key={i}
                           className="h-14 rounded-lg text-center font-semibold tabular-nums"
                           style={{
-                            background: `color-mix(in oklch, var(--primary) ${Math.round(8 + intensidade * 72)}%, var(--card))`,
+                            background: `color-mix(in oklch, var(--primary) ${mistura}%, var(--card))`,
                             color: intensidade > 0.5 ? "var(--primary-foreground)" : "var(--foreground)",
                           }}
                         >

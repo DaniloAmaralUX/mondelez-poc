@@ -6,6 +6,7 @@
 @import "../styles/presets/apple.css";
 @import "../styles/presets/brutalist.css";
 @import "../styles/presets/linear.css";
+@import "../styles/presets/mondelez.css";
 @import "../styles/presets/soft-pop.css";
 @import "../styles/presets/tangerine.css";
 
@@ -14,6 +15,9 @@
 
 /* Refinamento do tema Apple por data-slot (v0.4, docs/14); só age com data-theme-preset="apple". */
 @import "../styles/tema-apple.css";
+
+/* Marca Mondelēz sobre o acabamento Apple (v0.6, docs/19); só age com data-theme-preset="mondelez". */
+@import "../styles/tema-mondelez.css";
 
 @custom-variant dark (&:is(.dark *));
 

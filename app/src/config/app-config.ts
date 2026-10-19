@@ -5,21 +5,23 @@ const currentYear = new Date().getFullYear();
 export const APP_CONFIG = {
   name: "Rotinas Operacionais",
   version: packageJson.version,
-  copyright: `© ${currentYear}, Rotinas Operacionais.`,
+  /** Protótipo para a Mondelēz International (v0.6, docs/19): o nome da empresa sempre com o mácron e completo. */
+  company: "Mondelēz International",
+  copyright: `© ${currentYear} · Protótipo para a Mondelēz International`,
   meta: {
-    title: "Rotinas Operacionais · Protótipo",
+    title: "Rotinas Operacionais · Mondelēz International",
     description: "Protótipo funcional de gestão de rotinas operacionais de manufatura.",
   },
   /**
    * App instalável (manifest, `viewport` e ícones). Manifest, `theme-color` e `ImageResponse` não leem variáveis CSS,
-   * então as cores são o tema Apple (`src/styles/presets/apple.css`) convertido de OKLCH para hex.
+   * então as cores são as do tema Mondelēz (`src/styles/presets/mondelez.css`, v0.6), em hex.
    */
   pwa: {
     shortName: "Rotinas",
-    /** `--background` do tema claro: oklch(0.9702 0.0015 286.4). Só o claro: o tema do app vem da classe (padrão claro), não do sistema. */
-    backgroundLight: "#f5f5f6",
-    /** `--primary` do tema claro: oklch(0.5 0.19 294). */
-    primary: "#6d42c2",
+    /** `--background` do tema claro, o creme do site da Mondelēz. Só o claro: o tema do app vem da classe (padrão claro), não do sistema. */
+    backgroundLight: "#faf3e7",
+    /** `--primary` do tema claro: o roxo do logo (MDLZ World, #4F2170). */
+    primary: "#4f2170",
     /** `--primary-foreground`: oklch(1 0 0). */
     primaryForeground: "#ffffff",
   },

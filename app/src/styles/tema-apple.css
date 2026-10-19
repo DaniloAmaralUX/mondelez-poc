@@ -1,6 +1,7 @@
 /*
  * Refinamento do tema Apple (v0.4, docs/14). Folha do projeto, no mesmo espírito de tablet.css: não edita
- * src/components/ui/**; ajusta os componentes do template pelo data-slot, e só com data-theme-preset="apple".
+ * src/components/ui/**; ajusta os componentes do template pelo data-slot, e só com data-theme-preset="apple" ou "mondelez"
+ * (v0.6, docs/19: o tema Mondelēz herda este acabamento e acrescenta a marca em tema-mondelez.css).
  *
  * Fora de @layer de propósito (como tablet.css): precisa vencer os utilitários dos componentes do template (ring-1 do
  * Card, border do Status, translate-y-px do Button). Por isso aqui só entram propriedades que nenhuma tela usa para
@@ -11,7 +12,7 @@
  * ease-out forte, < 300 ms), baseline-ui (tabular-nums, text-balance, um acento por tela) e HIG (Typography, Materials).
  */
 
-:root[data-theme-preset="apple"] {
+:root:is([data-theme-preset="apple"], [data-theme-preset="mondelez"]) {
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
   --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
@@ -19,7 +20,7 @@
   --hairline: oklch(0 0 0 / 6%);
 }
 
-.dark:root[data-theme-preset="apple"] {
+.dark:root:is([data-theme-preset="apple"], [data-theme-preset="mondelez"]) {
   --hairline: oklch(1 0 0 / 9%);
 }
 
@@ -32,11 +33,11 @@
  * demais (Windows, Android), que tem métricas próximas. Só quando a fonte escolhida é a padrão (Inter): quem trocar a
  * fonte no menu de layout continua com a escolha.
  */
-:root[data-theme-preset="apple"][data-font="inter"] body {
+:root:is([data-theme-preset="apple"], [data-theme-preset="mondelez"])[data-font="inter"] body {
   --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", var(--font-inter), system-ui, sans-serif;
 }
 
-:root[data-theme-preset="apple"] body {
+:root:is([data-theme-preset="apple"], [data-theme-preset="mondelez"]) body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
@@ -45,19 +46,19 @@
 }
 
 /* Tracking por tamanho (princípios da Apple §15): títulos grandes apertam, corpo fica em 0. Peso dá a hierarquia. */
-:root[data-theme-preset="apple"] :is(h1, h2) {
+:root:is([data-theme-preset="apple"], [data-theme-preset="mondelez"]) :is(h1, h2) {
   font-weight: 600;
   letter-spacing: -0.021em;
   text-wrap: balance;
 }
 
-:root[data-theme-preset="apple"] h3,
-:root[data-theme-preset="apple"] [data-slot="card-title"] {
+:root:is([data-theme-preset="apple"], [data-theme-preset="mondelez"]) h3,
+:root:is([data-theme-preset="apple"], [data-theme-preset="mondelez"]) [data-slot="card-title"] {
   font-weight: 600;
   letter-spacing: -0.012em;
 }
 
-:root[data-theme-preset="apple"] p {
+:root:is([data-theme-preset="apple"], [data-theme-preset="mondelez"]) p {
   text-wrap: pretty;
 }
 
@@ -69,18 +70,18 @@
  * Card branco sobre o fundo agrupado: sombra macia e contorno de meio pixel no lugar do ring de 1 px. Cards usados como
  * painel de página (rounded-none, ex.: a coluna da lista de alertas) ficam de fora: são área, não objeto.
  */
-:root[data-theme-preset="apple"] [data-slot="card"]:not(.rounded-none) {
+:root:is([data-theme-preset="apple"], [data-theme-preset="mondelez"]) [data-slot="card"]:not(.rounded-none) {
   box-shadow:
     0 0 0 0.5px var(--hairline),
     var(--shadow-sm);
 }
 
-.dark:root[data-theme-preset="apple"] [data-slot="card"]:not(.rounded-none) {
+.dark:root:is([data-theme-preset="apple"], [data-theme-preset="mondelez"]) [data-slot="card"]:not(.rounded-none) {
   box-shadow: 0 0 0 0.5px var(--hairline);
 }
 
 /* Menus e popovers: material mais espesso que o card (princípios da Apple §12), cantos maiores. */
-:root[data-theme-preset="apple"]
+:root:is([data-theme-preset="apple"], [data-theme-preset="mondelez"])
 :is(
   [data-slot="dropdown-menu-content"],
   [data-slot="dropdown-menu-sub-content"],
@@ -95,7 +96,7 @@
 }
 
 /* Capsula de status sem contorno: o fundo tingido já separa (iOS não desenha borda em tags). */
-:root[data-theme-preset="apple"] [data-slot="status"] {
+:root:is([data-theme-preset="apple"], [data-theme-preset="mondelez"]) [data-slot="status"] {
   border-color: transparent;
 }
 
@@ -103,31 +104,36 @@
 /* Shell: header como material translúcido, sidebar sem divisória dura                                              */
 /* ---------------------------------------------------------------------------------------------------------------- */
 
-:root[data-theme-preset="apple"] [data-slot="sidebar-inset"] > header {
+:root:is([data-theme-preset="apple"], [data-theme-preset="mondelez"]) [data-slot="sidebar-inset"] > header {
   border-bottom-color: var(--hairline);
 }
 
 /* Desktop: vidro (blur + saturação) sobre o conteúdo que rola por baixo. No toque a barra segue opaca (layout.tsx). */
 @media (pointer: fine) {
-  :root[data-theme-preset="apple"][data-navbar-style="sticky"] [data-slot="sidebar-inset"] > header {
-    background-color: color-mix(in oklch, var(--background) 72%, transparent);
+  :root:is([data-theme-preset="apple"], [data-theme-preset="mondelez"])[data-navbar-style="sticky"]
+    [data-slot="sidebar-inset"]
+    > header {
+    background-color: color-mix(in oklab, var(--background) 72%, transparent);
     backdrop-filter: blur(20px) saturate(180%);
   }
 }
 
 @media (prefers-reduced-transparency: reduce) {
-  :root[data-theme-preset="apple"][data-navbar-style="sticky"] [data-slot="sidebar-inset"] > header {
+  :root:is([data-theme-preset="apple"], [data-theme-preset="mondelez"])[data-navbar-style="sticky"]
+    [data-slot="sidebar-inset"]
+    > header {
     background-color: var(--background);
     backdrop-filter: none;
   }
 }
 
-:root[data-theme-preset="apple"] [data-slot="sidebar-container"] {
+:root:is([data-theme-preset="apple"], [data-theme-preset="mondelez"]) [data-slot="sidebar-container"] {
   border-color: var(--sidebar-border);
 }
 
 /* Item ativo da sidebar com peso, como a seleção da sidebar do iPadOS. */
-:root[data-theme-preset="apple"] [data-slot="sidebar-menu-button"][data-active="true"] {
+:root:is([data-theme-preset="apple"], [data-theme-preset="mondelez"])
+[data-slot="sidebar-menu-button"][data-active="true"] {
   font-weight: 600;
 }
 
@@ -135,14 +141,14 @@
 /* Toque: resposta no press (princípios da Apple §1, design engineering de Emil Kowalski)                                                       */
 /* ---------------------------------------------------------------------------------------------------------------- */
 
-:root[data-theme-preset="apple"]
+:root:is([data-theme-preset="apple"], [data-theme-preset="mondelez"])
 :is([data-slot="button"], [data-slot="toggle"], [data-slot="toggle-group-item"], [data-slot="sidebar-menu-button"]) {
   transition-property: color, background-color, border-color, box-shadow, opacity, transform;
   transition-duration: 160ms;
   transition-timing-function: var(--ease-out);
 }
 
-:root[data-theme-preset="apple"]
+:root:is([data-theme-preset="apple"], [data-theme-preset="mondelez"])
   :is([data-slot="button"], [data-slot="toggle"], [data-slot="toggle-group-item"]):active:not(
     :disabled,
     [aria-haspopup]
@@ -152,20 +158,21 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  :root[data-theme-preset="apple"]
+  :root:is([data-theme-preset="apple"], [data-theme-preset="mondelez"])
     :is([data-slot="button"], [data-slot="toggle"], [data-slot="toggle-group-item"]):active {
     transform: none;
   }
 }
 
 /* Botão principal: um leve brilho de material no topo e sombra curta, como os botões preenchidos do iOS. */
-:root[data-theme-preset="apple"] [data-slot="button"][data-variant="default"] {
+:root:is([data-theme-preset="apple"], [data-theme-preset="mondelez"]) [data-slot="button"][data-variant="default"] {
   box-shadow:
     inset 0 1px 0 oklch(1 0 0 / 14%),
     0 1px 2px oklch(0.3 0.12 294 / 22%);
 }
 
 /* Números de dados alinham (baseline-ui). */
-:root[data-theme-preset="apple"] :is(time, [data-slot="status"], [data-slot="badge"], td) {
+:root:is([data-theme-preset="apple"], [data-theme-preset="mondelez"])
+:is(time, [data-slot="status"], [data-slot="badge"], td) {
   font-variant-numeric: tabular-nums;
 }

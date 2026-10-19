@@ -1,6 +1,7 @@
 "use client";
 
 import { FotosDoRegistro } from "@/components/fotos-de-evidencia";
+import { LogoMondelez } from "@/components/marca/logo-mondelez";
 import { localRepository } from "@/data/repository";
 import { descreverResposta, resumirRespostas, situacaoItem } from "@/domain/formulario-engine";
 import { turnoAtual } from "@/domain/turno";
@@ -48,12 +49,9 @@ export function ChecklistPaper({ formulario, valores, tarefa, registro }: Checkl
     >
       <header className="flex flex-col gap-6">
         <div className="grid grid-cols-2 items-start gap-14">
-          <svg className="size-12" viewBox="0 0 48 48" aria-hidden="true">
-            <rect width="20" height="20" rx="3" fill="currentColor" />
-            <rect x="28" width="20" height="20" rx="3" fill="currentColor" />
-            <rect y="28" width="20" height="20" rx="3" fill="currentColor" />
-            <rect x="28" y="28" width="20" height="20" rx="3" fill="currentColor" />
-          </svg>
+          {/* v0.6 (docs/19): o registro é um documento da Mondelēz; o logo roxo no lugar do monograma do template. A
+              folha é sempre clara, então o logo é sempre o roxo. */}
+          <LogoMondelez cor="roxo" className="w-36" />
           <h2 className="text-4xl uppercase tracking-widest">Registro</h2>
         </div>
 

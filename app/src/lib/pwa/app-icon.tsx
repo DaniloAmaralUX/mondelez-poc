@@ -3,10 +3,11 @@ import { ImageResponse } from "next/og";
 import { APP_CONFIG } from "@/config/app-config";
 
 /**
- * Traço do ícone `Command` do lucide (viewBox 24, traço 2): a mesma marca que o template usa na sidebar e no painel
- * do login, aqui sobre o `--primary` do tema Linear. Gerado por código para não versionar binários.
+ * Traço do ícone `ListChecks` do lucide (viewBox 24, traço 2), o mesmo de `MarcaDoApp`: desenho de linha branca sobre
+ * o roxo da Mondelēz, como o brand book pede para os logos de iniciativas internas (v0.6, docs/19). Gerado por código
+ * para não versionar binários.
  */
-const GLIFO_COMMAND = "M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3";
+const GLIFO = ["m3 17 2 2 4-4", "m3 7 2 2 4-4", "M13 6h8", "M13 12h8", "M13 18h8"];
 
 /**
  * - `padrao`: quadrado de cantos arredondados com fundo transparente fora dele (navegador, área de trabalho).
@@ -62,7 +63,9 @@ export function gerarIconeDoApp(tamanho: number, formato: FormatoDoIcone) {
         // Sem `<title>`: o Satori desenha o texto dele dentro do PNG. O ícone é decorativo; o nome vem do manifest.
         aria-hidden="true"
       >
-        <path d={GLIFO_COMMAND} />
+        {GLIFO.map((d) => (
+          <path key={d} d={d} />
+        ))}
       </svg>
     </div>,
     { width: tamanho, height: tamanho },

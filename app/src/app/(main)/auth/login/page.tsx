@@ -1,7 +1,7 @@
 import { Globe } from "lucide-react";
 import type { Metadata } from "next";
 
-import { MarcaDoApp } from "@/components/marca-do-app";
+import { LogoMondelez } from "@/components/marca/logo-mondelez";
 import { APP_CONFIG } from "@/config/app-config";
 import { PIN_DEMO } from "@/data/seed";
 
@@ -36,8 +36,12 @@ export default function LoginPage() {
           sem card, ocupando a largura. A marca aparece aqui quando o painel da direita some (abaixo de xl). */}
       <div className="@container/login mx-auto my-auto flex w-full flex-col justify-center space-y-8 px-6 py-8 sm:w-[420px] sm:rounded-[1.75rem] sm:bg-card sm:p-10 sm:shadow-[0_0_0_0.5px_var(--hairline),var(--shadow-md)] lg:w-[680px] lg:space-y-6 lg:p-8 xl:w-[640px]">
         <div className="flex flex-col items-center gap-3 text-center">
-          {/* Em tela baixa (iPad em paisagem) a marca sai para o card caber sem rolar. */}
-          <MarcaDoApp tamanho="lg" className="mb-1 xl:hidden [@media(max-height:56rem)]:hidden" />
+          {/* Sem o painel roxo (abaixo de xl) o logo Mondelēz abre o card: roxo no claro, branco no escuro (o roxo só vai
+              sobre fundo claro). Em tela baixa (iPad em paisagem) ele sai para o card caber sem rolar. */}
+          <div className="mb-2 xl:hidden [@media(max-height:56rem)]:hidden">
+            <LogoMondelez cor="roxo" className="w-40 dark:hidden" />
+            <LogoMondelez cor="branco" className="hidden w-40 dark:block" />
+          </div>
           <h1 className="text-3xl">Entrar no posto</h1>
           <p className="text-muted-foreground text-sm toque:text-base">Use a matrícula do crachá e o seu PIN.</p>
         </div>

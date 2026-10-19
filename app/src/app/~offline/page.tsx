@@ -1,6 +1,7 @@
 import { WifiOff } from "lucide-react";
 import type { Metadata } from "next";
 
+import { LogoMondelez } from "@/components/marca/logo-mondelez";
 import { Button } from "@/components/ui/button";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import { APP_CONFIG } from "@/config/app-config";
@@ -22,6 +23,9 @@ export default function Page() {
       <RecarregarComRede />
       <Empty role="status" className="min-h-[50dvh] border">
         <EmptyHeader>
+          {/* v0.6 (docs/19): a marca também na tela sem rede, que é a primeira coisa vista quando a rede cai. */}
+          <LogoMondelez cor="roxo" className="mb-4 w-28 dark:hidden" />
+          <LogoMondelez cor="branco" className="mb-4 hidden w-28 dark:block" />
           <EmptyMedia variant="icon">
             <WifiOff />
           </EmptyMedia>
