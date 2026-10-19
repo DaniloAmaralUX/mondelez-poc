@@ -170,3 +170,17 @@
 :root[data-theme-preset="mondelez"]:not(.dark) [data-slot="tabs-trigger"]:not([data-state="active"]):not(:hover) {
   color: var(--muted-foreground);
 }
+
+/*
+ * Barra de rolagem discreta (login, v0.7): fina, sem trilho, num cinza translúcido que só aparece contra o branco, como a
+ * do macOS. A barra cinza do sistema, com trilho e setas, era o elemento mais pesado da tela de entrada. Vale fora do
+ * tema também: é um utilitário de quem rola dentro de um painel.
+ */
+.rolagem-discreta {
+  scrollbar-width: thin;
+  scrollbar-color: oklch(0 0 0 / 18%) transparent;
+}
+
+.dark .rolagem-discreta {
+  scrollbar-color: oklch(1 0 0 / 22%) transparent;
+}
