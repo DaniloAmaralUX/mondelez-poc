@@ -7,8 +7,10 @@ import { persist, type StorageValue } from "zustand/middleware";
 
 import { definirCadastrosDoTablet, localRepository } from "@/data/repository";
 import { recadosIniciais } from "@/data/seed";
+import { alinharEscalaAoDia } from "@/domain/escala";
 import { limitarRespostas, resumirRespostas } from "@/domain/formulario-engine";
 import { LIMITES, limitarTexto } from "@/domain/limites";
+import { dataLocal } from "@/domain/producao";
 import { chaveTurno, montarTurno, turnoAtual } from "@/domain/turno";
 import type {
   AcaoAlerta,
@@ -156,6 +158,8 @@ const AGORA_NO_SERVIDOR = new Date(2026, 9, 16, 7, 40);
  */
 function estadoInicialDemo(realAgora: number = Date.now()) {
   const relogio = ancoraPadrao(realAgora);
+  // A escala das turmas segue o dia da demo: a turma A (quem está no posto) no 1º turno (domain/escala.ts).
+  alinharEscalaAoDia(dataLocal(agoraSimulado(relogio, realAgora)));
   const turno = montarTurno(1, agoraSimulado(relogio, realAgora));
   const chave = chaveTurno(turno);
   const em = (h: number, m: number) => {
@@ -771,6 +775,7 @@ export const useSessionStore = create<SessionState>()(
         }
         const salvo = persistido as Partial<SessaoPersistida>;
         const relogio = salvo.relogio ?? atual.relogio;
+        alinharEscalaAoDia(dataLocal(agoraSimulado(relogio)));
         const simularSemRede = salvo.simularSemRede ?? atual.simularSemRede;
         // Ao abrir o app, janelas de desfazer e envios interrompidos voltam para a fila.
         const registros = podarRegistros(normalizarAoAbrir(salvo.registros ?? atual.registros), agoraSimulado(relogio));

@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { pode } from "@/domain/permissoes";
 import { dataLocal } from "@/domain/producao";
-import type { Recado } from "@/domain/types";
+import { useRecados } from "@/hooks/use-producao";
 import { formatarDia } from "@/lib/format";
 import { useAgora, useSessionStore, useUsuarioAtual } from "@/stores/session/session-store";
 
@@ -22,20 +22,6 @@ import { PublicarRecado } from "./publicar-recado";
 import { pessoasDoPosto } from "./turnos";
 
 type Aba = "agenda" | "escala";
-
-/**
- * Recados até o minuto atual. Como `useRecados()`, mas com 1 min de folga: o relógio do hook vira no minuto e a
- * publicação grava com segundos, então o recado recém-publicado só aparecia no minuto seguinte.
- */
-function useRecadosPublicados(agora: Date): Recado[] {
-  const recados = useSessionStore((s) => s.recados);
-  return React.useMemo(() => {
-    const limite = agora.getTime() + 60_000;
-    return Object.values(recados)
-      .filter((r) => new Date(r.em).getTime() < limite)
-      .sort((x, y) => y.em.localeCompare(x.em));
-  }, [recados, agora]);
-}
 
 /** Agenda e escala (RM-06, RM-16). */
 export function AgendaEEscala() {
@@ -56,7 +42,7 @@ function Conteudo() {
   const agora = useAgora();
   const contexto = useSessionStore((s) => s.contexto);
   const ajustes = useSessionStore((s) => s.ajustesEscala);
-  const recados = useRecadosPublicados(agora);
+  const recados = useRecados();
   const params = useSearchParams();
   const aba: Aba = params.get("aba") === "escala" ? "escala" : "agenda";
   const hoje = dataLocal(agora);

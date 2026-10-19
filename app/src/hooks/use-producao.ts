@@ -9,6 +9,7 @@ import { kpisDoTurno } from "@/domain/kpis";
 import type { HoraDoTurno } from "@/domain/producao";
 import { chaveTurno, turnoAtual } from "@/domain/turno";
 import type { Alerta, EventoFalha, KpisTurno, Linha, Notificacao, PlanoProducao, Recado } from "@/domain/types";
+import { MINUTO_MS } from "@/lib/clock";
 import { metaDaLinha, planoVigente, serieDoPosto } from "@/lib/sessao/indicadores";
 import { useAgora, useSessionStore } from "@/stores/session/session-store";
 
@@ -176,7 +177,12 @@ export function useRecados(linhaId?: string): Recado[] {
   return useMemo(
     () =>
       Object.values(recados)
-        .filter((r) => new Date(r.em) <= agora && (!linhaId || !r.linhaId || r.linhaId === linhaId))
+        // Até o fim do minuto corrente: o relógio único vira no minuto e a publicação grava com segundos; com "<= agora"
+        // o recado recém-publicado só aparecia no minuto seguinte (relatório da frente D, docs/17).
+        .filter(
+          (r) =>
+            new Date(r.em).getTime() < agora.getTime() + MINUTO_MS && (!linhaId || !r.linhaId || r.linhaId === linhaId),
+        )
         .sort((a, b) => b.em.localeCompare(a.em)),
     [recados, agora, linhaId],
   );

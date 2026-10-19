@@ -11,13 +11,28 @@ export type DiaDeEscala = NumeroTurno | "folga";
  */
 const CICLO: readonly DiaDeEscala[] = [1, 1, 2, 2, 3, 3, "folga", "folga"];
 const DEFASAGEM: Record<Turma, number> = { A: 0, B: 6, C: 4, D: 2 };
-/** Dia zero do ciclo (segunda-feira, 5 de janeiro de 2026). */
-const ORIGEM = Date.UTC(2026, 0, 5);
 const DIA_MS = 24 * 60 * 60 * 1000;
 
-function indiceDoDia(data: string): number {
+function utcDoDia(data: string): number {
   const [a, m, d] = data.split("-").map(Number);
-  return Math.round((Date.UTC(a ?? 2026, (m ?? 1) - 1, d ?? 1) - ORIGEM) / DIA_MS);
+  return Date.UTC(a ?? 2026, (m ?? 1) - 1, d ?? 1);
+}
+
+/** Dia zero do ciclo: a turma A no primeiro dia do 1º turno. Padrão: segunda-feira, 5 de janeiro de 2026. */
+let origem = Date.UTC(2026, 0, 5);
+
+/**
+ * Alinha o ciclo ao dia da demonstração (v0.5): a demo começa "hoje" às 07:40 com as pessoas da turma A no 1º turno
+ * (Alberto, Renata, João), então nesse dia a turma A tem de estar no primeiro dia do 1º turno, a D no 2º, a C no 3º e a
+ * B de folga. Sem isso, num dia qualquer a escala dizia "Hoje: folga" para quem está trabalhando na demo. O store chama
+ * ao criar a demo, ao carregar a sessão salva e ao reiniciar a demonstração (stores/session/session-store.ts).
+ */
+export function alinharEscalaAoDia(data: string): void {
+  origem = utcDoDia(data);
+}
+
+function indiceDoDia(data: string): number {
+  return Math.round((utcDoDia(data) - origem) / DIA_MS);
 }
 
 export function turnoDaTurma(turma: Turma, data: string): DiaDeEscala {
