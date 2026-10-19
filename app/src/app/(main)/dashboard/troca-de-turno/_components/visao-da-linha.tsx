@@ -87,6 +87,7 @@ export function VisaoDaLinha() {
 
 function LinhaDoPosto({ posto }: { posto: Posto }) {
   const usuario = useUsuarioAtual();
+  const agora = useAgora();
   const { troca, kpis, turno, sugestoes } = usePassagem(posto.id);
   const [vendo, setVendo] = React.useState(false);
   const [recebendo, setRecebendo] = React.useState(false);
@@ -103,8 +104,13 @@ function LinhaDoPosto({ posto }: { posto: Posto }) {
     detalhe = `Entregue por ${primeiroNome(entregou?.nome ?? "")} às ${formatarHora(new Date(troca.entregueEm))}; recebida por ${primeiroNome(recebeu.nome)} às ${formatarHora(new Date(troca.aceiteEm))}.`;
   else if (troca)
     detalhe = `Entregue por ${primeiroNome(entregou?.nome ?? "")} às ${formatarHora(new Date(troca.entregueEm))}. Falta o aceite.`;
-  else if (JANELA)
-    detalhe = `Ainda não entregue. A entrega abre às ${formatarHora(new Date(turno.inicio.getTime() + JANELA.inicioMin * 60_000))}.`;
+  else if (JANELA) {
+    const abre = new Date(turno.inicio.getTime() + JANELA.inicioMin * 60_000);
+    detalhe =
+      agora < abre
+        ? `Ainda não entregue. A entrega abre às ${formatarHora(abre)}.`
+        : `Ainda não entregue. A janela está aberta até ${formatarHora(turno.fim)}.`;
+  }
 
   return (
     <div className="flex flex-col gap-3 py-4 first:pt-0 last:pb-0">

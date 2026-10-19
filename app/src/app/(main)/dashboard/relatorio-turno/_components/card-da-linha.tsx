@@ -57,14 +57,14 @@ export function Variacao({ comparacao, className }: { comparacao: Comparacao | n
  * anterior; toneladas sobre a meta com barra; MTBF, maior parada, alertas e pedidos de ajuda embaixo. As linhas que vêm
  * do gerador levam o selo "simulado": só a Bis 2 é registrada de verdade no protótipo.
  */
-export function CardDaLinha({ item, destaque = false }: { item: LinhaNoRelatorio; destaque?: boolean }) {
+export function CardDaLinha({ item }: { item: LinhaNoRelatorio }) {
   const { linha, kpis, anterior, simulado } = item;
   if (!kpis) return null;
   const aderencia = aderenciaAMeta(kpis);
   const geRuim = geAbaixoDoLimite(kpis.ge);
 
   return (
-    <Card className={cn("min-w-0", destaque && "ring-2 ring-primary/40")}>
+    <Card className="min-w-0">
       <CardHeader>
         <CardTitle className="text-lg">{linha.nome}</CardTitle>
         <CardDescription>{simulado ? "Dados do gerador" : "Registrado no tablet"}</CardDescription>
@@ -117,7 +117,7 @@ export function CardDaLinha({ item, destaque = false }: { item: LinhaNoRelatorio
           )}
         </div>
 
-        <dl className="mt-auto grid grid-cols-2 gap-x-4 gap-y-3 border-t pt-4 text-sm">
+        <dl className="grid grid-cols-2 gap-x-4 gap-y-3 border-t pt-4 text-sm">
           <div className="flex min-w-0 flex-col gap-0.5">
             <dt className="text-muted-foreground">MTBF</dt>
             <dd className="font-medium text-base tabular-nums">{formatarMinutos(kpis.mtbfMin)}</dd>
@@ -127,9 +127,7 @@ export function CardDaLinha({ item, destaque = false }: { item: LinhaNoRelatorio
           </div>
           <div className="flex min-w-0 flex-col gap-0.5">
             <dt className="text-muted-foreground">Maior parada</dt>
-            <dd className="truncate font-medium text-base" title={kpis.maiorParada?.nome}>
-              {kpis.maiorParada?.nome ?? "Nenhuma"}
-            </dd>
+            <dd className="line-clamp-2 font-medium text-base leading-snug">{kpis.maiorParada?.nome ?? "Nenhuma"}</dd>
             {kpis.maiorParada && <dd className="text-muted-foreground tabular-nums">{kpis.maiorParada.minutos} min</dd>}
           </div>
           <div className="flex min-w-0 flex-col gap-0.5">

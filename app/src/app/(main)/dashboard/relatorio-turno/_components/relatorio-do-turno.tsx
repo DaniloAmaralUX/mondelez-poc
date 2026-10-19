@@ -36,7 +36,7 @@ export function RelatorioDoTurno() {
 
       <section aria-label="Linhas" className="grid @2xl/content:grid-cols-2 @min-[66rem]/content:grid-cols-4 gap-4">
         {linhas.map((item) => (
-          <CardDaLinha key={item.linha.id} item={item} destaque={item === daLinha} />
+          <CardDaLinha key={item.linha.id} item={item} />
         ))}
       </section>
 

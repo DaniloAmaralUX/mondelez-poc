@@ -37,8 +37,16 @@ export function textoDosPedidos(
     .join("\n");
 }
 
+/**
+ * Pendências em poucas linhas: uma por tarefa atrasada (as horas repetidas do Hora x Hora viram "× 6") e os alertas
+ * abertos que não são de atraso (o atraso já está na tarefa). Mais curto que o limite do campo, sem cortar no meio.
+ */
 export function textoDasPendencias(tarefas: readonly TarefaInstancia[], alertas: readonly Alerta[]): string {
-  const atrasadas = tarefas.filter((t) => t.estado === "atrasada").map((t) => `Tarefa atrasada: ${t.titulo}`);
-  const abertos = alertas.filter((a) => a.estado !== "resolvido").map((a) => `Alerta aberto: ${a.titulo}`);
-  return [...atrasadas, ...abertos].join("\n");
+  const atrasadas = new Map<string, number>();
+  for (const t of tarefas) if (t.estado === "atrasada") atrasadas.set(t.titulo, (atrasadas.get(t.titulo) ?? 0) + 1);
+  const linhasDeTarefa = [...atrasadas].map(([titulo, n]) => `Atrasada: ${titulo}${n > 1 ? ` (× ${n})` : ""}`);
+  const abertos = new Set(
+    alertas.filter((a) => a.estado !== "resolvido" && a.regra !== "A-ATRASO").map((a) => `Alerta aberto: ${a.titulo}`),
+  );
+  return [...linhasDeTarefa, ...abertos].join("\n");
 }

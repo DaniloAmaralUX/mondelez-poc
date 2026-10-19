@@ -61,7 +61,7 @@ export function KpisDaPassagem({
           <Destaque
             rotulo="GE"
             valor={formatarGe(kpis.ge)}
-            detalhe={semCaixas ? "Posto sem apontamento de caixas" : "Eficiência global do turno"}
+            detalhe={semCaixas ? "Posto sem apontamento de caixas" : "Eficiência global"}
             alerta={geAbaixoDoLimite(kpis.ge)}
           />
           <Destaque
@@ -80,7 +80,7 @@ export function KpisDaPassagem({
           <Destaque
             rotulo="MTBF"
             valor={formatarMinutos(kpis.mtbfMin)}
-            detalhe={kpis.falhas === 0 ? "Sem falhas no turno" : "Tempo médio entre falhas"}
+            detalhe={kpis.falhas === 0 ? "Sem falhas no turno" : "Entre falhas"}
           />
           <Destaque
             rotulo="Maior parada"

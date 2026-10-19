@@ -6,7 +6,6 @@ import { cn } from "cn";
 import { ArrowLeft, Inbox, Info } from "lucide-react";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
@@ -124,7 +123,14 @@ export function Notificacoes() {
                   </EmptyHeader>
                 </Empty>
               ) : (
-                <ul className="flex flex-col gap-2">
+                // Lado a lado (notebook), a lista rola sozinha e o detalhe fica parado ao lado, como no Mail; na pilha do
+                // iPad, a página rola. Focável e nomeada para o teclado rolar (WCAG 2.1.1).
+                <ul
+                  // biome-ignore lint/a11y/noNoninteractiveTabindex: região com rolagem precisa de foco para o teclado rolar (WCAG 2.1.1).
+                  tabIndex={0}
+                  aria-label="Mensagens"
+                  className="-mx-1 flex @4xl/content:max-h-[calc(100dvh-var(--dashboard-header-height)-17rem)] flex-col gap-2 @4xl/content:overflow-y-auto rounded-lg px-1 py-1 outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+                >
                   {visiveis.map((n) => (
                     <li key={n.id}>
                       <ItemDaLista
@@ -199,12 +205,8 @@ function ItemDaLista({
           </time>
         </span>
         <span className="truncate text-muted-foreground text-sm">
-          {NOME_DO_CANAL[notificacao.canal]} · para {descreverPara(notificacao.para)}
-        </span>
-        <span className="mt-1">
-          <Badge variant="outline" className="toque:text-sm">
-            {ORIGEM[notificacao.origem.tipo]}
-          </Badge>
+          {ORIGEM[notificacao.origem.tipo]} · {NOME_DO_CANAL[notificacao.canal]} · para{" "}
+          {descreverPara(notificacao.para)}
         </span>
       </span>
     </button>

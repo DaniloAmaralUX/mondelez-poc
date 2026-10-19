@@ -323,7 +323,7 @@ function Perguntas({ somenteLeitura }: { somenteLeitura: boolean }) {
             disabled={!somenteLeitura && !(etiquetas > 0)}
             aria-invalid={Boolean(errors.ondeEtiquetas)}
             className="wrap-anywhere h-11"
-            placeholder="Equipamento e o que está pendente"
+            placeholder={somenteLeitura ? undefined : "Equipamento e o que está pendente"}
             {...register("ondeEtiquetas", {
               validate: (v, valores) =>
                 Number.parseInt(valores.etiquetasAbertas, 10) > 0 && !v.trim()
@@ -395,7 +395,7 @@ function Pergunta({
         rows={2}
         maxLength={LIMITES.observacao}
         readOnly={somenteLeitura}
-        placeholder={placeholder}
+        placeholder={somenteLeitura ? undefined : placeholder}
         className="wrap-anywhere"
         {...register(id)}
       />

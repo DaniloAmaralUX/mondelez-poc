@@ -23,6 +23,9 @@ import {
   statusVisual,
 } from "../../alertas/_components/alerta-estilos";
 
+/** Os mais urgentes; a lista inteira fica na tela de Alertas. */
+const MAX_NA_LISTA = 6;
+
 const TINTA: Record<StatusVisual, string> = {
   critico: "bg-destructive/10 text-red-700 dark:text-red-400",
   atencao: "bg-amber-500/12 text-amber-700 dark:text-amber-400",
@@ -32,11 +35,19 @@ const TINTA: Record<StatusVisual, string> = {
 
 /**
  * Detalhe da Bis 2 no relatório: os alertas do turno da linha, do mais recente para o mais antigo, com o estado de cada
- * um. Quem trata alertas abre o alerta na tela de Alertas; a Assistência só lê.
+ * um, até seis (os abertos e críticos primeiro). Quem trata alertas abre o alerta na tela de Alertas; a Assistência só lê.
  */
 export function AlertasDaLinha({ nomeDaLinha }: { nomeDaLinha: string }) {
   const usuario = useUsuarioAtual();
-  const alertas = [...useAlertas()].sort((a, b) => b.criadoEm.getTime() - a.criadoEm.getTime());
+  // Abertos antes dos resolvidos, críticos antes, e o mais recente primeiro.
+  const alertas = [...useAlertas()].sort(
+    (a, b) =>
+      Number(a.estado === "resolvido") - Number(b.estado === "resolvido") ||
+      Number(b.criticidade === "critico") - Number(a.criticidade === "critico") ||
+      b.criadoEm.getTime() - a.criadoEm.getTime(),
+  );
+  const visiveis = alertas.slice(0, MAX_NA_LISTA);
+  const restantes = alertas.length - visiveis.length;
   const abreAlerta = pode(usuario?.perfil, "alertas");
   const abertos = alertas.filter((a) => a.estado !== "resolvido").length;
 
@@ -63,7 +74,7 @@ export function AlertasDaLinha({ nomeDaLinha }: { nomeDaLinha: string }) {
           </Empty>
         ) : (
           <ul className="flex flex-col divide-y">
-            {alertas.map((alerta) => {
+            {visiveis.map((alerta) => {
               const status = statusVisual(alerta);
               const Icone = ICONE_MODULO[alerta.moduloSlug] ?? Bell;
               const posto = localRepository.posto(alerta.postoId);
@@ -101,6 +112,20 @@ export function AlertasDaLinha({ nomeDaLinha }: { nomeDaLinha: string }) {
               );
             })}
           </ul>
+        )}
+        {restantes > 0 && (
+          <p className="mt-3 border-t pt-3 text-muted-foreground text-sm">
+            {abreAlerta ? (
+              <Link
+                href="/dashboard/alertas"
+                className="toque:inline-flex toque:h-11 toque:items-center font-medium text-foreground underline-offset-4 hover:underline focus-visible:underline"
+              >
+                Ver todos os {alertas.length} em Alertas
+              </Link>
+            ) : (
+              `E mais ${restantes} ${restantes === 1 ? "alerta" : "alertas"} no turno.`
+            )}
+          </p>
         )}
       </CardContent>
     </Card>

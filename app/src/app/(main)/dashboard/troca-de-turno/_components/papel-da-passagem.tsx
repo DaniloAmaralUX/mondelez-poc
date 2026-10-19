@@ -67,15 +67,13 @@ export function PapelDaPassagem({
             <rect x="28" y="28" width="20" height="20" rx="3" fill="currentColor" />
           </svg>
         </div>
-        <div className="grid gap-x-8 gap-y-1 sm:grid-cols-2">
-          <p className="first-letter:uppercase">{formatarDia(turno.inicio)}</p>
-          <p>
-            {turno.numero}º turno · {formatarHora(turno.inicio)}–{formatarHora(turno.fim)}
+        <div className="flex flex-col gap-1">
+          <p className="first-letter:uppercase">
+            {formatarDia(turno.inicio)} · {turno.numero}º turno, {formatarHora(turno.inicio)}–{formatarHora(turno.fim)}
           </p>
           <p>
-            {linha?.nome} · {posto?.nome}
+            {linha?.nome} · {posto?.nome} · {situacao}
           </p>
-          <p>{situacao}</p>
         </div>
         <div className="grid gap-x-8 gap-y-3 sm:grid-cols-2">
           <div>

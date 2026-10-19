@@ -14,7 +14,8 @@ const ALTURA = 280;
 const MARGEM = { top: 12, right: 96, bottom: 0, left: 0 };
 /** Altura útil aproximada da área de plotagem (altura menos margens e eixo X), para afastar os rótulos diretos. */
 const ALTURA_PLOT = ALTURA - MARGEM.top - 30;
-const DOMINIO: [number, number] = [55, 100];
+/** Piso do eixo quando todas as linhas estão acima dele; desce em degraus de 10 quando alguma cai mais. */
+const PISO = 55;
 const VAO_MIN_PX = 16;
 
 /**
@@ -33,7 +34,13 @@ export function GraficoGe({ linhas, colunas }: { linhas: readonly Linha[]; colun
 
   // Rótulos diretos: valores finais em ordem, empurrados para baixo até ficarem a 16 px um do outro.
   const ultimo = dados.length - 1;
-  const pxPorPonto = ALTURA_PLOT / (DOMINIO[1] - DOMINIO[0]);
+  const valores = colunas.flatMap((c) => linhas.map((l) => ge100(c.porLinha[l.id]?.ge ?? null) ?? 100));
+  const minimo = Math.min(PISO, ...valores);
+  const dominio: [number, number] = [minimo < PISO ? Math.max(0, Math.floor((minimo - 5) / 10) * 10) : PISO, 100];
+  const passo = dominio[1] - dominio[0] > 50 ? 20 : 10;
+  const ticks: number[] = [];
+  for (let t = 100; t >= dominio[0] + (dominio[0] === PISO ? 5 : 0); t -= passo) ticks.unshift(t);
+  const pxPorPonto = ALTURA_PLOT / (dominio[1] - dominio[0]);
   const finais = linhas
     .map((l) => ({ id: l.id, valor: ge100(colunas[ultimo]?.porLinha[l.id]?.ge ?? null) }))
     .filter((f): f is { id: string; valor: number } => f.valor !== null)
@@ -41,7 +48,7 @@ export function GraficoGe({ linhas, colunas }: { linhas: readonly Linha[]; colun
   const deslocamento: Record<string, number> = {};
   let anterior = Number.NEGATIVE_INFINITY;
   for (const f of finais) {
-    const y = (DOMINIO[1] - f.valor) * pxPorPonto;
+    const y = (dominio[1] - f.valor) * pxPorPonto;
     const ajustado = Math.max(y, anterior + VAO_MIN_PX);
     deslocamento[f.id] = ajustado - y;
     anterior = ajustado;
@@ -71,8 +78,8 @@ export function GraficoGe({ linhas, colunas }: { linhas: readonly Linha[]; colun
             <CartesianGrid vertical={false} />
             <XAxis dataKey="rotulo" axisLine={false} tickLine={false} tickMargin={10} tick={{ fontSize: 13 }} />
             <YAxis
-              domain={DOMINIO}
-              ticks={[60, 70, 80, 90, 100]}
+              domain={dominio}
+              ticks={ticks}
               axisLine={false}
               tickLine={false}
               width={44}
