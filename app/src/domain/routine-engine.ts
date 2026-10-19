@@ -34,6 +34,7 @@ export function gerarTarefas({ templates, postoId, perfil, turno, agora, conclus
         criticidade: t.criticidade,
         formularioId: t.formularioId,
         rota: t.rota,
+        concluiNaTela: t.concluiNaTela,
         abre: janela.abre,
         prazo: janela.prazo,
         futura: !conclusao && agora < janela.abre,

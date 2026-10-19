@@ -1,8 +1,10 @@
 import { localRepository } from "@/data/repository";
-import { gerarAlertas } from "@/domain/alert-engine";
+import { compararAlertas, gerarAlertas } from "@/domain/alert-engine";
 import { gerarTarefas } from "@/domain/routine-engine";
 import { turnoAtual } from "@/domain/turno";
 import type { AcaoAlerta, Alerta, Conclusao, Perfil, Registro, TarefaInstancia } from "@/domain/types";
+
+import { alertasDeIndicadoresDaLinha, type DadosIndicadores } from "./indicadores";
 
 type Conclusoes = Readonly<Record<string, Conclusao>>;
 type Registros = Readonly<Record<string, Registro>>;
@@ -20,6 +22,7 @@ interface EntradaAlertas {
   conclusoes: Conclusoes;
   registros: Registros;
   tratamentos: Tratamentos;
+  dados?: DadosIndicadores;
   alertas: Alerta[];
 }
 
@@ -54,13 +57,17 @@ export function tarefasDoTurno(
   return tarefas;
 }
 
-/** Alertas dos postos de uma linha (RN-01, RN-02), calculados uma vez por tick e por mudança de estado. */
+/**
+ * Alertas dos postos de uma linha, calculados uma vez por tick e por mudança de estado: atraso e NC (RN-01, RN-02) e,
+ * com `dados` (v0.5), os de indicador, falha repetida, perdas e pedido de ajuda (RN-07, RF-14).
+ */
 export function alertasDaLinha(
   linhaId: string,
   agora: Date,
   conclusoes: Conclusoes,
   registros: Registros,
   tratamentos: Tratamentos,
+  dados?: DadosIndicadores,
 ): Alerta[] {
   const instante = agora.getTime();
   const c = ultimaLinha;
@@ -70,7 +77,8 @@ export function alertasDaLinha(
     c.agora === instante &&
     c.conclusoes === conclusoes &&
     c.registros === registros &&
-    c.tratamentos === tratamentos
+    c.tratamentos === tratamentos &&
+    mesmosDados(c.dados, dados)
   ) {
     return c.alertas;
   }
@@ -87,6 +95,21 @@ export function alertasDaLinha(
     tratamentos,
     agora,
   });
-  ultimaLinha = { linhaId, agora: instante, conclusoes, registros, tratamentos, alertas };
-  return alertas;
+  const todos = dados
+    ? [...alertas, ...alertasDeIndicadoresDaLinha(linhaId, agora, dados, tratamentos)].sort(compararAlertas)
+    : alertas;
+  ultimaLinha = { linhaId, agora: instante, conclusoes, registros, tratamentos, dados, alertas: todos };
+  return todos;
+}
+
+function mesmosDados(a: DadosIndicadores | undefined, b: DadosIndicadores | undefined): boolean {
+  if (a === b) return true;
+  if (!a || !b) return false;
+  return (
+    a.apontamentosHora === b.apontamentosHora &&
+    a.apontamentosPerdas === b.apontamentosPerdas &&
+    a.falhas === b.falhas &&
+    a.pedidosAjuda === b.pedidosAjuda &&
+    a.planos === b.planos
+  );
 }

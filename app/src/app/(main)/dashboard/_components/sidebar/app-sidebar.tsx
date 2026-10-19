@@ -22,7 +22,7 @@ import {
 import { APP_CONFIG } from "@/config/app-config";
 import { paraUsuarioDoShell } from "@/data/users";
 import { usePonteiroGrossoReal } from "@/hooks/use-modo-toque";
-import { sidebarItems } from "@/navigation/sidebar/sidebar-items";
+import { itensDoPerfil, sidebarItems } from "@/navigation/sidebar/sidebar-items";
 import { usePreferencesStore } from "@/stores/preferences/preferences-provider";
 import { useUsuarioAtual } from "@/stores/session/session-store";
 
@@ -88,7 +88,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={sidebarItems} />
+        {/* Menu do perfil (RF-08). Antes de carregar a sessão (servidor e hidratação), o menu inteiro: sem salto. */}
+        <NavMain items={usuario ? itensDoPerfil(usuario.perfil) : sidebarItems} />
       </SidebarContent>
       {/* Com viewport-fit=cover, a sidebar (h-svh) e o Sheet do retrato vão até a borda de baixo: no app instalado do
           iPad o NavUser fica acima do indicador de início, como as barras do checklist e do alerta. */}

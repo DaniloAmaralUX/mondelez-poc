@@ -92,11 +92,13 @@ export function gerarAlertas({ tarefas, registros, formularios, tratamentos, ago
   return alertas.sort(compararAlertas);
 }
 
-function envio(em: Date): AcaoAlerta {
+/** Ação de envio simulado (Teams) que abre o histórico de todo alerta. */
+export function envio(em: Date): AcaoAlerta {
   return { tipo: "envio", texto: "Enviado à Supervisão e à Especialista via Teams (simulado).", em: em.toISOString() };
 }
 
-function montar(base: Omit<Alerta, "estado" | "responsavelId">): Alerta {
+/** Alerta com as ações em ordem e o estado e o responsável derivados delas. */
+export function montar(base: Omit<Alerta, "estado" | "responsavelId">): Alerta {
   const acoes = [...base.acoes].sort((a, b) => a.em.localeCompare(b.em));
   return { ...base, acoes, ...cicloDoAlerta(acoes) };
 }

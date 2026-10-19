@@ -27,6 +27,8 @@ export function situacaoItem(item: ItemFormulario, resposta: Resposta | undefine
       return foraDaFaixa(item, resposta.numero) ? "NC" : "C";
     case "texto":
       return resposta?.texto?.trim() ? "C" : "pendente";
+    case "foto":
+      return (resposta?.fotos?.length ?? 0) > 0 ? "C" : "pendente";
   }
 }
 
@@ -40,7 +42,12 @@ export function validarRespostas(form: Formulario, respostas: Readonly<Record<st
     const justificativa = resposta?.justificativa?.trim().length ?? 0;
 
     if (situacao === "pendente") {
-      erros[item.id] = item.tipo === "texto" ? "Preencha este campo." : "Responda este item.";
+      erros[item.id] =
+        item.tipo === "texto"
+          ? "Preencha este campo."
+          : item.tipo === "foto"
+            ? "Tire ao menos uma foto como evidência."
+            : "Responda este item.";
     } else if (item.tipo === "texto" && (resposta?.texto?.trim().length ?? 0) > MAX_TEXTO_DO_ITEM) {
       erros[item.id] = `Use até ${MAX_TEXTO_DO_ITEM} caracteres.`;
     } else if (situacao === "NC" && justificativa < MIN_JUSTIFICATIVA) {
@@ -117,6 +124,10 @@ export function descreverResposta(item: ItemFormulario, resposta: Resposta | und
     return `${resposta.numero.toLocaleString("pt-BR")} ${item.faixa?.unidade ?? ""}`.trim();
   }
   if (item.tipo === "texto") return resposta?.texto?.trim() || "—";
+  if (item.tipo === "foto") {
+    const n = resposta?.fotos?.length ?? 0;
+    return n === 0 ? "—" : `${n} ${n === 1 ? "foto" : "fotos"}`;
+  }
   if (resposta?.valor === "C") return "Conforme";
   if (resposta?.valor === "NC") return "Não conforme";
   return "—";

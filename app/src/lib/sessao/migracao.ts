@@ -1,5 +1,22 @@
 import { chaveTurno, turnoAtual } from "@/domain/turno";
-import type { AcaoAlerta, Conclusao, Contexto, Rascunho, Registro } from "@/domain/types";
+import type {
+  AcaoAlerta,
+  AjusteEscala,
+  ApontamentoHora,
+  ApontamentoPerdas,
+  Conclusao,
+  Contexto,
+  EventoFalha,
+  Formulario,
+  Notificacao,
+  PedidoAjuda,
+  PlanoProducao,
+  Rascunho,
+  Recado,
+  Registro,
+  TrocaDeTurno,
+  Usuario,
+} from "@/domain/types";
 import { agoraSimulado, type ClockAnchor } from "@/lib/clock";
 
 import type { MotivoBloqueio } from "./bloqueio";
@@ -7,12 +24,66 @@ import type { RascunhoSalvo } from "./rascunho";
 
 /**
  * Versão do estado salvo no IndexedDB. v3 = v0.3 (sessão compartilhada, fila com desfazer, rede real); v4 = tentativas
- * de PIN por pessoa e a última sincronização também no relógio da demo.
+ * de PIN por pessoa e a última sincronização também no relógio da demo; v5 = v0.5 (apontamentos, falhas, troca de
+ * turno, pedidos de ajuda, agenda, plano, escala, cadastros, notificações).
  */
-export const VERSAO_SESSAO = 4;
+export const VERSAO_SESSAO = 5;
 
-/** O que fica salvo no tablet (v4). Rede do navegador e rede efetiva não são salvas: vêm do aparelho ao abrir. */
-export interface SessaoPersistida {
+/** Relatório do turno enviado à liderança. Id: `linhaId|turnoChave`. */
+export interface RelatorioEnviado {
+  id: string;
+  linhaId: string;
+  turnoChave: string;
+  enviadoPor: string;
+  em: string;
+}
+
+/** Dados da v0.5, todos mapas por id (juntados chave a chave entre abas). */
+export interface DadosV5 {
+  /** Hora x Hora: por id da tarefa do bloco. */
+  apontamentosHora: Record<string, ApontamentoHora>;
+  /** Sobrepeso, refugo e reprocesso: por id da tarefa do bloco. */
+  apontamentosPerdas: Record<string, ApontamentoPerdas>;
+  /** MTBF: falhas apontadas por toque. */
+  falhas: Record<string, EventoFalha>;
+  /** Troca de turno: por `postoId|turnoChave`. */
+  trocasDeTurno: Record<string, TrocaDeTurno>;
+  pedidosAjuda: Record<string, PedidoAjuda>;
+  /** Agenda e recados publicados (os iniciais da demo inclusive). */
+  recados: Record<string, Recado>;
+  /** Planos importados, por semana (segunda-feira). Sem plano da semana, vale o de exemplo do seed. */
+  planos: Record<string, PlanoProducao>;
+  /** Ajustes pontuais da escala: por `usuarioId|data`. */
+  ajustesEscala: Record<string, AjusteEscala>;
+  /** Pessoas cadastradas pela Assistência no tablet. */
+  usuariosCadastrados: Record<string, Usuario>;
+  /** Versões de checklist publicadas pela Especialista: por id do formulário (a vigente). */
+  formulariosPublicados: Record<string, Formulario>;
+  /** Caixa de saída simulada (Teams, e-mail) das mensagens que não vêm de alertas. */
+  notificacoes: Record<string, Notificacao>;
+  relatoriosEnviados: Record<string, RelatorioEnviado>;
+}
+
+/** Dados da v0.5 vazios (migração e reset parcial). */
+export function dadosV5Vazios(): DadosV5 {
+  return {
+    apontamentosHora: {},
+    apontamentosPerdas: {},
+    falhas: {},
+    trocasDeTurno: {},
+    pedidosAjuda: {},
+    recados: {},
+    planos: {},
+    ajustesEscala: {},
+    usuariosCadastrados: {},
+    formulariosPublicados: {},
+    notificacoes: {},
+    relatoriosEnviados: {},
+  };
+}
+
+/** O que fica salvo no tablet (v5). Rede do navegador e rede efetiva não são salvas: vêm do aparelho ao abrir. */
+export interface SessaoPersistida extends DadosV5 {
   usuarioId: string | null;
   /** Posto lembrado pelo tablet: sobrevive à troca de pessoa e ao sair. */
   contexto: Contexto | null;
@@ -45,8 +116,11 @@ export interface SessaoPersistida {
   pinBloqueadoAte: Record<string, string>;
 }
 
+/** O estado salvo pela v4, antes dos dados da v0.5. */
+type SessaoV4 = Omit<SessaoPersistida, keyof DadosV5>;
+
 /** O estado salvo pela v3, antes dos campos da v4. */
-type SessaoV3 = Omit<SessaoPersistida, "ultimaSincronizacaoSimulada" | "tentativasPin" | "pinBloqueadoAte">;
+type SessaoV3 = Omit<SessaoV4, "ultimaSincronizacaoSimulada" | "tentativasPin" | "pinBloqueadoAte">;
 
 /** Estado salvo pela v0.2 (`version: 2`). */
 interface SessaoV2 {
@@ -118,7 +192,7 @@ function v2ParaV3(v2: SessaoV2, realAgora: number): SessaoV3 {
  * v3 → v4: tentativas de PIN começam do zero; a última sincronização no relógio da demo é a real convertida pela âncora
  * salva (exata enquanto o relógio não foi avançado depois dela, a melhor estimativa que o estado v3 permite).
  */
-function v3ParaV4(v3: SessaoV3): SessaoPersistida {
+function v3ParaV4(v3: SessaoV3): SessaoV4 {
   const real = v3.ultimaSincronizacao ? Date.parse(v3.ultimaSincronizacao) : Number.NaN;
   const simulada = Number.isFinite(real) && temRelogio(v3) ? agoraSimulado(v3.relogio, real).getTime() : Number.NaN;
   return {
@@ -127,6 +201,14 @@ function v3ParaV4(v3: SessaoV3): SessaoPersistida {
     tentativasPin: {},
     pinBloqueadoAte: {},
   };
+}
+
+/**
+ * v4 → v5: tudo da v4 fica; os dados da v0.5 começam vazios. Sem recados salvos, a Minha Rotina mostra os iniciais
+ * da demo assim que o store os semeia (`semearRecados`).
+ */
+function v4ParaV5(v4: SessaoV4): SessaoPersistida {
+  return { ...v4, ...dadosV5Vazios() };
 }
 
 /**
@@ -148,6 +230,10 @@ export function migrarSessao(
     if (!ehObjeto(estado)) return null;
     estado = v3ParaV4(estado as unknown as SessaoV3);
   }
-  // Próximas versões: `if (versao <= 4) estado = v4ParaV5(estado)`.
+  if (versao <= 4) {
+    if (!ehObjeto(estado)) return null;
+    estado = v4ParaV5(estado as unknown as SessaoV4);
+  }
+  // Próximas versões: `if (versao <= 5) estado = v5ParaV6(estado)`.
   return ehObjeto(estado) ? (estado as unknown as SessaoPersistida) : null;
 }

@@ -5,7 +5,8 @@ import { useCallback, useDeferredValue, useMemo, useSyncExternalStore } from "re
 import { create } from "zustand";
 import { persist, type StorageValue } from "zustand/middleware";
 
-import { localRepository } from "@/data/repository";
+import { definirCadastrosDoTablet, localRepository } from "@/data/repository";
+import { recadosIniciais } from "@/data/seed";
 import { limitarRespostas, resumirRespostas } from "@/domain/formulario-engine";
 import { LIMITES, limitarTexto } from "@/domain/limites";
 import { chaveTurno, montarTurno, turnoAtual } from "@/domain/turno";
@@ -33,7 +34,7 @@ import {
   marcarComo,
   normalizarAoAbrir,
 } from "@/lib/sessao/fila";
-import { migrarSessao, type SessaoPersistida, VERSAO_SESSAO } from "@/lib/sessao/migracao";
+import { dadosV5Vazios, migrarSessao, type SessaoPersistida, VERSAO_SESSAO } from "@/lib/sessao/migracao";
 import { assinarDesbloqueioDoPin, bloqueioVigente, conferirPin, mensagemDeEsperaDoPin } from "@/lib/sessao/pin";
 import { podarRegistros } from "@/lib/sessao/poda";
 import { assumirRascunho, gravarRascunho, type RascunhoSalvo } from "@/lib/sessao/rascunho";
@@ -41,14 +42,17 @@ import { type Rede, redeEfetiva } from "@/lib/sessao/rede";
 import { criarTicker } from "@/lib/sessao/ticker";
 import { removerUltimaAcao } from "@/lib/sessao/tratamentos";
 
+import { type AcoesV05, criarAcoesV05 } from "./acoes-v05";
 import { type ArmazenamentoSessao, criarArmazenamentoSessao } from "./persistencia";
 
 export { INATIVIDADE_MS, type MotivoBloqueio, OCULTO_MS } from "@/lib/sessao/bloqueio";
 export { JANELA_DESFAZER_MS } from "@/lib/sessao/fila";
-export type { SessaoPersistida } from "@/lib/sessao/migracao";
+export type { RelatorioEnviado, SessaoPersistida } from "@/lib/sessao/migracao";
 export { ESPERA_PIN_MS, MAX_TENTATIVAS_PIN, mensagemDeEsperaDoPin, segundosParaDesbloquear } from "@/lib/sessao/pin";
 export type { RascunhoSalvo } from "@/lib/sessao/rascunho";
 export type { Rede } from "@/lib/sessao/rede";
+
+export { JANELA_APAGAR_FALHA_MS, type ResultadoCadastro } from "./acoes-v05";
 
 /** Cookie lido pelo `proxy.ts` para proteger as rotas do dashboard. */
 export const SESSION_COOKIE = "rotinas_sessao";
@@ -63,7 +67,7 @@ export type ResultadoLogin =
   | { ok: true; usuario: Usuario }
   | { ok: false; campo: "matricula" | "pin"; erro: string; bloqueadoAte?: string };
 
-export interface SessionState extends SessaoPersistida {
+export interface SessionState extends SessaoPersistida, AcoesV05 {
   /** Rede segundo o aparelho (eventos online/offline + `useOffline` do Next), mantida pela `<Plataforma />`. */
   redeNavegador: Rede;
   /** Rede efetiva: a do aparelho, com "Simular sem rede" da demo por cima. */
@@ -146,7 +150,10 @@ const CONTEXTO_PADRAO: Contexto = { plantaId: "chocolate", linhaId: "bis-2", pos
  */
 const AGORA_NO_SERVIDOR = new Date(2026, 9, 16, 7, 40);
 
-/** Estado inicial da demo: 07:40 do 1º turno, com a pré-partida e o primeiro Hora x Hora já feitos. */
+/**
+ * Estado inicial da demo: 07:40 do 1º turno, com a pré-partida e o primeiro Hora x Hora já feitos (v0.5: com as caixas
+ * da hora das 06:00 apontadas), três falhas no turno, a última ainda sem encerrar, e os recados do dia.
+ */
 function estadoInicialDemo(realAgora: number = Date.now()) {
   const relogio = ancoraPadrao(realAgora);
   const turno = montarTurno(1, agoraSimulado(relogio, realAgora));
@@ -163,7 +170,38 @@ function estadoInicialDemo(realAgora: number = Date.now()) {
     [`sup-passagem@${chave}`]: { estado: "feita", em: em(6, 25), usuarioId: "u-renata" },
   };
 
+  const v5 = dadosV5Vazios();
+  const blocoSeis = `hora-x-hora@${chave}#06`;
+  v5.apontamentosHora[blocoSeis] = {
+    id: blocoSeis,
+    postoId: "bis-2-embalagem",
+    linhaId: "bis-2",
+    turnoChave: chave,
+    bloco: em(6, 0),
+    skuId: "bis-leite-126",
+    caixas: 668,
+    usuarioId: "u-alberto",
+    em: em(7, 4),
+  };
+  const falha = (id: string, equipamentoId: string, tipoId: string, inicio: string, fim?: string) => {
+    v5.falhas[id] = {
+      id,
+      postoId: "bis-2-embalagem",
+      equipamentoId,
+      turnoChave: chave,
+      tipoId,
+      inicio,
+      ...(fim ? { fim } : {}),
+      usuarioId: "u-alberto",
+    };
+  };
+  falha("falha-demo-1", "loeschpack-4", "enrosco", em(6, 22), em(6, 28));
+  falha("falha-demo-2", "loeschpack-4", "troca-bobina", em(7, 5), em(7, 14));
+  falha("falha-demo-3", "loeschpack-2", "enrosco", em(7, 31), em(7, 35));
+  v5.recados = Object.fromEntries(recadosIniciais(turno.data).map((r) => [r.id, r]));
+
   return {
+    ...v5,
     relogio,
     conclusoes,
     registros: {} as Record<string, Registro>,
@@ -221,6 +259,18 @@ function partializar(s: SessionState): SessaoPersistida {
     turnoDaSessao: s.turnoDaSessao,
     tentativasPin: s.tentativasPin,
     pinBloqueadoAte: s.pinBloqueadoAte,
+    apontamentosHora: s.apontamentosHora,
+    apontamentosPerdas: s.apontamentosPerdas,
+    falhas: s.falhas,
+    trocasDeTurno: s.trocasDeTurno,
+    pedidosAjuda: s.pedidosAjuda,
+    recados: s.recados,
+    planos: s.planos,
+    ajustesEscala: s.ajustesEscala,
+    usuariosCadastrados: s.usuariosCadastrados,
+    formulariosPublicados: s.formulariosPublicados,
+    notificacoes: s.notificacoes,
+    relatoriosEnviados: s.relatoriosEnviados,
   };
 }
 
@@ -232,6 +282,18 @@ const CAMPOS_POR_CHAVE = [
   "rascunhos",
   "tentativasPin",
   "pinBloqueadoAte",
+  "apontamentosHora",
+  "apontamentosPerdas",
+  "falhas",
+  "trocasDeTurno",
+  "pedidosAjuda",
+  "recados",
+  "planos",
+  "ajustesEscala",
+  "usuariosCadastrados",
+  "formulariosPublicados",
+  "notificacoes",
+  "relatoriosEnviados",
 ] as const;
 /**
  * Com a fila vazia, a "última sincronização" é renovada no máximo a cada 50 s: o pulso de cada minuto a atualiza, mas
@@ -419,8 +481,20 @@ export const useSessionStore = create<SessionState>()(
         descartesNestaAba.clear();
       };
 
+      const acoesV05 = criarAcoesV05({
+        getState,
+        setState,
+        agora,
+        gravarJa,
+        conferirPin: (usuario, pin) => {
+          const recusa = conferirPinDe(usuario, pin);
+          return recusa && !recusa.ok ? { erro: recusa.erro } : null;
+        },
+      });
+
       return {
         ...sessaoAntesDaCarga(),
+        ...acoesV05,
         redeNavegador: "online",
         rede: "online",
 
@@ -732,6 +806,23 @@ function aplicarDeOutraAba(estado: SessaoPersistida) {
     rede: redeEfetiva(redeNavegador, estado.simularSemRede),
   });
 }
+
+/**
+ * Cadastros do tablet (usuários da Assistência, checklists publicados pela Especialista) no repositório, para login,
+ * rotinas e checklist enxergarem o que foi cadastrado. Roda já com o estado inicial e a cada mudança desses mapas.
+ */
+definirCadastrosDoTablet({
+  usuarios: useSessionStore.getState().usuariosCadastrados,
+  formularios: useSessionStore.getState().formulariosPublicados,
+});
+useSessionStore.subscribe((s, anterior) => {
+  if (
+    s.usuariosCadastrados !== anterior.usuariosCadastrados ||
+    s.formulariosPublicados !== anterior.formulariosPublicados
+  ) {
+    definirCadastrosDoTablet({ usuarios: s.usuariosCadastrados, formularios: s.formulariosPublicados });
+  }
+});
 
 function assinarCarga(ouvinte: () => void) {
   ouvintesDaCarga.add(ouvinte);

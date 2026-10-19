@@ -34,7 +34,7 @@ import {
   TimelineTitle,
 } from "@/components/ui/timeline";
 import { localRepository } from "@/data/repository";
-import type { AcaoAlerta, Alerta, Registro } from "@/domain/types";
+import type { AcaoAlerta, Alerta, Registro, RegraAlerta } from "@/domain/types";
 import { formatarHora } from "@/lib/format";
 import { getInitials } from "@/lib/utils";
 import { useAgora, useSessionStore } from "@/stores/session/session-store";
@@ -43,7 +43,15 @@ import { AlertActions } from "./alert-actions";
 import { progressRingClasses, STATUS_LABEL, statusBadgeClasses, statusVisual } from "./alerta-estilos";
 import { idadeDoAlerta } from "./idade";
 
-const REGRA_LABEL = { "A-ATRASO": "A-ATRASO · RN-01", "A-NC": "A-NC · RN-02" } as const;
+const REGRA_LABEL: Record<RegraAlerta, string> = {
+  "A-ATRASO": "A-ATRASO · RN-01",
+  "A-NC": "A-NC · RN-02",
+  "A-GE": "A-GE · RN-07",
+  "A-META": "A-META · RN-07",
+  "A-REPET": "A-REPET · RN-07",
+  "A-AJUDA": "A-AJUDA · RF-14",
+  "A-PERDA": "A-PERDA · RM-03",
+};
 const ACAO_LABEL = {
   envio: "Envio",
   assumir: "Assumido",

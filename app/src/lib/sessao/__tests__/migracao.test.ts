@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import type { Registro } from "@/domain/types";
 
-import { migrarSessao, VERSAO_SESSAO } from "../migracao";
+import { dadosV5Vazios, migrarSessao, VERSAO_SESSAO } from "../migracao";
 
 const REAL = Date.parse("2026-10-16T13:00:00.000Z");
 const relogio = { simulado: new Date(2026, 9, 16, 9, 30).toISOString(), real: REAL };
@@ -38,8 +38,8 @@ const v2 = {
 };
 
 describe("migração do estado salvo", () => {
-  it("está na versão 4", () => {
-    expect(VERSAO_SESSAO).toBe(4);
+  it("está na versão 5", () => {
+    expect(VERSAO_SESSAO).toBe(5);
   });
 
   it("v2 → v3 preserva pessoa, posto, relógio, conclusões, registros e tratamentos", () => {
@@ -125,8 +125,30 @@ describe("migração v3 → v4", () => {
     expect(migrarSessao("v3", 3, REAL)).toBeNull();
   });
 
+  it("da v3 chega à v5 com os dados da v0.5 vazios", () => {
+    const atual = migrarSessao(v3, 3, REAL);
+    expect(atual).toMatchObject({ usuarioId: "u-alberto", ...dadosV5Vazios() });
+  });
+});
+
+describe("migração v4 → v5", () => {
+  const v4 = (() => {
+    const migrado = migrarSessao({ ...v2 }, 2, REAL) as unknown as Record<string, unknown>;
+    for (const chave of Object.keys(dadosV5Vazios())) delete migrado[chave];
+    return migrado;
+  })();
+
+  it("preserva tudo da v4 e começa os dados da v0.5 vazios", () => {
+    const v5 = migrarSessao(v4, 4, REAL);
+    expect(v5).toMatchObject({ usuarioId: "u-alberto", relogio, registros: v2.registros, ...dadosV5Vazios() });
+  });
+
+  it("estado da v4 sem forma recomeça a demo", () => {
+    expect(migrarSessao(null, 4, REAL)).toBeNull();
+  });
+
   it("na versão atual, o estado passa como está", () => {
-    const v4 = migrarSessao(v3, 3, REAL);
-    expect(migrarSessao(v4, 4, REAL)).toBe(v4);
+    const v5 = migrarSessao(v4, 4, REAL);
+    expect(migrarSessao(v5, 5, REAL)).toBe(v5);
   });
 });
