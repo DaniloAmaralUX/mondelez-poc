@@ -83,7 +83,7 @@ export function alertasDeIndicadoresDaLinha(
       turnoChave,
       agora,
       serie: serieDoPosto(posto.id, agora, dados, turno),
-      falhas: falhasDoTurno(falhas, turnoChave, posto.id).filter((f) => emAte(f.inicio)),
+      falhas: falhasDoTurno(falhas, turnoChave, posto.id, turno).filter((f) => emAte(f.inicio)),
       tipos,
       perdas: perdas.filter((p) => p.postoId === posto.id && p.turnoChave === turnoChave && emAte(p.em)),
       pedidos: pedidos.filter(

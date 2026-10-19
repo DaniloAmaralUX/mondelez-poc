@@ -17,8 +17,12 @@ import { PRESSAO } from "@/lib/pressao";
 import { JANELA_DESFAZER_MS, useAgora, useSessionStore } from "@/stores/session/session-store";
 
 /** O tempo da falha em curso, como o operador fala: "desde 08:12 · 14 min". */
+/** "desde 08:12 · 14 min". Falha que vem do turno anterior: a hora real em que parou e o tempo desde então. */
 function tempoCorrendo(falha: EventoFalha, agora: Date) {
-  return `desde ${formatarHora(new Date(falha.inicio))} · ${formatarDuracao(duracaoMin(falha, agora) * 60_000)}`;
+  const inicio = falha.inicioOriginal ?? falha.inicio;
+  const desde = formatarHora(new Date(inicio));
+  const minutos = duracaoMin({ ...falha, inicio }, agora);
+  return `desde ${desde}${falha.continuacao ? " (turno anterior)" : ""} · ${formatarDuracao(minutos * 60_000)}`;
 }
 
 /**

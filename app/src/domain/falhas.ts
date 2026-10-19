@@ -22,12 +22,35 @@ export function corteDoTurno(turno: Turno, agora: Date): Date {
   return agora.getTime() < turno.fim.getTime() ? agora : turno.fim;
 }
 
-/** Falhas do turno, da mais antiga para a mais recente. */
-export function falhasDoTurno(eventos: readonly EventoFalha[], turnoChave: string, postoId?: string): EventoFalha[] {
+/**
+ * Falhas do turno, da mais antiga para a mais recente. Com o `turno`, entra também a falha que começou num turno
+ * anterior e seguia aberta (ou terminou) depois do início deste: ela vem recortada no início do turno, com
+ * `continuacao: true`. Sem isso, a máquina que parou às 13:50 e não foi liberada sumia da tela às 14:00 e ainda
+ * bloqueava abrir o mesmo tipo de falha no equipamento (`abrirFalha` recusa com uma aberta).
+ */
+export function falhasDoTurno(
+  eventos: readonly EventoFalha[],
+  turnoChave: string,
+  postoId?: string,
+  turno?: Pick<Turno, "inicio">,
+): EventoFalha[] {
+  const inicioDoTurno = turno?.inicio.getTime();
   return eventos
-    .filter((e) => e.turnoChave === turnoChave && (!postoId || e.postoId === postoId))
+    .filter((e) => !postoId || e.postoId === postoId)
+    .flatMap((e): EventoFalha[] => {
+      if (e.turnoChave === turnoChave) return [e];
+      if (inicioDoTurno === undefined) return [];
+      const comecouAntes = new Date(e.inicio).getTime() < inicioDoTurno;
+      const seguiuNoTurno = !e.fim || new Date(e.fim).getTime() > inicioDoTurno;
+      return comecouAntes && seguiuNoTurno
+        ? [{ ...e, inicio: new Date(inicioDoTurno).toISOString(), continuacao: true, inicioOriginal: e.inicio }]
+        : [];
+    })
     .sort((a, b) => a.inicio.localeCompare(b.inicio));
 }
+
+/** Falhas que contam na quantidade (MTBF, Pareto, repetição): as que começaram no turno. */
+const novasNoTurno = (eventos: readonly EventoFalha[]) => eventos.filter((e) => !e.continuacao);
 
 export interface IndicadoresFalha {
   falhas: number;
@@ -44,11 +67,12 @@ export function indicadoresDeFalha(eventos: readonly EventoFalha[], turno: Turno
   const decorrido = Math.max(0, (corte.getTime() - turno.inicio.getTime()) / MIN_MS);
   const minutosParados = eventos.reduce((s, e) => s + duracaoMin(e, corte), 0);
   const minutosOperando = Math.max(0, decorrido - minutosParados);
+  const falhas = novasNoTurno(eventos).length;
   return {
-    falhas: eventos.length,
+    falhas,
     minutosParados,
     minutosOperando,
-    mtbfMin: eventos.length > 0 ? minutosOperando / eventos.length : null,
+    mtbfMin: falhas > 0 ? minutosOperando / falhas : null,
     emCurso: eventos.filter((e) => !e.fim).length,
   };
 }
@@ -67,11 +91,11 @@ export function pareto(eventos: readonly EventoFalha[], tipos: readonly TipoFalh
   const porTipo = new Map<string, { quantidade: number; minutos: number }>();
   for (const e of eventos) {
     const atual = porTipo.get(e.tipoId) ?? { quantidade: 0, minutos: 0 };
-    atual.quantidade += 1;
+    if (!e.continuacao) atual.quantidade += 1;
     atual.minutos += duracaoMin(e, corte);
     porTipo.set(e.tipoId, atual);
   }
-  const total = eventos.length;
+  const total = novasNoTurno(eventos).length;
   let acumulado = 0;
   return [...porTipo.entries()]
     .map(([tipoId, v]) => ({ tipoId, nome: tipos.find((t) => t.id === tipoId)?.nome ?? tipoId, ...v }))
@@ -94,7 +118,7 @@ export function falhasRepetidas(
   eventos: readonly EventoFalha[],
 ): { tipoId: string; vezes: number; atingidoEm: string }[] {
   const porTipo = new Map<string, EventoFalha[]>();
-  for (const e of [...eventos].sort((a, b) => a.inicio.localeCompare(b.inicio))) {
+  for (const e of novasNoTurno(eventos).sort((a, b) => a.inicio.localeCompare(b.inicio))) {
     porTipo.set(e.tipoId, [...(porTipo.get(e.tipoId) ?? []), e]);
   }
   const repetidas: { tipoId: string; vezes: number; atingidoEm: string }[] = [];

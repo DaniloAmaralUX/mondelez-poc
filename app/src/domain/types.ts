@@ -343,6 +343,13 @@ export interface EventoFalha {
   usuarioId: string;
   /** Quem encerrou, quando não foi quem abriu. */
   encerradaPor?: string;
+  /**
+   * Só na leitura (`falhasDoTurno` com o turno), nunca gravado: a falha começou num turno anterior e continuava aberta
+   * neste. Vem recortada no início do turno; o tempo parado conta aqui, a quantidade de falhas não.
+   */
+  continuacao?: true;
+  /** Na continuação, o início real da falha (no turno anterior), para a tela dizer desde quando a máquina está parada. */
+  inicioOriginal?: string;
 }
 
 // Turno ------------------------------------------------------------------------------------------------

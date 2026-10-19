@@ -53,8 +53,10 @@ export function useFalhasDoTurno(postoId?: string): EventoFalha[] {
   const falhas = useSessionStore((s) => s.falhas);
   const agora = useAgora();
   return useMemo(() => {
-    const chave = chaveTurno(turnoAtual(agora));
-    return falhasDoTurno(Object.values(falhas), chave, id).filter((f) => new Date(f.inicio) <= agora);
+    const turno = turnoAtual(agora);
+    return falhasDoTurno(Object.values(falhas), chaveTurno(turno), id, turno).filter(
+      (f) => new Date(f.inicio) <= agora,
+    );
   }, [falhas, agora, id]);
 }
 
