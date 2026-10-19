@@ -133,7 +133,7 @@ function Formulario({
     }
     fechar();
     toast.success("Escala ajustada", {
-      description: `${pessoa.nome}: ${nomeDoDia(dia)} em ${rotuloDoDia(data, hoje).toLowerCase()}. Todos os tablets já mostram.`,
+      description: `${pessoa.nome} · ${nomeDoDia(dia)} · ${rotuloDoDia(data, hoje)}. Todos os tablets já mostram.`,
       duration: JANELA_DESFAZER_MS,
       action: { label: "Desfazer", onClick: () => desfazerPara(anterior) },
     });
@@ -148,7 +148,7 @@ function Formulario({
     }
     fechar();
     toast.success("Voltou à escala da turma", {
-      description: `${pessoa.nome} em ${rotuloDoDia(data, hoje).toLowerCase()}: ${daTurma ? nomeDoDia(daTurma) : "sem turma"}.`,
+      description: `${pessoa.nome} · ${daTurma ? nomeDoDia(daTurma) : "sem turma"} · ${rotuloDoDia(data, hoje)}.`,
       duration: JANELA_DESFAZER_MS,
       action: {
         label: "Desfazer",

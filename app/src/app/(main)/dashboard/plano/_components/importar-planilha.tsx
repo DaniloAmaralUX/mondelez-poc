@@ -54,6 +54,12 @@ export function ImportarPlanilha({
   );
 }
 
+/** "Publicar plano", "Publicar sem a linha com erro" ou "Publicar sem as 3 linhas com erro". */
+function rotuloDePublicar(comErro: number, prontas: number): string {
+  if (comErro === 0 || prontas === 0) return "Publicar plano";
+  return comErro === 1 ? "Publicar sem a linha com erro" : `Publicar sem as ${comErro} linhas com erro`;
+}
+
 function Formulario({
   semanaPadrao,
   fechar,
@@ -232,7 +238,7 @@ function Formulario({
               </div>
               {atual && (
                 <p className="text-muted-foreground text-sm toque:text-base">
-                  Substitui o plano desta semana. Hoje ele é: {origemDoPlano(atual)}
+                  Substitui o plano publicado para essa semana: {origemDoPlano(atual)}
                 </p>
               )}
               {erroArquivo && (
@@ -305,9 +311,7 @@ function Formulario({
           Cancelar
         </Button>
         <Button type="submit" className="h-11 toque:h-16 px-5 text-base">
-          {comErro.length > 0 && itens.length > 0
-            ? `Publicar sem as ${comErro.length} ${comErro.length === 1 ? "linha" : "linhas"} com erro`
-            : "Publicar plano"}
+          {rotuloDePublicar(comErro.length, itens.length)}
         </Button>
       </SheetFooter>
     </form>

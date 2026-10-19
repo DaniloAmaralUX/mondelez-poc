@@ -15,6 +15,12 @@ export function faixaDoTurno(numero: NumeroTurno): string {
   return `${hh(inicio)}–${hh(inicio + DURACAO_TURNO_HORAS)}`;
 }
 
+/** "das 06:00 às 14:00". */
+export function horarioDoTurno(numero: NumeroTurno): string {
+  const inicio = INICIO_TURNO[numero];
+  return `das ${hh(inicio)}:00 às ${hh(inicio + DURACAO_TURNO_HORAS)}:00`;
+}
+
 /** "1º turno" ou "Folga". */
 export function nomeDoDia(dia: DiaDeEscala): string {
   return dia === "folga" ? "Folga" : `${dia}º turno`;

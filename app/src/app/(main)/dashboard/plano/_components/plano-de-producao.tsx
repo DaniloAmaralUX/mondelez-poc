@@ -94,7 +94,7 @@ function Conteudo() {
           </p>
         </div>
         {podeImportar && (
-          <div className="flex flex-wrap items-center gap-2 toque:gap-3">
+          <div className="flex shrink-0 flex-wrap items-center gap-2 toque:gap-3">
             <Button
               variant="outline"
               className="toque:h-14"

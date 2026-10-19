@@ -19,7 +19,15 @@ import { primeiroNome } from "@/lib/format";
 
 import type { AlvoDoAjuste } from "./ajustar-escala";
 import { deChave, rotuloDoDia } from "./recados";
-import { DIAS_DE_ESCALA, faixaDoTurno, nomeCurto, nomeDoDia, pessoasDoPosto, TINTA_DA_ESCALA } from "./turnos";
+import {
+  DIAS_DE_ESCALA,
+  faixaDoTurno,
+  horarioDoTurno,
+  nomeCurto,
+  nomeDoDia,
+  pessoasDoPosto,
+  TINTA_DA_ESCALA,
+} from "./turnos";
 
 const MES = new Intl.DateTimeFormat("pt-BR", { month: "long", year: "numeric" });
 const DIA_CURTO = new Intl.DateTimeFormat("pt-BR", { weekday: "short" });
@@ -210,7 +218,7 @@ function MinhaEscala({
                 {deHoje ? nomeDoDia(deHoje.dia) : "Sem escala"}
                 {deHoje && deHoje.dia !== "folga" && (
                   <span className="block font-normal text-base text-muted-foreground tabular-nums">
-                    das {faixaDoTurno(deHoje.dia).replace("–", " às ")}
+                    {horarioDoTurno(deHoje.dia)}
                   </span>
                 )}
               </dd>
@@ -440,13 +448,13 @@ function ChipDaPessoa({
 }) {
   const conteudo = (
     <>
-      <span className="truncate">{primeiroNome(pessoa.nome)}</span>
+      <span>{primeiroNome(pessoa.nome)}</span>
       <span className="text-muted-foreground">{pessoa.perfil === "supervisao" ? "sup." : pessoa.turma}</span>
       {ajustado && <PencilLine className="size-3.5 shrink-0" aria-label="ajustado" />}
     </>
   );
   const base = cn(
-    "inline-flex max-w-full items-center gap-1.5 rounded-md bg-background px-2 py-1 text-sm ring-1 ring-foreground/10",
+    "inline-flex max-w-full flex-wrap items-center gap-x-1.5 rounded-md bg-background px-2 py-1 text-left text-sm ring-1 ring-foreground/10",
     ajustado && "ring-foreground/35",
   );
   if (!onClick) return <span className={base}>{conteudo}</span>;

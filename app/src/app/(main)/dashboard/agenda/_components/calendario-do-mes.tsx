@@ -103,6 +103,7 @@ export function CalendarioDoMes({
           locale={ptBr}
           plugins={plugins}
           height="auto"
+          firstDay={1}
           fixedWeekCount={false}
           dayMaxEvents={2}
           dayNarrowWidth={70}

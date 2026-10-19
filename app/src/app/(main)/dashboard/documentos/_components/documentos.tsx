@@ -122,7 +122,7 @@ function Conteudo() {
         <div className="grid @min-[60rem]/content:grid-cols-5 @2xl/content:grid-cols-3 grid-cols-2 gap-3">
           <Pasta
             icone={FolderOpen}
-            nome={posto ? `Todo o posto ${posto.nome}` : "Todo o posto"}
+            nome="Todo o posto"
             quantidade={todos.filter((d) => doEquipamento(d, "posto")).length}
             ativo={equipamento === "posto"}
             onClick={() => filtrarEquipamento("posto")}
