@@ -4,11 +4,12 @@ import Link from "next/link";
 
 import NumberFlow from "@number-flow/react";
 import { cn } from "cn";
-import { ArrowRight, Check, CircleCheck, LayoutGrid } from "lucide-react";
+import { ArrowRight, Award, Check, CircleCheck, LayoutGrid } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { localRepository } from "@/data/repository";
+import { turnoCem } from "@/domain/kpis";
 import { concluida, proximaTarefa } from "@/domain/routine-engine";
 import { useMinhasTarefas } from "@/hooks/use-turno";
 import { formatarHora } from "@/lib/format";
@@ -19,7 +20,7 @@ import { useAgora } from "@/stores/session/session-store";
 
 import { Duracao } from "./duracao";
 import { StatusTarefa } from "./status-tarefa";
-import { rotuloDaRota, temFormulario, useConcluirTarefa } from "./use-concluir";
+import { abreTela, rotuloDaAcao, rotuloDaRota, useConcluirTarefa } from "./use-concluir";
 
 /** A ação dominante da tela: a próxima tarefa, com prazo vivo e um botão grande (UI Audit, prioridade 1). */
 export function FazerAgora() {
@@ -31,6 +32,7 @@ export function FazerAgora() {
   const atrasadas = tarefas.filter((t) => t.estado === "atrasada").length;
   const progresso = tarefas.length ? Math.round((tarefas.filter(concluida).length / tarefas.length) * 100) : 0;
   const depois = tarefas.find((t) => t.futura);
+  const cem = turnoCem(tarefas, agora);
 
   const contadores = (
     <CardFooter className="flex-wrap gap-x-6 gap-y-1 border-t text-muted-foreground text-sm">
@@ -43,6 +45,13 @@ export function FazerAgora() {
       {atrasadas > 0 && (
         <span className="text-destructive">
           <NumberFlow value={atrasadas} className="font-medium" /> {atrasadas === 1 ? "atrasada" : "atrasadas"}
+        </span>
+      )}
+      {/* Reconhecimento (job P2 do operador, RF-17 no mínimo do doc 06): tudo o que já venceu foi feito no prazo e sem NC. */}
+      {cem.cem && (
+        <span className="ml-auto inline-flex items-center gap-1.5 rounded-full bg-amber-500/12 px-2.5 py-0.5 font-medium text-amber-800 dark:text-amber-300">
+          <Award className="size-4" aria-hidden />
+          Turno 100% até agora
         </span>
       )}
     </CardFooter>
@@ -104,12 +113,12 @@ export function FazerAgora() {
             {formatarHora(proxima.abre)}–{formatarHora(proxima.prazo)}
           </p>
         </div>
-        {temFormulario(proxima) ? (
+        {abreTela(proxima) ? (
           // 44 px no notebook (v0.2); 64 px no toque: ação primária do operador (docs/12 §2 item 1 e §3.1).
           <Button asChild size="lg" className={cn("h-11 toque:h-16 px-5 toque:px-6 text-base", PRESSAO)}>
             {/* prefetch: a tela de registro abre mesmo com a rede caindo (lib/rotas.ts). */}
             <Link prefetch href={hrefDaTarefa(proxima)}>
-              Registrar
+              {rotuloDaAcao(proxima)}
               <ArrowRight data-icon="inline-end" />
             </Link>
           </Button>

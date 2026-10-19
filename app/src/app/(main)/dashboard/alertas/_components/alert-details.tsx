@@ -19,6 +19,7 @@ import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { FotosDoRegistro } from "@/components/fotos-de-evidencia";
 import { Button } from "@/components/ui/button";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import { Separator } from "@/components/ui/separator";
@@ -90,24 +91,51 @@ function envioPendente(registro: Registro | undefined) {
   return registro !== undefined && registro.syncStatus !== "sincronizado";
 }
 
+/** Tela de origem de cada regra (v0.5): de onde o alerta veio e onde a liderança vê o contexto inteiro. */
+const ORIGEM_DA_REGRA: Partial<Record<RegraAlerta, { href: string; rotulo: string }>> = {
+  "A-ATRASO": { href: "/dashboard/tarefas", rotulo: "Ver tarefas dos postos" },
+  "A-GE": { href: "/dashboard/hora-x-hora", rotulo: "Abrir Hora x Hora" },
+  "A-META": { href: "/dashboard/hora-x-hora", rotulo: "Abrir Hora x Hora" },
+  "A-REPET": { href: "/dashboard/mtbf", rotulo: "Abrir MTBF" },
+  "A-PERDA": { href: "/dashboard/sobrepeso", rotulo: "Abrir sobrepeso e refugo" },
+};
+
+const TITULO_DA_CAIXA: Record<RegraAlerta, string> = {
+  "A-NC": "Itens fora do padrão",
+  "A-ATRASO": "Tarefa sem registro no prazo",
+  "A-GE": "Eficiência abaixo do limite",
+  "A-META": "Produção abaixo da meta",
+  "A-REPET": "Falha que se repete",
+  "A-PERDA": "Perdas acima do limite",
+  "A-AJUDA": "Pedido do posto",
+};
+
 function useOrigem(alerta: Alerta) {
   const registros = useSessionStore((s) => s.registros);
+  const pedidos = useSessionStore((s) => s.pedidosAjuda);
   const registro = alerta.registroId ? registros[alerta.registroId] : undefined;
-  const pessoa = registro
-    ? localRepository.usuario(registro.usuarioId)
-    : localRepository.usuarios().find((u) => u.perfil === "operacao");
-  return { registro, pessoa };
+  const pedido = alerta.pedidoAjudaId ? pedidos[alerta.pedidoAjudaId] : undefined;
+  const autorId = registro?.usuarioId ?? pedido?.usuarioId;
+  const pessoa = autorId
+    ? localRepository.usuario(autorId)
+    : localRepository.usuarios().find((u) => u.perfil === "operacao" && u.postoId === alerta.postoId);
+  const link = registro
+    ? { href: `/dashboard/checklist/${registro.formularioId}`, rotulo: "Abrir o registro" }
+    : (ORIGEM_DA_REGRA[alerta.regra] ?? { href: "/dashboard/tarefas", rotulo: "Ver tarefas dos postos" });
+  return { registro, pessoa, link };
 }
 
 function AlertOverview({ alerta, tituloId }: { alerta: Alerta; tituloId?: string }) {
   const agora = useAgora();
   const status = statusVisual(alerta);
-  const { registro, pessoa } = useOrigem(alerta);
+  const { registro, pessoa, link } = useOrigem(alerta);
   const posto = localRepository.posto(alerta.postoId);
   const equipamento = alerta.equipamentoId ? localRepository.equipamento(alerta.equipamentoId) : undefined;
   const responsavel = alerta.responsavelId ? localRepository.usuario(alerta.responsavelId) : undefined;
   const itemCritico = alerta.itensNaoConformes.some((i) => i.critico);
   const aguardandoEnvio = envioPendente(registro);
+  // Fotos de evidência dos itens não conformes (v0.5): a especialista vê a NC com foto (job P1).
+  const fotosDaNc = registro ? Object.values(registro.respostas).flatMap((r) => (r.valor === "NC" || r.fotos ? (r.fotos ?? []) : [])) : [];
 
   return (
     <div className="flex flex-col gap-4">
@@ -198,8 +226,8 @@ function AlertOverview({ alerta, tituloId }: { alerta: Alerta; tituloId?: string
 
           <Button asChild variant="outline" size="sm" className="shrink-0">
             {/* prefetch: o registro abre mesmo com a rede caindo no meio da linha (lib/rotas.ts). */}
-            <Link prefetch href={registro ? `/dashboard/checklist/${registro.formularioId}` : "/dashboard/tarefas"}>
-              {registro ? "Abrir o registro" : "Ver tarefas do posto"}
+            <Link prefetch href={link.href}>
+              {link.rotulo}
             </Link>
           </Button>
         </div>
@@ -243,7 +271,7 @@ function AlertOverview({ alerta, tituloId }: { alerta: Alerta; tituloId?: string
 
       <Alert className="border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-50">
         <AlertTriangleIcon />
-        <AlertTitle>{alerta.regra === "A-NC" ? "Itens fora do padrão" : "Tarefa sem registro no prazo"}</AlertTitle>
+        <AlertTitle>{TITULO_DA_CAIXA[alerta.regra]}</AlertTitle>
         <AlertDescription className="space-y-2">
           <div className="space-y-1 border-amber-900 text-amber-900 dark:border-amber-50 dark:text-amber-50">
             {alerta.regra === "A-NC" ? (
@@ -253,9 +281,16 @@ function AlertOverview({ alerta, tituloId }: { alerta: Alerta; tituloId?: string
                 </p>
               ))
             ) : (
-              <p className="leading-snug">{alerta.descricao}</p>
+              <p className="wrap-anywhere leading-snug">{alerta.descricao}</p>
             )}
+            {/* Contexto das regras da v0.5: falhas da hora, valores do indicador, quando a falha se repetiu. */}
+            {alerta.contexto?.map((linha) => (
+              <p key={linha} className="wrap-anywhere text-sm leading-snug">
+                {linha}
+              </p>
+            ))}
           </div>
+          {fotosDaNc.length > 0 && <FotosDoRegistro fotos={fotosDaNc} />}
 
           <Separator className="bg-amber-800 dark:bg-amber-50" />
 

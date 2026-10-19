@@ -1,5 +1,6 @@
 "use client";
 
+import { FotosDoRegistro } from "@/components/fotos-de-evidencia";
 import { localRepository } from "@/data/repository";
 import { descreverResposta, resumirRespostas, situacaoItem } from "@/domain/formulario-engine";
 import { turnoAtual } from "@/domain/turno";
@@ -112,6 +113,9 @@ export function ChecklistPaper({ formulario, valores, tarefa, registro }: Checkl
                   {item.texto}
                   {situacao === "NC" && resposta?.justificativa && (
                     <span className="block text-neutral-500">{resposta.justificativa}</span>
+                  )}
+                  {(resposta?.fotos?.length ?? 0) > 0 && (
+                    <FotosDoRegistro fotos={resposta?.fotos ?? []} className="mt-2" />
                   )}
                 </span>
                 <span className="text-right">

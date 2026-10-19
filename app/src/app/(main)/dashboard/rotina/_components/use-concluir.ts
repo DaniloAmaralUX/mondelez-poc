@@ -23,7 +23,7 @@ export function useConcluirTarefa() {
   const desfazerConclusao = useSessionStore((s) => s.desfazerConclusao);
 
   return (tarefa: TarefaInstancia) => {
-    if (temFormulario(tarefa)) {
+    if (abreTela(tarefa)) {
       router.push(hrefDaTarefa(tarefa));
       return;
     }
@@ -49,12 +49,38 @@ export function temFormulario(tarefa: TarefaInstancia) {
   return tarefa.formularioId !== undefined;
 }
 
-const ROTULO_DA_ROTA: Record<string, string> = {
-  "/dashboard/alertas": "Abrir alertas",
+/**
+ * A tarefa se conclui numa tela (v0.5): o checklist do formulário, ou a tela da rota quando ela mesma grava a conclusão
+ * (`concluiNaTela`: apontar a hora, apontar perdas, entregar o turno, enviar o relatório). Essas tarefas não têm
+ * "Concluir": a linha e "Fazer agora" levam até a tela.
+ */
+export function abreTela(tarefa: TarefaInstancia) {
+  return temFormulario(tarefa) || Boolean(tarefa.concluiNaTela && tarefa.rota);
+}
+
+const ACAO_DA_ROTA: Record<string, string> = {
+  "/dashboard/hora-x-hora": "Apontar",
+  "/dashboard/sobrepeso": "Apontar",
+  "/dashboard/troca-de-turno": "Passar turno",
+  "/dashboard/relatorio-turno": "Abrir relatório",
 };
 
-/** Atalho para a tela onde a tarefa é feita, quando ela não tem formulário (ex.: "Abrir alertas"). */
+/** Rótulo da ação principal de uma tarefa que abre tela ("Registrar", "Apontar", "Passar turno"). */
+export function rotuloDaAcao(tarefa: TarefaInstancia): string {
+  if (temFormulario(tarefa)) return "Registrar";
+  return (tarefa.rota && ACAO_DA_ROTA[tarefa.rota]) || "Abrir";
+}
+
+const ROTULO_DA_ROTA: Record<string, string> = {
+  "/dashboard/alertas": "Abrir alertas",
+  "/dashboard/troca-de-turno": "Abrir passagem",
+  "/dashboard/relatorio-turno": "Abrir relatório",
+  "/dashboard/plano": "Abrir plano",
+  "/dashboard/agenda": "Abrir agenda",
+};
+
+/** Atalho para a tela onde a tarefa é feita, quando é ela que se conclui com "Concluir" (ex.: "Abrir alertas"). */
 export function rotuloDaRota(tarefa: TarefaInstancia): string | undefined {
-  if (temFormulario(tarefa) || !tarefa.rota) return undefined;
+  if (abreTela(tarefa) || !tarefa.rota) return undefined;
   return ROTULO_DA_ROTA[tarefa.rota] ?? "Abrir";
 }

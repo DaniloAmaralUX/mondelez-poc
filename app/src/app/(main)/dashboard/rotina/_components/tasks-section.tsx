@@ -21,7 +21,7 @@ import { hrefDaTarefa } from "@/lib/rotas";
 import { useAgora, useSessionStore } from "@/stores/session/session-store";
 
 import { StatusTarefa } from "./status-tarefa";
-import { rotuloDaRota, temFormulario, useConcluirTarefa } from "./use-concluir";
+import { abreTela, rotuloDaRota, useConcluirTarefa } from "./use-concluir";
 
 type Filtro = "agora" | "turno" | "feitas";
 
@@ -100,7 +100,7 @@ export function TasksSection() {
                   onConcluir={() => concluir(tarefa)}
                   // Conclusão feita aqui por esta pessoa (sem formulário): desfaz pela linha, depois do aviso de 10 s.
                   onDesfazer={
-                    usuarioId && !temFormulario(tarefa) && conclusoes[tarefa.id]?.usuarioId === usuarioId
+                    usuarioId && !abreTela(tarefa) && conclusoes[tarefa.id]?.usuarioId === usuarioId
                       ? () => desfazerConclusao(tarefa.id)
                       : undefined
                   }
@@ -118,7 +118,7 @@ export function TasksSection() {
  * Linha inteira tocável (≥ 56 px, docs/12 §3.4); a ação fica explícita no fim da linha, nunca num checkbox.
  * active:bg-muted: retorno no toque, onde o hover não existe e o flash do navegador está desligado (tablet.css).
  *
- * - Com formulário: a linha é o link para o registro.
+ * - Com formulário ou concluída numa tela (Hora x Hora, troca de turno): a linha é o link para essa tela.
  * - Sem formulário: "Concluir" no fim da linha; com rota (ex.: "Revisar alertas abertos"), um atalho para a tela antes.
  * - Feita por esta pessoa sem formulário: "Desfazer", o caminho que fica depois que o aviso some (WCAG 2.2.1).
  */
@@ -155,7 +155,7 @@ function LinhaTarefa({
   // py-3: com a linha-link de 56 px, 12 px até o botão Concluir da linha seguinte.
   const linha = "flex min-h-14 items-center gap-3 px-4 py-3";
 
-  if (aberta && temFormulario(tarefa)) {
+  if (aberta && abreTela(tarefa)) {
     return (
       <Link
         // prefetch: o checklist abre sem rede (lib/rotas.ts).

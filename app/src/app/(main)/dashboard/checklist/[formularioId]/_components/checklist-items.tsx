@@ -20,6 +20,7 @@ import { MAX_JUSTIFICATIVA, MAX_TEXTO_DO_ITEM, MIN_JUSTIFICATIVA, situacaoItem }
 import type { ItemFormulario, Resposta, ValorCnc } from "@/domain/types";
 import { PRESSAO } from "@/lib/pressao";
 
+import { CampoFoto } from "./campo-foto";
 import type { ChecklistFormValues } from "./data";
 import { FaixaIndicador } from "./faixa-indicador";
 
@@ -221,8 +222,19 @@ function ItemRow({
               onChange={(e) => onChange({ ...resposta, texto: e.target.value })}
             />
           )}
+
+          {item.tipo === "foto" && (
+            <CampoFoto
+              fotos={resposta?.fotos ?? []}
+              rotulo={item.texto}
+              invalido={Boolean(erro)}
+              descritoPor={idErro}
+              onChange={(fotos) => onChange({ ...resposta, fotos })}
+            />
+          )}
         </div>
       </div>
+      {item.tipo === "foto" && item.ajuda && <p className="-mt-1 text-muted-foreground text-sm">{item.ajuda}</p>}
 
       <AnimatePresence initial={false}>
         {situacao === "NC" && (
@@ -257,6 +269,13 @@ function ItemRow({
               <FieldDescription id={idAjudaJustificativa}>
                 Mínimo de {MIN_JUSTIFICATIVA} caracteres. Vai para a supervisão junto com o alerta.
               </FieldDescription>
+              {/* Evidência da NC (decisão pendente do doc 13 §6, resolvida na v0.5): foto opcional junto da justificativa. */}
+              <CampoFoto
+                opcional
+                fotos={resposta?.fotos ?? []}
+                rotulo={`Não conformidade: ${item.texto}`}
+                onChange={(fotos) => onChange({ ...resposta, fotos })}
+              />
             </Field>
           </motion.div>
         )}
