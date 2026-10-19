@@ -1,6 +1,7 @@
-import { localRepository } from "@/data/repository";
+import { BLOCO_DE_PERDAS_MS } from "@/domain/alertas-indicadores";
 import type { TarefaInstancia } from "@/domain/types";
 import { formatarHora } from "@/lib/format";
+import { inicioDoBlocoDePerdas } from "@/lib/sessao/perdas";
 
 const UMA_CASA = new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 
@@ -17,19 +18,13 @@ export const MOTIVOS_PERDA = [
   "Outro",
 ] as const;
 
-/**
- * Início do bloco de produção de uma tarefa de perdas. A tarefa abre 1 h depois do início do bloco de 2 h (janela do
- * template `sobrepeso` no seed): a de 07:00 aponta o que saiu das 06:00 às 08:00.
- */
+/** Início do bloco de produção de uma tarefa de perdas (o mesmo que o store grava em `bloco`). */
 export function inicioDoBloco(tarefa: Pick<TarefaInstancia, "abre">): Date {
-  const atraso = localRepository.templates().find((t) => t.id === "sobrepeso")?.janela.inicioMin ?? 60;
-  return new Date(tarefa.abre.getTime() - atraso * 60_000);
+  return inicioDoBlocoDePerdas(tarefa.abre);
 }
-
-const BLOCO_MS = 2 * 60 * 60 * 1000;
 
 /** "06:00–08:00". */
 export function rotuloDoBloco(tarefa: Pick<TarefaInstancia, "abre">): string {
   const inicio = inicioDoBloco(tarefa);
-  return `${formatarHora(inicio)}–${formatarHora(new Date(inicio.getTime() + BLOCO_MS))}`;
+  return `${formatarHora(inicio)}–${formatarHora(new Date(inicio.getTime() + BLOCO_DE_PERDAS_MS))}`;
 }

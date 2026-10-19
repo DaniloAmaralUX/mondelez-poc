@@ -242,6 +242,8 @@ describe("alertas de indicador (RN-07, RN-08)", () => {
     ];
     const alertas = gerarAlertasDeIndicadores({ ...base, agora: em(9), serie: [], falhas: [], perdas });
     expect(alertas[0]).toMatchObject({ regra: "A-PERDA", criticidade: "atencao" });
+    // bloco guarda o início do bloco de 2 h: o título diz o bloco inteiro, não a hora em que a tarefa abriu.
+    expect(alertas[0]?.titulo).toBe("Perdas acima do limite no bloco 07:00–09:00");
   });
 });
 

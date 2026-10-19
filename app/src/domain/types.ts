@@ -310,6 +310,7 @@ export interface ApontamentoPerdas {
   id: string;
   postoId: string;
   turnoChave: string;
+  /** Início do bloco de 2 h (ISO), e não a hora em que a tarefa abre: a tarefa das 07:00 aponta o bloco 06:00–08:00. */
   bloco: string;
   /** Sobrepeso médio por pacote, em gramas. */
   sobrepesoG: number;

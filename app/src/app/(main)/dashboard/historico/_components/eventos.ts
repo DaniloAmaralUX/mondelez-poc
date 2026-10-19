@@ -1,5 +1,5 @@
 import { localRepository } from "@/data/repository";
-import { MOTIVO_AJUDA } from "@/domain/alertas-indicadores";
+import { BLOCO_DE_PERDAS_MS, MOTIVO_AJUDA } from "@/domain/alertas-indicadores";
 import { duracaoMin } from "@/domain/falhas";
 import { alcanceDoHistorico } from "@/domain/permissoes";
 import { toneladas } from "@/domain/producao";
@@ -41,6 +41,7 @@ export interface EventoHistorico {
 
 const linhaDoPosto = (postoId: string | undefined) => (postoId ? localRepository.posto(postoId)?.linhaId : undefined);
 const chaveDe = (iso: string) => chaveTurno(turnoAtual(new Date(iso)));
+const horaCheia = (d: Date) => `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
 const num = (n: number, casas = 1) =>
   n.toLocaleString("pt-BR", { minimumFractionDigits: casas, maximumFractionDigits: casas });
 
@@ -106,7 +107,7 @@ export function eventosDoTablet(dados: Dados, agora: Date): EventoHistorico[] {
       turnoChave: p.turnoChave,
       linhaId: linhaDoPosto(p.postoId),
       postoId: p.postoId,
-      titulo: `Perdas do bloco das ${String(new Date(p.bloco).getHours()).padStart(2, "0")}:00`,
+      titulo: `Perdas do bloco ${horaCheia(new Date(p.bloco))}–${horaCheia(new Date(new Date(p.bloco).getTime() + BLOCO_DE_PERDAS_MS))}`,
       detalhe: `Sobrepeso ${num(p.sobrepesoG)} g · refugo ${num(p.refugoKg)} kg · reprocesso ${num(p.reprocessoKg)} kg`,
       usuarioId: p.usuarioId,
       href: "/dashboard/sobrepeso",

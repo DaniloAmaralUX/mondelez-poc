@@ -24,6 +24,8 @@ export const TOLERANCIA_META_TON = 1.3;
 /** A-PERDA: refugo da hora e sobrepeso médio acima destes limites (RM-03). */
 export const LIMITE_REFUGO_KG = 20;
 export const LIMITE_SOBREPESO_G = 2.5;
+/** Duração do bloco de apontamento de perdas (RM-03): 2 h. */
+export const BLOCO_DE_PERDAS_MS = 2 * 60 * 60 * 1000;
 
 export const MOTIVO_AJUDA: Record<MotivoAjuda, string> = {
   manutencao: "Manutenção",
@@ -189,7 +191,7 @@ export function gerarAlertasDeIndicadores(input: AlertasIndicadoresInput): Alert
         id,
         regra: "A-PERDA",
         criticidade: "atencao",
-        titulo: `Perdas acima do limite na hora das ${fmtHora(new Date(p.bloco))}`,
+        titulo: `Perdas acima do limite no bloco ${fmtHora(new Date(p.bloco))}–${fmtHora(new Date(new Date(p.bloco).getTime() + BLOCO_DE_PERDAS_MS))}`,
         descricao: `Apontamento com ${partes.join(" e ")}.`,
         postoId,
         moduloSlug: "sobrepeso-refugo",

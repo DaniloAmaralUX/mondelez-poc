@@ -28,6 +28,7 @@ import type {
   Usuario,
 } from "@/domain/types";
 import type { DadosV5, RelatorioEnviado } from "@/lib/sessao/migracao";
+import { inicioDoBlocoDePerdas } from "@/lib/sessao/perdas";
 
 /** Tempo em que quem apontou uma falha ainda pode apagá-la (toque errado). */
 export const JANELA_APAGAR_FALHA_MS = 5 * 60_000;
@@ -187,7 +188,7 @@ export function criarAcoesV05(d: DependenciasV05): AcoesV05 {
         postoId: contexto.postoId,
         linhaId: contexto.linhaId,
         turnoChave: chaveTurno(turnoAtual(tarefa.abre)),
-        bloco: tarefa.abre.toISOString(),
+        bloco: inicioDoBlocoDePerdas(tarefa.abre).toISOString(),
         skuId,
         caixas: Math.round(caixas),
         motivo: motivo?.trim() ? limitarTexto(motivo.trim(), LIMITES.justificativa) : undefined,
