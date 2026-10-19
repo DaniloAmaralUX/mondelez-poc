@@ -243,15 +243,13 @@ function BlocoDeFalha({
       variant="outline"
       onClick={onTocar}
       aria-pressed={Boolean(aberta)}
-      aria-label={
-        aberta
-          ? `${tipo.nome}, em curso ${tempoCorrendo(aberta, agora)}. Tocar encerra: resolvido.`
-          : `${tipo.nome}, ${vezes === 0 ? "nenhuma" : vezes} no turno. Tocar abre a falha.`
-      }
       className={cn(BLOCO, PRESSAO, "touch-manipulation", emCurso)}
     >
+      {/* O nome acessível é o próprio texto do bloco (nome, contagem ou tempo), mais o que o toque faz: um aria-label
+          diferente do texto visível quebra o comando de voz "tocar em Enrosco" (WCAG 2.5.3). */}
       {nome}
       {rodape}
+      <span className="sr-only">{aberta ? "Toque para encerrar como resolvida." : "Toque para abrir a falha."}</span>
     </Button>
   );
 }
