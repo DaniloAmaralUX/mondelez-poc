@@ -5,8 +5,9 @@ value: mondelez
 
 /*
  * Tema Mondelēz, v0.7 (docs/20b): "campo roxo refinado". Cores do brand book Mondelēz International (2019) em OKLCH.
- * O campo roxo da sinalização da marca (#4F2170, a cor do logo) fica na sidebar e no painel do login, com o logo em
- * branco; o resto é quieto e preciso, no espírito de Jakub Krehel: tela branca com um traço do creme da marca, cards
+ * O campo roxo da sinalização da marca (#4F2170, a cor do logo) fica no painel do login, com o logo em branco; a
+ * sidebar é preta, no desenho da guia do YouTube (tema-mondelez.css), com o logo em branco. O resto é quieto e
+ * preciso, no espírito de Jakub Krehel: tela branca com um traço do creme da marca, cards
  * brancos, divisórias, controles e textos em cinza neutro (sem o bege da v0.6), raio de 10 px, sombras em camadas curtas, e o roxo só na ação principal, no
  * selecionado e no foco. O acabamento por data-slot é o de tema-apple.css; a marca (fontes, sidebar, login) fica em
  * tema-mondelez.css.
@@ -46,14 +47,14 @@ value: mondelez
   --chart-3: oklch(0.5258 0.1154 249.5);
   --chart-4: oklch(0.5047 0.1493 140.9);
   --chart-5: oklch(0.5918 0.0495 64.4);
-  --sidebar: oklch(0.3558 0.1324 307.7);
-  --sidebar-foreground: oklch(1 0 0);
+  --sidebar: oklch(0.1684 0 0);
+  --sidebar-foreground: oklch(0.9581 0 0);
   --sidebar-primary: oklch(1 0 0);
-  --sidebar-primary-foreground: oklch(0.3558 0.1324 307.7);
+  --sidebar-primary-foreground: oklch(0.1684 0 0);
   --sidebar-accent: oklch(1 0 0 / 10%);
-  --sidebar-accent-foreground: oklch(1 0 0);
+  --sidebar-accent-foreground: oklch(0.9581 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(1 0 0 / 70%);
+  --sidebar-ring: oklch(1 0 0 / 60%);
 
   --selecao: oklch(1 0 0 / 14%);
   --selecao-texto: oklch(1 0 0);
@@ -268,13 +269,13 @@ value: mondelez
   --chart-3: oklch(0.7162 0.0678 246.7);
   --chart-4: oklch(0.72 0.1 140.6);
   --chart-5: oklch(0.7585 0.0269 59.8);
-  --sidebar: oklch(0.2799 0.0975 307.7);
-  --sidebar-foreground: oklch(0.9663 0.0176 81.3);
-  --sidebar-primary: oklch(0.9663 0.0176 81.3);
-  --sidebar-primary-foreground: oklch(0.2799 0.0975 307.7);
-  --sidebar-accent: oklch(1 0 0 / 9%);
-  --sidebar-accent-foreground: oklch(1 0 0);
-  --sidebar-border: oklch(1 0 0 / 8%);
+  --sidebar: oklch(0.1684 0 0);
+  --sidebar-foreground: oklch(0.9581 0 0);
+  --sidebar-primary: oklch(1 0 0);
+  --sidebar-primary-foreground: oklch(0.1684 0 0);
+  --sidebar-accent: oklch(1 0 0 / 10%);
+  --sidebar-accent-foreground: oklch(0.9581 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(1 0 0 / 60%);
 
   --selecao: oklch(1 0 0 / 12%);

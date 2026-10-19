@@ -78,64 +78,130 @@
 }
 
 /* ---------------------------------------------------------------------------------------------------------------- */
-/* Sidebar: o campo roxo da sinalização da marca, com o logo em branco                                               */
+/* Sidebar: a guia do YouTube (v0.7), preta e com vidro quando passa por cima do conteúdo                             */
 /* ---------------------------------------------------------------------------------------------------------------- */
 
 /*
- * Dentro da sidebar os tokens do conteúdo viram os da sidebar: o botão "Registrar agora" (bg-primary) passa a branco
- * com texto roxo, e texto secundário fica num lilás claro sólido (6,8:1 sobre o roxo). Os cards da sidebar (pedido de
- * ajuda) voltam aos tokens do conteúdo logo abaixo.
+ * Medida na guia do YouTube em modo escuro (outubro de 2026, docs/20b): fundo #0f0f0f, texto #f1f1f1 (17:1),
+ * secundário #aaa (8,3:1), itens de 40 px com raio de 10 px e 12 px de respiro, ícone de 24 px a 24 px do rótulo,
+ * rótulo de 14/20 (500 no item ativo), ativo e hover em branco a 10 %, seções de 12 px separadas por uma linha branca a
+ * 20 % e títulos de seção de 16 px. Aqui com os ícones de 20 px do lucide (traço 1,75) e a fonte do tema.
+ *
+ * Adaptação ao projeto: o logo Mondelēz em branco no topo (branco sobre fundo escuro, brand book); "Registrar agora"
+ * como a pílula branca de maior ênfase; no toque os itens seguem com 56 px (tablet.css). Quando a sidebar passa por cima
+ * do conteúdo (Sheet do retrato e do Split View), ela vira vidro preto: 88 % de opacidade com desfoque forte (a 78 % sobre o conteúdo branco ficava cinza), como o
+ * cabeçalho do YouTube. Encostada ao lado do conteúdo não há nada atrás para desfocar, então fica sólida, com um brilho
+ * roxo da marca, bem fraco, subindo do pé.
  */
 :root[data-theme-preset="mondelez"] [data-sidebar="sidebar"] {
   --foreground: var(--sidebar-foreground);
   --primary: var(--sidebar-primary);
   --primary-foreground: var(--sidebar-primary-foreground);
-  --muted-foreground: oklch(0.828 0.033 311.4);
+  --muted-foreground: oklch(0.738 0 0);
   --accent: var(--sidebar-accent);
   --accent-foreground: var(--sidebar-accent-foreground);
-  --border: var(--sidebar-border);
-  --input: oklch(1 0 0 / 24%);
+  --border: oklch(1 0 0 / 12%);
+  --input: oklch(1 0 0 / 22%);
   --ring: var(--sidebar-ring);
-  --background: oklch(1 0 0 / 10%);
+  --background: oklch(1 0 0 / 8%);
+  --card: oklch(1 0 0 / 6%);
+  --muted: oklch(1 0 0 / 10%);
+  --card-foreground: var(--sidebar-foreground);
   --hairline: oklch(1 0 0 / 12%);
 }
 
-.dark:root[data-theme-preset="mondelez"] [data-sidebar="sidebar"] {
-  --muted-foreground: oklch(0.806 0.017 311);
+/* Encostada: sólida, com o brilho roxo da marca no pé. */
+:root[data-theme-preset="mondelez"] [data-slot="sidebar-inner"] {
+  background: radial-gradient(120% 38% at 0% 100%, oklch(0.3558 0.1324 307.7 / 32%), transparent 72%), var(--sidebar);
 }
 
-:root[data-theme-preset="mondelez"] [data-sidebar="sidebar"] [data-slot="card"] {
-  --foreground: oklch(0.2686 0 0);
-  --primary: oklch(0.3558 0.1324 307.7);
-  --primary-foreground: oklch(1 0 0);
-  --muted-foreground: oklch(0.5103 0 0);
-  --accent: oklch(0.953 0.018 310.4);
-  --accent-foreground: oklch(0.3558 0.1324 307.7);
-  --border: oklch(0.915 0 0);
-  --input: oklch(0.6167 0 0);
-  --ring: oklch(0.6219 0.0757 310.4);
-  --background: oklch(1 0 0);
-  --hairline: oklch(0 0 0 / 7%);
-  color: var(--card-foreground);
+/* Por cima do conteúdo: vidro preto. */
+:root[data-theme-preset="mondelez"] [data-slot="sidebar"][data-mobile="true"] {
+  background-color: oklch(0.1684 0 0 / 88%);
+  backdrop-filter: blur(32px) saturate(150%);
 }
 
-.dark:root[data-theme-preset="mondelez"] [data-sidebar="sidebar"] [data-slot="card"] {
-  --foreground: oklch(0.9663 0.0176 81.3);
-  --primary: oklch(0.8 0.08 310.4);
-  --primary-foreground: oklch(0.2799 0.0975 307.7);
-  --muted-foreground: oklch(0.74 0.01 81.3);
-  --accent: oklch(0.3 0.045 308);
-  --accent-foreground: oklch(0.9 0.04 310.4);
-  --border: oklch(1 0 0 / 9%);
-  --input: oklch(0.56 0.005 81.3);
-  --ring: oklch(0.8 0.08 310.4);
-  --background: oklch(0.16 0.004 81.3);
-  --hairline: oklch(1 0 0 / 9%);
+@media (prefers-reduced-transparency: reduce) {
+  :root[data-theme-preset="mondelez"] [data-slot="sidebar"][data-mobile="true"] {
+    background-color: var(--sidebar);
+    backdrop-filter: none;
+  }
 }
 
-/* Item ativo: pílula branca translúcida, como a seleção da sinalização sobre o roxo. */
+/* Seções: 12 px de respiro e a linha branca a 20 % entre elas; título de seção de 16 px, no texto principal. */
+:root[data-theme-preset="mondelez"] [data-sidebar="sidebar"] [data-slot="sidebar-group"] {
+  padding: 12px;
+}
+
+:root[data-theme-preset="mondelez"] [data-sidebar="sidebar"] [data-slot="sidebar-group"] + [data-slot="sidebar-group"] {
+  border-top: 1px solid oklch(1 0 0 / 20%);
+}
+
+:root[data-theme-preset="mondelez"] [data-sidebar="sidebar"] [data-slot="sidebar-group-label"] {
+  height: auto;
+  padding: 6px 12px 4px;
+  margin-bottom: 4px;
+  color: var(--sidebar-foreground);
+  font-size: 1rem;
+  line-height: 1.375rem;
+  font-weight: 600;
+}
+
+:root[data-theme-preset="mondelez"] [data-sidebar="sidebar"] [data-slot="sidebar-footer"] {
+  border-top: 1px solid oklch(1 0 0 / 20%);
+  padding: 12px;
+}
+
+/* Itens do menu (fora o logo do topo e a pílula de "Registrar agora"). O item que abre um grupo (Checklists) é o mesmo
+   botão com outro data-slot (o do Collapsible), daí o :is com o data-sidebar. */
+:root[data-theme-preset="mondelez"]
+  [data-sidebar="sidebar"]
+  [data-slot="sidebar-content"]
+  :is([data-slot="sidebar-menu-button"], [data-sidebar="menu-button"]):not([class*="bg-primary"]) {
+  gap: 20px;
+  padding-inline: 12px;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 400;
+  color: var(--sidebar-foreground);
+}
+
+:root[data-theme-preset="mondelez"]
+  [data-sidebar="sidebar"]
+  [data-slot="sidebar-content"]
+  :is([data-slot="sidebar-menu-button"], [data-sidebar="menu-button"]):not([class*="bg-primary"])
+  > svg {
+  width: 20px;
+  height: 20px;
+  stroke-width: 1.75;
+}
+
+/* 40 px com ponteiro fino (no toque, os 56 px da camada de toque). */
+@media (pointer: fine) {
+  :root[data-theme-preset="mondelez"]
+    [data-sidebar="sidebar"]
+    [data-slot="sidebar-content"]
+    :is([data-slot="sidebar-menu-button"], [data-sidebar="menu-button"]):not([class*="bg-primary"]) {
+    height: 40px;
+  }
+}
+
 :root[data-theme-preset="mondelez"] [data-sidebar="sidebar"] [data-slot="sidebar-menu-button"][data-active="true"] {
-  background-color: oklch(1 0 0 / 16%);
+  background-color: oklch(1 0 0 / 10%);
+  font-weight: 500;
+}
+
+/* "Registrar agora": a pílula branca, a ação de maior ênfase da sidebar. */
+:root[data-theme-preset="mondelez"] [data-sidebar="sidebar"] [data-slot="sidebar-menu-button"][class*="bg-primary"] {
+  border-radius: 9999px;
+  font-weight: 500;
+}
+
+/* Cards da sidebar (pedido de ajuda): vidro escuro, não um cartão branco no meio do preto. */
+:root[data-theme-preset="mondelez"] [data-sidebar="sidebar"] [data-slot="card"] {
+  box-shadow: inset 0 0 0 1px oklch(1 0 0 / 10%);
+  color: var(--sidebar-foreground);
 }
 
 /* ---------------------------------------------------------------------------------------------------------------- */
