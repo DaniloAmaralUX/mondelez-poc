@@ -31,7 +31,7 @@ export function SsoButton({ className, ...props }: React.ComponentProps<typeof B
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="secondary" className={cn(className)} {...props}>
+        <Button variant="outline" className={cn("h-11", className)} {...props}>
           <Building2 className="size-4" />
           Entrar com SSO corporativo
         </Button>

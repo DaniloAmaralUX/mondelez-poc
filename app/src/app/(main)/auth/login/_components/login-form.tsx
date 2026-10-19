@@ -38,8 +38,12 @@ type FormValues = z.infer<typeof formSchema>;
  * entre as opções (spacing 3), quebra em linhas quando não cabe. A escolhida se lê de longe: borda e fundo da cor
  * primária e um ✓ (não só a cor), no mesmo padrão das respostas C/NC do checklist.
  */
+/**
+ * Opção de linha e posto (v0.7, docs/20b): contorno fino neutro e sombra curta, como um controle; escolhida, o roxo da
+ * marca em três pistas (contorno, fundo tingido, texto) mais o ✓, que carrega o estado sem depender da cor.
+ */
 const OPCAO =
-  "min-w-0 flex-1 basis-16 toque:text-base data-[state=on]:border-primary/40 data-[state=on]:bg-primary/10 data-[state=on]:text-primary";
+  "min-w-0 flex-1 basis-16 border-border bg-card shadow-xs toque:text-base data-[state=on]:border-primary data-[state=on]:bg-accent data-[state=on]:font-medium data-[state=on]:text-accent-foreground";
 
 function apenasDigitos(texto: string, tamanho: number) {
   return texto.replace(/\D/g, "").slice(0, tamanho);

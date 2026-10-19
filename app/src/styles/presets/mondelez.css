@@ -4,23 +4,26 @@ value: mondelez
 */
 
 /*
- * Tema Mondelēz (v0.6, docs/19). Cores do brand book Mondelēz International (2019) e do site institucional, em OKLCH.
- * O acabamento dos componentes (sombras, tipografia, toque) é o do tema Apple (tema-apple.css vale para os dois); a
- * marca (fontes, sidebar roxa, títulos) fica em src/styles/tema-mondelez.css.
+ * Tema Mondelēz, v0.7 (docs/20b): "campo roxo refinado". Cores do brand book Mondelēz International (2019) em OKLCH.
+ * O campo roxo da sinalização da marca (#4F2170, a cor do logo) fica na sidebar e no painel do login, com o logo em
+ * branco; o resto é quieto e preciso, no espírito de Jakub Krehel: tela branca com um traço do creme da marca, cards
+ * brancos, divisórias, controles e textos em cinza neutro (sem o bege da v0.6), raio de 10 px, sombras em camadas curtas, e o roxo só na ação principal, no
+ * selecionado e no foco. O acabamento por data-slot é o de tema-apple.css; a marca (fontes, sidebar, login) fica em
+ * tema-mondelez.css.
  *
- * - Fundo creme do site (#FAF3E7) com cards brancos; a sidebar é o "campo roxo" da sinalização da marca (#4F2170, a
- *   cor do logo), com o logo em branco.
- * - Acento único: roxo MDLZ World #4F2170 (branco sobre ele: 11,8:1). Texto #262626 e secundário Cool Grey #666666
- *   (5,2:1 sobre o creme, 5,7:1 sobre o card).
- * - Estados nas cores de apoio da marca: Go Green (ok), Golden Wheat (atenção), Tasty Red (erro), Cool Blue (info).
- *   As telas usam as cores do Tailwind (green, amber, red, sky...); aqui elas são redefinidas com a luminosidade da
- *   rampa do Tailwind (os pares de contraste continuam valendo) e o matiz e a saturação da marca. As cores da marca
- *   caem nos degraus de luminosidade mais próxima (green-700 = #287819, red-800 = #A52323, amber-500 = #EAAB5E...).
+ * Contraste medido (culori, WCAG 2), claro / escuro: texto no card 15,1 / 16,2; secundário no card 5,7 / 7,8 e na tela
+ * 5,5 / 8,4; texto da ação no roxo 11,8 / 7,9; borda de campo 3,7 / 3,9 e anel de foco 3,7 / 9,3 (componentes, mínimo
+ * 3:1); gráficos 1 a 5 no card de 3,5 a 6,6 no claro e de 6,9 a 9,0 no escuro. No escuro, a ação vira o lilás claro com
+ * texto roxo: o roxo escuro como texto não chegava a 4,5:1.
+ *
+ * Estados nas cores de apoio da marca: Go Green (ok), Golden Wheat (atenção), Tasty Red (erro), Cool Blue (info). As
+ * telas usam as cores do Tailwind (green, amber, red, sky...); aqui elas são redefinidas com a luminosidade da rampa
+ * do Tailwind (os pares de contraste continuam valendo) e o matiz e a saturação da marca.
  */
 
 :root[data-theme-preset="mondelez"] {
-  --radius: 0.875rem;
-  --background: oklch(0.9663 0.0176 81.3);
+  --radius: 0.625rem;
+  --background: oklch(0.984 0.002 81.3);
   --foreground: oklch(0.2686 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.2686 0 0);
@@ -28,39 +31,46 @@ value: mondelez
   --popover-foreground: oklch(0.2686 0 0);
   --primary: oklch(0.3558 0.1324 307.7);
   --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.9385 0.0205 79.5);
+  --secondary: oklch(0.958 0 0);
   --secondary-foreground: oklch(0.2686 0 0);
-  --muted: oklch(0.9455 0.0185 80);
+  --muted: oklch(0.965 0 0);
   --muted-foreground: oklch(0.5103 0 0);
-  --accent: oklch(0.943 0.022 310.4);
+  --accent: oklch(0.953 0.018 310.4);
   --accent-foreground: oklch(0.3558 0.1324 307.7);
   --destructive: oklch(0.4735 0.1663 26.4);
-  --border: oklch(0.9 0.022 78);
-  --input: oklch(0.855 0.024 78);
-  --ring: oklch(0.4879 0.1069 309.6 / 55%);
+  --border: oklch(0.915 0 0);
+  --input: oklch(0.6167 0 0);
+  --ring: oklch(0.6219 0.0757 310.4);
   --chart-1: oklch(0.4879 0.1069 309.6);
-  --chart-2: oklch(0.704 0.1539 63.3);
+  --chart-2: oklch(0.64 0.146 63.3);
   --chart-3: oklch(0.5258 0.1154 249.5);
-  --chart-4: oklch(0.6758 0.1044 140.5);
+  --chart-4: oklch(0.5047 0.1493 140.9);
   --chart-5: oklch(0.5918 0.0495 64.4);
   --sidebar: oklch(0.3558 0.1324 307.7);
   --sidebar-foreground: oklch(1 0 0);
   --sidebar-primary: oklch(1 0 0);
   --sidebar-primary-foreground: oklch(0.3558 0.1324 307.7);
-  --sidebar-accent: oklch(1 0 0 / 14%);
+  --sidebar-accent: oklch(1 0 0 / 10%);
   --sidebar-accent-foreground: oklch(1 0 0);
-  --sidebar-border: oklch(1 0 0 / 12%);
-  --sidebar-ring: oklch(1 0 0 / 60%);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(1 0 0 / 70%);
 
-  /* Sombras com um pouco do roxo no lugar do preto puro: sobre o creme, sombra neutra fica suja. */
-  --shadow-2xs: 0 1px 1px oklch(0.28 0.06 308 / 4%);
-  --shadow-xs: 0 1px 2px oklch(0.28 0.06 308 / 5%);
-  --shadow-sm: 0 1px 2px oklch(0.28 0.06 308 / 5%), 0 2px 6px oklch(0.28 0.06 308 / 5%);
-  --shadow: 0 1px 2px oklch(0.28 0.06 308 / 5%), 0 4px 12px oklch(0.28 0.06 308 / 6%);
-  --shadow-md: 0 2px 4px oklch(0.28 0.06 308 / 5%), 0 8px 20px oklch(0.28 0.06 308 / 8%);
-  --shadow-lg: 0 4px 8px oklch(0.28 0.06 308 / 5%), 0 16px 32px oklch(0.28 0.06 308 / 10%);
-  --shadow-xl: 0 8px 16px oklch(0.28 0.06 308 / 7%), 0 24px 48px oklch(0.28 0.06 308 / 12%);
-  --shadow-2xl: 0 24px 64px oklch(0.28 0.06 308 / 18%);
+  --selecao: oklch(1 0 0 / 14%);
+  --selecao-texto: oklch(1 0 0);
+  --cor-logo: #ffffff;
+  --hairline: oklch(0 0 0 / 7%);
+  --sombra-cartao:
+    0 0 0 1px oklch(0.2686 0.02 81.3 / 6%), 0 1px 2px -1px oklch(0 0 0 / 6%), 0 2px 4px 0 oklch(0 0 0 / 4%);
+  --sombra-controle: 0 0 0 1px oklch(0 0 0 / 8%), 0 1px 2px 0 oklch(0 0 0 / 6%);
+
+  --shadow-2xs: 0 1px 1px oklch(0 0 0 / 4%);
+  --shadow-xs: 0 1px 2px oklch(0 0 0 / 5%);
+  --shadow-sm: 0 1px 2px -1px oklch(0 0 0 / 8%), 0 2px 4px oklch(0 0 0 / 4%);
+  --shadow: 0 1px 2px -1px oklch(0 0 0 / 8%), 0 4px 8px -2px oklch(0 0 0 / 6%);
+  --shadow-md: 0 2px 4px -2px oklch(0 0 0 / 8%), 0 8px 16px -4px oklch(0 0 0 / 8%);
+  --shadow-lg: 0 4px 8px -4px oklch(0 0 0 / 8%), 0 16px 32px -8px oklch(0 0 0 / 12%);
+  --shadow-xl: 0 8px 16px -8px oklch(0 0 0 / 10%), 0 24px 48px -12px oklch(0 0 0 / 16%);
+  --shadow-2xl: 0 32px 64px -16px oklch(0 0 0 / 22%);
 
   /*
    * Rampas de estado na paleta da marca (mesmos nomes do Tailwind; ver o comentário do topo). Exceção à luminosidade do
@@ -235,37 +245,44 @@ value: mondelez
 }
 
 .dark:root[data-theme-preset="mondelez"] {
-  --background: oklch(0.165 0.022 308);
+  --background: oklch(0.16 0.004 81.3);
   --foreground: oklch(0.9663 0.0176 81.3);
-  --card: oklch(0.215 0.03 308);
+  --card: oklch(0.205 0.005 81.3);
   --card-foreground: oklch(0.9663 0.0176 81.3);
-  --popover: oklch(0.24 0.032 308);
+  --popover: oklch(0.23 0.005 81.3);
   --popover-foreground: oklch(0.9663 0.0176 81.3);
-  --primary: oklch(0.56 0.13 308);
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.27 0.032 308);
+  --primary: oklch(0.8 0.08 310.4);
+  --primary-foreground: oklch(0.2799 0.0975 307.7);
+  --secondary: oklch(0.26 0.005 81.3);
   --secondary-foreground: oklch(0.9663 0.0176 81.3);
-  --muted: oklch(0.27 0.032 308);
-  --muted-foreground: oklch(0.75 0.015 308);
-  --accent: oklch(0.29 0.045 308);
-  --accent-foreground: oklch(0.9663 0.0176 81.3);
-  --destructive: oklch(0.68 0.15 24);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 16%);
-  --ring: oklch(0.7 0.1 310 / 60%);
-  --chart-1: oklch(0.7 0.1 310);
-  --chart-2: oklch(0.785 0.12 70);
-  --chart-3: oklch(0.716 0.068 246.7);
+  --muted: oklch(0.255 0.005 81.3);
+  --muted-foreground: oklch(0.74 0.01 81.3);
+  --accent: oklch(0.3 0.045 308);
+  --accent-foreground: oklch(0.9 0.04 310.4);
+  --destructive: oklch(0.72 0.13 22);
+  --border: oklch(1 0 0 / 9%);
+  --input: oklch(0.56 0.005 81.3);
+  --ring: oklch(0.8 0.08 310.4);
+  --chart-1: oklch(0.72 0.1 310.4);
+  --chart-2: oklch(0.7854 0.1197 70);
+  --chart-3: oklch(0.7162 0.0678 246.7);
   --chart-4: oklch(0.72 0.1 140.6);
   --chart-5: oklch(0.7585 0.0269 59.8);
-  --sidebar: oklch(0.24 0.075 308);
+  --sidebar: oklch(0.2799 0.0975 307.7);
   --sidebar-foreground: oklch(0.9663 0.0176 81.3);
   --sidebar-primary: oklch(0.9663 0.0176 81.3);
-  --sidebar-primary-foreground: oklch(0.28 0.098 307.7);
-  --sidebar-accent: oklch(1 0 0 / 10%);
+  --sidebar-primary-foreground: oklch(0.2799 0.0975 307.7);
+  --sidebar-accent: oklch(1 0 0 / 9%);
   --sidebar-accent-foreground: oklch(1 0 0);
   --sidebar-border: oklch(1 0 0 / 8%);
-  --sidebar-ring: oklch(1 0 0 / 50%);
+  --sidebar-ring: oklch(1 0 0 / 60%);
+
+  --selecao: oklch(1 0 0 / 12%);
+  --selecao-texto: oklch(1 0 0);
+  --cor-logo: #ffffff;
+  --hairline: oklch(1 0 0 / 9%);
+  --sombra-cartao: 0 0 0 1px oklch(1 0 0 / 8%);
+  --sombra-controle: 0 0 0 1px oklch(1 0 0 / 12%);
 
   --shadow-2xs: 0 0 0 transparent;
   --shadow-xs: 0 0 0 transparent;

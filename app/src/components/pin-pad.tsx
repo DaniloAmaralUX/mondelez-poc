@@ -18,7 +18,9 @@ const TECLAS = ["1", "2", "3", "4", "5", "6", "7", "8", "9"] as const;
  * `h-16` e não `min-h-16`: a camada de toque (src/styles/tablet.css) dá o piso de 56 px por min-height, e um min-h-*
  * aqui perderia para ela. Pressão com escala só sem "reduzir movimento".
  */
-const TECLA = "h-16 w-full text-2xl font-medium tabular-nums motion-safe:active:scale-[0.97]";
+// Teclas cheias no cinza neutro do tema, sem contorno (teclado do iOS): o teclado é um bloco só, quieto; o roxo fica no
+// Entrar. O retorno do toque é o press do tema (tema-apple.css); um scale próprio aqui somava com ele (0,97 × 0,97).
+const TECLA = "h-16 w-full rounded-2xl text-[1.625rem] font-normal tabular-nums";
 
 /**
  * Tremida curta no erro, dentro do teto de 300 ms para retorno de interface. Em `x` (e não numa string de transform):
@@ -175,7 +177,7 @@ export function PinPad({
           <span
             key={posicao}
             className={cn(
-              "size-4 toque:size-5 rounded-full border-2 border-input transition-colors duration-150",
+              "size-3.5 toque:size-4 rounded-full border-[1.5px] border-input transition-colors duration-150",
               posicao < valor.length && "border-primary bg-primary",
               temErro && "border-destructive",
             )}
@@ -188,14 +190,14 @@ export function PinPad({
 
       <div className="grid grid-cols-3 gap-3">
         {TECLAS.map((digito) => (
-          <Button key={digito} type="button" variant="outline" onClick={() => digitar(digito)} className={TECLA}>
+          <Button key={digito} type="button" variant="secondary" onClick={() => digitar(digito)} className={TECLA}>
             {digito}
           </Button>
         ))}
         <Button type="button" variant="ghost" aria-label="Apagar o último número" onClick={apagar} className={TECLA}>
           <Delete aria-hidden="true" className="size-6" />
         </Button>
-        <Button type="button" variant="outline" onClick={() => digitar("0")} className={TECLA}>
+        <Button type="button" variant="secondary" onClick={() => digitar("0")} className={TECLA}>
           0
         </Button>
         {teclaDeAcao ?? <span aria-hidden="true" />}
