@@ -1,6 +1,6 @@
 "use client";
 
-import { useId } from "react";
+import Link from "next/link";
 
 import { Clock } from "lucide-react";
 
@@ -16,12 +16,11 @@ import { Duracao } from "./duracao";
 /**
  * Tempo até o fim do turno, no lugar do timer de foco do template. v0.4 (docs/14): widget do iOS, com o número grande
  * em tabular-nums e a barra do turno andando (contexto que simplifica, HIG "Simplicity"), na mesma altura do
- * "Fazer agora" ao lado.
+ * "Fazer agora" ao lado. v0.5: "Passar turno" leva à troca de turno, que já vem preenchida com os números do posto.
  */
 export function FocusCard() {
   const agora = useAgora();
   const turno = turnoAtual(agora);
-  const ajudaId = useId();
   const total = turno.fim.getTime() - turno.inicio.getTime();
   const passado = Math.min(Math.max(agora.getTime() - turno.inicio.getTime(), 0), total);
   const percentual = total > 0 ? Math.round((passado / total) * 100) : 0;
@@ -35,8 +34,11 @@ export function FocusCard() {
           {formatarHora(turno.inicio)}–{formatarHora(turno.fim)}
         </CardDescription>
         <CardAction>
-          <Button variant="secondary" size="sm" className="toque:text-sm" disabled aria-describedby={ajudaId}>
-            Passar turno
+          <Button asChild variant="secondary" size="sm" className="toque:text-sm">
+            {/* prefetch: a troca de turno em cache para abrir sem rede (lib/rotas.ts). */}
+            <Link prefetch href="/dashboard/troca-de-turno">
+              Passar turno
+            </Link>
           </Button>
         </CardAction>
       </CardHeader>
@@ -45,10 +47,7 @@ export function FocusCard() {
           <Duracao ms={turno.fim.getTime() - agora.getTime()} />
         </div>
         <Progress value={percentual} aria-label={`${percentual}% do turno passado`} className="h-1.5 bg-secondary" />
-        {/* Botão desabilitado sem explicação não serve no toque (não há tooltip). */}
-        <p id={ajudaId} className="text-muted-foreground text-xs toque:text-sm">
-          {percentual}% do turno passado. Passar turno pelo app: em breve.
-        </p>
+        <p className="text-muted-foreground text-xs toque:text-sm">{percentual}% do turno passado.</p>
       </CardContent>
     </Card>
   );
