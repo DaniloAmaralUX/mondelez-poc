@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rotinas Operacionais · Status dos jobs e funcionalidades</title>
+<style>
+  :root {
+    --bg: var(--background, #f5f5f7);
+    --fg: var(--foreground, #1d1d1f);
+    --card-bg: var(--card, #ffffff);
+    --mut: var(--muted-foreground, #6e6e73);
+    --line: var(--border, #e3e3e8);
+    --ok: var(--success, #1f8a4c);
+    --part: var(--warning, #b86e00);
+    --todo: var(--destructive, #c4312b);
+    --acc: var(--primary, #6d42c2);
+    --r: 14px;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, "Inter", system-ui, sans-serif); color: var(--fg); background: var(--bg); line-height: 1.45; -webkit-font-smoothing: antialiased; }
+  main { max-width: 1120px; margin: 0 auto; }
+  h1 { font-size: 26px; letter-spacing: -0.02em; margin: 0 0 4px; font-weight: 650; text-wrap: balance; }
+  h2 { font-size: 18px; letter-spacing: -0.012em; margin: 32px 0 4px; font-weight: 650; }
+  h3 { font-size: 14px; margin: 18px 0 8px; font-weight: 650; }
+  p.sub, .note { color: var(--mut); font-size: 13.5px; margin: 0 0 12px; text-wrap: pretty; }
+
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin-top: 16px; }
+  .kpi { background: var(--card-bg); border: 1px solid var(--line); border-radius: var(--r); padding: 14px 16px; }
+  .kpi .lbl { font-size: 12px; color: var(--mut); font-weight: 600; }
+  .kpi .num { font-size: 28px; font-weight: 650; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; margin: 2px 0 8px; }
+  .kpi .num small { font-size: 14px; color: var(--mut); font-weight: 500; }
+  .bar { display: flex; height: 6px; border-radius: 99px; overflow: hidden; background: var(--line); }
+  .bar i { display: block; height: 100%; }
+  .bar .b-ok { background: var(--ok); } .bar .b-part { background: var(--part); } .bar .b-todo { background: var(--todo); opacity: .55; }
+  .legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: var(--mut); margin-top: 12px; }
+  .legend span::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; }
+  .legend .l-ok::before { background: var(--ok); } .legend .l-part::before { background: var(--part); } .legend .l-todo::before { background: var(--todo); }
+
+  .card { background: var(--card-bg); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th { text-align: left; font-size: 11.5px; text-transform: uppercase; letter-spacing: .04em; color: var(--mut); font-weight: 600; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+  td { padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:last-child td { border-bottom: 0; }
+  td.st { width: 92px; white-space: nowrap; }
+  td.pri { width: 44px; font-weight: 650; color: var(--mut); font-variant-numeric: tabular-nums; }
+  td .ev { display: block; color: var(--mut); font-size: 12.5px; margin-top: 2px; }
+  .tag { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 2px 9px; border-radius: 99px; }
+  .tag::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .t-ok { color: var(--ok); background: color-mix(in srgb, var(--ok) 13%, transparent); }
+  .t-part { color: var(--part); background: color-mix(in srgb, var(--part) 14%, transparent); }
+  .t-todo { color: var(--todo); background: color-mix(in srgb, var(--todo) 11%, transparent); }
+  .t-off { color: var(--mut); background: color-mix(in srgb, var(--mut) 12%, transparent); }
+
+  .journey { display: grid; grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); gap: 8px; }
+  .step { background: var(--card-bg); border: 1px solid var(--line); border-radius: 12px; padding: 12px; border-top: 4px solid var(--line); }
+  .step.s-ok { border-top-color: var(--ok); } .step.s-part { border-top-color: var(--part); } .step.s-todo { border-top-color: var(--todo); }
+  .step b { display: block; font-size: 13px; }
+  .step .mods { font-size: 12px; color: var(--mut); margin-top: 4px; }
+  .step .tag { margin-top: 8px; }
+
+  .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
+  .next { counter-reset: n; display: grid; gap: 8px; }
+  .next .it { background: var(--card-bg); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px 12px 48px; position: relative; font-size: 13.5px; }
+  .next .it::before { counter-increment: n; content: counter(n); position: absolute; left: 14px; top: 12px; width: 22px; height: 22px; border-radius: 7px; background: var(--acc); color: #fff; font-size: 12px; font-weight: 700; display: grid; place-items: center; }
+  .next .it b { display: block; }
+  .next .it span { color: var(--mut); font-size: 12.5px; }
+  ul.extra { margin: 0; padding: 12px 14px 12px 32px; font-size: 13.5px; }
+  ul.extra li { margin: 3px 0; }
+  .src { font-size: 12px; color: var(--mut); margin-top: 28px; }
+  @media (max-width: 640px) { td.st { width: auto; } th.hide, td.hide { display: none; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>Status dos Jobs to be Done e das funcionalidades</h1>
+  <p class="sub">Protótipo "Rotinas Operacionais" (Mondelez VSA, Bis 2 · Embalagem). Cruzamento dos documentos oficiais (Briefing Porto Digital V1, Proposta Pitang V1, material Mondelez V2) e dos documentos do projeto que derivam deles (04 Jobs to be Done, 05 Requisitos, 06 MoSCoW) com o código na versão v0.4 (commit edd480f, 19/10/2026).</p>
+
+  <div class="kpis">
+    <div class="kpi"><div class="lbl">Jobs P0 (núcleo)</div><div class="num">6 <small>de 13 feitos · 2 parciais</small></div>
+      <div class="bar"><i class="b-ok" style="width:46%"></i><i class="b-part" style="width:15%"></i><i class="b-todo" style="width:39%"></i></div></div>
+    <div class="kpi"><div class="lbl">Todos os jobs</div><div class="num">6 <small>de 31 feitos · 7 parciais</small></div>
+      <div class="bar"><i class="b-ok" style="width:19.4%"></i><i class="b-part" style="width:22.6%"></i><i class="b-todo" style="width:58%"></i></div></div>
+    <div class="kpi"><div class="lbl">MoSCoW · Must</div><div class="num">9 <small>de 15 feitos · 1 parcial</small></div>
+      <div class="bar"><i class="b-ok" style="width:60%"></i><i class="b-part" style="width:7%"></i><i class="b-todo" style="width:33%"></i></div></div>
+    <div class="kpi"><div class="lbl">Módulos do V2</div><div class="num">4 <small>de 16 completos · 3 parciais</small></div>
+      <div class="bar"><i class="b-ok" style="width:25%"></i><i class="b-part" style="width:19%"></i><i class="b-todo" style="width:56%"></i></div></div>
+  </div>
+  <div class="legend"><span class="l-ok">Feito</span><span class="l-part">Parcial</span><span class="l-todo">Falta</span></div>
+
+  <h2>O turno de ponta a ponta</h2>
+  <p class="sub">Mapa do job (doc 04). Hoje o operador assume, prepara e registra desvios, e a liderança é avisada e trata. Produzir e apontar, encerrar o turno e analisar ainda não existem.</p>
+  <div class="journey">
+    <div class="step s-part"><b>1. Assumir</b><div class="mods">Passagem do turno anterior (leitura), recados. Sem plano, agenda e nível de risco</div><span class="tag t-part">Parcial</span></div>
+    <div class="step s-ok"><b>2. Preparar</b><div class="mods">Pré-partida, PPLI &amp; Centerlining, Manutenção autônoma</div><span class="tag t-ok">Feito</span></div>
+    <div class="step s-todo"><b>3. Produzir e apontar</b><div class="mods">Hora x Hora, Sobrepeso só com "Concluir"; Rastreabilidade com lotes, sem foto</div><span class="tag t-todo">Falta</span></div>
+    <div class="step s-part"><b>4. Desviar</b><div class="mods">NC com justificativa e "Registrar desvio". Falta MTBF, Book e IT/LPP</div><span class="tag t-part">Parcial</span></div>
+    <div class="step s-ok"><b>5. Tratar</b><div class="mods">Alertas: assumir, registrar ação, resolver, histórico, Teams simulado</div><span class="tag t-ok">Feito</span></div>
+    <div class="step s-todo"><b>6. Encerrar</b><div class="mods">Troca de turno e Relatório do turno "em breve"</div><span class="tag t-todo">Falta</span></div>
+    <div class="step s-todo"><b>7. Analisar</b><div class="mods">Histórico, tendências e comparação entre linhas</div><span class="tag t-todo">Falta</span></div>
+  </div>
+
+  <h2>Jobs to be Done por persona</h2>
+  <p class="sub">Todos os jobs do doc 04, com a prioridade dele e a evidência no protótipo.</p>
+
+  <h3>Operador · Alberto e Graziela</h3>
+  <div class="card"><table>
+    <tr><th>Pri</th><th>Job</th><th>Status</th></tr>
+    <tr><td class="pri">P0</td><td>Ver exatamente o que fazer e em que ordem no começo do turno<span class="ev">Minha Rotina: "Fazer agora" com prazo vivo, tarefas por prazo e criticidade, linha do turno</span></td><td class="st"><span class="tag t-ok">Feito</span></td></tr>
+    <tr><td class="pri">P0</td><td>Marcar cada item do checklist num toque, de luva, e só escrever na exceção<span class="ev">C/NC/N/A de 64 px no toque, "Restantes conformes", modo foco, rascunho salvo a cada item</span></td><td class="st"><span class="tag t-ok">Feito</span></td></tr>
+    <tr><td class="pri">P0</td><td>Registrar e justificar a NC ali mesmo, e quem decide ficar sabendo na hora<span class="ev">Justificativa obrigatória gera alerta A-NC para a liderança. Foto no desvio é decisão pendente (doc 13 §6)</span></td><td class="st"><span class="tag t-ok">Feito</span></td></tr>
+    <tr><td class="pri">P0</td><td>Apontar o tipo de falha num toque para o MTBF sair certo<span class="ev">Tela MTBF está em "Próximas telas"</span></td><td class="st"><span class="tag t-todo">Falta</span></td></tr>
+    <tr><td class="pri">P0</td><td>Apontar caixas quando fecha a hora e ver se está na meta<span class="ev">A tarefa Hora x Hora existe, mas só com "Concluir": sem apontamento, toneladas, GE nem farol</span></td><td class="st"><span class="tag t-todo">Falta</span></td></tr>
+    <tr><td class="pri">P0</td><td>Passagem de turno já preenchida com os meus números<span class="ev">"Passar turno" desabilitado ("em breve")</span></td><td class="st"><span class="tag t-todo">Falta</span></td></tr>
+    <tr><td class="pri">P0</td><td>Continuar registrando quando a rede cai<span class="ev">Fila local no IndexedDB, reenvio automático, selo de sincronização, service worker, simulação de queda no menu de demonstração</span></td><td class="st"><span class="tag t-ok">Feito</span></td></tr>
+    <tr><td class="pri">P1</td><td>Ter instrução de trabalho e book de defeitos do equipamento no tablet<span class="ev">"IT, LPP e book" em "Próximas telas"</span></td><td class="st"><span class="tag t-todo">Falta</span></td></tr>
+    <tr><td class="pri">P1</td><td>Pedir ajuda e saber que alguém viu<span class="ev">Só o texto "Precisa de ajuda?" na sidebar, sem ação</span></td><td class="st"><span class="tag t-todo">Falta</span></td></tr>
+    <tr><td class="pri">P1</td><td>Tirar a foto do produto acabado e ligar ao lote num fluxo só<span class="ev">Checklist de rastreabilidade com lotes do PA, do envoltório e da caixa. Sem câmera nem foto</span></td><td class="st"><span class="tag t-part">Parcial</span></td></tr>
+    <tr><td class="pri">P2</td><td>Consultar escala e avisos da fábrica no tablet<span class="ev">Recados aparecem na home (leitura). Escala falta</span></td><td class="st"><span class="tag t-part">Parcial</span></td></tr>
+    <tr><td class="pri">P2</td><td>Esforço reconhecido quando o turno sai todo certo<span class="ev">Sem gamificação nem indicador de "turno 100%"</span></td><td class="st"><span class="tag t-todo">Falta</span></td></tr>
+  </table></div>
+
+  <h3>Supervisão · Renata</h3>
+  <div class="card"><table>
+    <tr><th>Pri</th><th>Job</th><th>Status</th></tr>
+    <tr><td class="pri">P0</td><td>Ser avisada na hora quando um registro atrasa ou sai NC, com posto, responsável e criticidade<span class="ev">Regras A-ATRASO e A-NC, aviso na tela, sino com contagem, escalonamento a crítico após 30 min</span></td><td class="st"><span class="tag t-ok">Feito</span></td></tr>
+    <tr><td class="pri">P0</td><td>Registrar o que fez no alerta e fechá-lo, com rastro para auditoria<span class="ev">Assumir, Registrar ação e Resolver com autor e hora, histórico e desfazer</span></td><td class="st"><span class="tag t-ok">Feito</span></td></tr>
+    <tr><td class="pri">P0</td><td>Consolidado da linha (GE, toneladas, MTBF, maior parada, pendências) pronto na passagem<span class="ev">Depende de Hora x Hora, MTBF e Relatório do turno</span></td><td class="st"><span class="tag t-todo">Falta</span></td></tr>
+    <tr><td class="pri">P0</td><td>Ver o status de cada posto (feito, pendente, atrasado)<span class="ev">"Tarefas do posto" com contadores e situação, mas só para o posto Bis 2 · Embalagem</span></td><td class="st"><span class="tag t-part">Parcial</span></td></tr>
+    <tr><td class="pri">P1</td><td>Ver o pedido de ajuda com o contexto (hora, equipamento, falha)<span class="ev">Não há pedido de ajuda</span></td><td class="st"><span class="tag t-todo">Falta</span></td></tr>
+    <tr><td class="pri">P1</td><td>Ver paradas e falhas da hora quando o GE cai<span class="ev">Sem GE nem falhas apontadas</span></td><td class="st"><span class="tag t-todo">Falta</span></td></tr>
+    <tr><td class="pri">P2</td><td>Ver o histórico de um alerta que se repete<span class="ev">Regra A-REPET não implementada; histórico só dentro de cada alerta</span></td><td class="st"><span class="tag t-todo">Falta</span></td></tr>
+  </table></div>
+
+  <div class="grid2">
+    <div>
+      <h3>Gerência de Seção · Marcos</h3>
+      <div class="card"><table>
+        <tr><th>Pri</th><th>Job</th><th>Status</th></tr>
+        <tr><td class="pri">P0</td><td>Relatório por linha pronto no fim do turno</td><td class="st"><span class="tag t-todo">Falta</span></td></tr>
+        <tr><td class="pri">P0</td><td>Ser notificado de desvio crítico no Teams ou e-mail<span class="ev">Envio simulado registrado no alerta ("Teams enviado"); sem tela de canais</span></td><td class="st"><span class="tag t-part">Parcial</span></td></tr>
+        <tr><td class="pri">P1</td><td>Comparar linhas e turnos lado a lado</td><td class="st"><span class="tag t-todo">Falta</span></td></tr>
+        <tr><td class="pri">P1</td><td>Publicar parada, visita ou evento na agenda</td><td class="st"><span class="tag t-todo">Falta</span></td></tr>
+        <tr><td class="pri">P2</td><td>Achar qualquer registro com evidência e autor<span class="ev">Carimbo completo em cada registro; sem busca nem histórico</span></td><td class="st"><span class="tag t-part">Parcial</span></td></tr>
+        <tr><td class="pri">P2</td><td>Ver o padrão de falhas que se repetem</td><td class="st"><span class="tag t-todo">Falta</span></td></tr>
+      </table></div>
+    </div>
+    <div>
+      <h3>Especialista · Juliana</h3>
+      <div class="card"><table>
+        <tr><th>Pri</th><th>Job</th><th>Status</th></tr>
+        <tr><td class="pri">P1</td><td>Publicar um padrão e garantir que a versão antiga saiu do posto<span class="ev">Versão do formulário no carimbo; sem publicação pela tela</span></td><td class="st"><span class="tag t-part">Parcial</span></td></tr>
+        <tr><td class="pri">P1</td><td>Ver a NC do meu domínio com foto e contexto na hora<span class="ev">Alerta A-NC com contexto e registro de origem; sem foto</span></td><td class="st"><span class="tag t-part">Parcial</span></td></tr>
+        <tr><td class="pri">P2</td><td>Ver NCs e falhas por equipamento e turno</td><td class="st"><span class="tag t-todo">Falta</span></td></tr>
+      </table></div>
+      <h3>Assistência · Carlos</h3>
+      <div class="card"><table>
+        <tr><th>Pri</th><th>Job</th><th>Status</th></tr>
+        <tr><td class="pri">P1</td><td>Importar e publicar a planilha do plano de produção</td><td class="st"><span class="tag t-todo">Falta</span></td></tr>
+        <tr><td class="pri">P1</td><td>Editar a escala uma vez e todos verem</td><td class="st"><span class="tag t-todo">Falta</span></td></tr>
+        <tr><td class="pri">P2</td><td>Cadastrar um operador novo e ligá-lo ao posto</td><td class="st"><span class="tag t-todo">Falta</span></td></tr>
+      </table></div>
+    </div>
+  </div>
+
+  <h2>Funcionalidades (MoSCoW do protótipo)</h2>
+  <p class="sub">Lista do doc 06, com o que está no código hoje.</p>
+
+  <h3>Must · sem isso a demo não prova a tese</h3>
+  <div class="card"><table>
+    <tr><th>Funcionalidade</th><th class="hide">Evidência</th><th>Status</th></tr>
+    <tr><td>Login por matrícula + PIN e contexto Chocolate → Bis 2 → Embalagem</td><td class="hide">Teclado de PIN, SSO simulado, limite de tentativas, tela "Quem está no posto?"</td><td class="st"><span class="tag t-ok">Feito</span></td></tr>
+    <tr><td>Minha Rotina do turno com prazos, estados e ordem por criticidade</td><td class="hide">Motor de rotina com testes; a/fazer, atrasada, com NC, feita, mais tarde</td><td class="st"><span class="tag t-ok">Feito</span></td></tr>
+    <tr><td>Motor de formulários: C/NC/NA, numérico, texto, NC com justificativa, autosave</td><td class="hide">Tipos cnc, numero (com faixa) e texto. Foto, seleção e data do RF-04 ainda não</td><td class="st"><span class="tag t-ok">Feito</span></td></tr>
+    <tr><td>PPLI &amp; Centerlining completo</td><td class="hide">Plano por equipamento (Loeschpack 2, 4 e 5), parâmetros com faixa, etapas, revisão, NC vira alerta</td><td class="st"><span class="tag t-ok">Feito</span></td></tr>
+    <tr><td>Hora x Hora com toneladas, ton/h, GE, meta, farol e gráfico</td><td class="hide">"Próximas telas"</td><td class="st"><span class="tag t-todo">Falta</span></td></tr>
+    <tr><td>MTBF por toque com timeline e Pareto</td><td class="hide">"Próximas telas"</td><td class="st"><span class="tag t-todo">Falta</span></td></tr>
+    <tr><td>Alertas: criticidade, responsável, idade, origem, tratar e resolver, log do Teams</td><td class="hide">Lista e detalhe lado a lado. Regras A-GE, A-META e A-REPET dependem de Hora x Hora e MTBF</td><td class="st"><span class="tag t-ok">Feito</span></td></tr>
+    <tr><td>Troca de turno guiada, pré-preenchida, com aceite</td><td class="hide">"Próximas telas"</td><td class="st"><span class="tag t-todo">Falta</span></td></tr>
+    <tr><td>Relatório do turno por linha (BIS 1–4)</td><td class="hide">"Próximas telas"</td><td class="st"><span class="tag t-todo">Falta</span></td></tr>
+    <tr><td>Três personas demonstráveis com permissões</td><td class="hide">Seis pessoas e cinco perfis no seed. Permissão é binária (operação × liderança); gerência sem telas próprias</td><td class="st"><span class="tag t-part">Parcial</span></td></tr>
+    <tr><td>Rastreabilidade: carimbo completo em cada registro</td><td class="hide">Autor, turno, posto, equipamento, versão, dispositivo e hora no documento do registro</td><td class="st"><span class="tag t-ok">Feito</span></td></tr>
+    <tr><td>Indicador de sincronização e simulação de queda de rede</td><td class="hide">Selo no header, estado por registro, "Simular sem rede"</td><td class="st"><span class="tag t-ok">Feito</span></td></tr>
+    <tr><td>Painel de demonstração (persona, relógio, rede, reset)</td><td class="hide">Menu do relógio e troca de pessoa no avatar</td><td class="st"><span class="tag t-ok">Feito</span></td></tr>
+    <tr><td>Design para luva, landscape e portrait</td><td class="hide">Camada de toque de 56–64 px (v0.3) e estética Apple por largura (v0.4). Falta validar num tablet real</td><td class="st"><span class="tag t-ok">Feito</span></td></tr>
+    <tr><td>Deploy na Vercel com preview por PR e seed resetável</td><td class="hide">Repositório sem remoto configurado; commits só locais</td><td class="st"><span class="tag t-todo">Falta</span></td></tr>
+  </table></div>
+
+  <h3>Should · assim que o núcleo estiver sólido</h3>
+  <div class="card"><table>
+    <tr><th>Funcionalidade</th><th class="hide">Evidência</th><th>Status</th></tr>
+    <tr><td>Plano de produção com importação de Excel</td><td class="hide">—</td><td class="st"><span class="tag t-todo">Falta</span></td></tr>
+    <tr><td>Book de defeitos e IT/LPP por equipamento</td><td class="hide">—</td><td class="st"><span class="tag t-todo">Falta</span></td></tr>
+    <tr><td>Escala e Agenda/recados</td><td class="hide">Recados na home; escala e agenda completas não</td><td class="st"><span class="tag t-part">Parcial</span></td></tr>
+    <tr><td>Rastreabilidade de PA com câmera e lotes</td><td class="hide">Lotes sim; câmera e foto obrigatória não</td><td class="st"><span class="tag t-part">Parcial</span></td></tr>
+    <tr><td>HSE: pré-partida por máquina e nível de risco da linha</td><td class="hide">Pré-partida sim; semáforo de risco não</td><td class="st"><span class="tag t-part">Parcial</span></td></tr>
+    <tr><td>Sobrepeso, Limpeza semanal e Manutenção autônoma pelo motor genérico</td><td class="hide">Limpeza e Manutenção sim; Sobrepeso só com "Concluir"</td><td class="st"><span class="tag t-part">Parcial</span></td></tr>
+    <tr><td>Pedido de ajuda contextual de qualquer tela</td><td class="hide">—</td><td class="st"><span class="tag t-todo">Falta</span></td></tr>
+    <tr><td>Dashboard gerencial por linha e turno</td><td class="hide">—</td><td class="st"><span class="tag t-todo">Falta</span></td></tr>
+    <tr><td>Histórico com filtros e exportação CSV</td><td class="hide">Só o histórico dentro de cada alerta</td><td class="st"><span class="tag t-todo">Falta</span></td></tr>
+    <tr><td>Status por posto para a supervisão</td><td class="hide">Um posto só (Tarefas do posto)</td><td class="st"><span class="tag t-part">Parcial</span></td></tr>
+    <tr><td>Estado compartilhado entre dois aparelhos</td><td class="hide">Sincroniza entre abas do mesmo navegador; sem banco</td><td class="st"><span class="tag t-todo">Falta</span></td></tr>
+  </table></div>
+
+  <h3>Could · se sobrar tempo</h3>
+  <div class="card"><table>
+    <tr><th>Funcionalidade</th><th class="hide">Evidência</th><th>Status</th></tr>
+    <tr><td>PWA instalável com service worker real</td><td class="hide">Serwist, manifesto, página offline</td><td class="st"><span class="tag t-ok">Feito</span></td></tr>
+    <tr><td>Modo escuro</td><td class="hide">Tema Apple com escuro em preto real</td><td class="st"><span class="tag t-ok">Feito</span></td></tr>
+    <tr><td>Exportar relatório do turno em PDF</td><td class="hide">Existe a impressão do registro do checklist; o relatório do turno não existe</td><td class="st"><span class="tag t-todo">Falta</span></td></tr>
+    <tr><td>Tendências e recorrência</td><td class="hide">—</td><td class="st"><span class="tag t-todo">Falta</span></td></tr>
+    <tr><td>Troubleshooting ligado a falhas</td><td class="hide">Fora do V2</td><td class="st"><span class="tag t-off">Fora do V2</span></td></tr>
+    <tr><td>Gamificação</td><td class="hide">—</td><td class="st"><span class="tag t-todo">Falta</span></td></tr>
+    <tr><td>Admin de rotinas e limiares pela tela</td><td class="hide">"Usuários" e "Perfis" em "Próximas telas"; seed em código</td><td class="st"><span class="tag t-todo">Falta</span></td></tr>
+  </table></div>
+
+  <h2>Os 16 módulos pedidos no V2</h2>
+  <div class="card"><table>
+    <tr><th>Módulo</th><th class="hide">Situação no protótipo</th><th>Status</th></tr>
+    <tr><td>PPLI &amp; Centerlining</td><td class="hide">Checklist completo por equipamento</td><td class="st"><span class="tag t-ok">Feito</span></td></tr>
+    <tr><td>Ferramentas de segurança (HSE)</td><td class="hide">Pré-partida; faltam PSM3, ferramentas, talhas, DDS e nível de risco</td><td class="st"><span class="tag t-part">Parcial</span></td></tr>
+    <tr><td>Manutenção autônoma</td><td class="hide">Checklist</td><td class="st"><span class="tag t-ok">Feito</span></td></tr>
+    <tr><td>Limpeza semanal</td><td class="hide">Checklist</td><td class="st"><span class="tag t-ok">Feito</span></td></tr>
+    <tr><td>Rastreabilidade de PA</td><td class="hide">Lotes e inspeção; sem foto</td><td class="st"><span class="tag t-part">Parcial</span></td></tr>
+    <tr><td>Alertas</td><td class="hide">Painel completo</td><td class="st"><span class="tag t-ok">Feito</span></td></tr>
+    <tr><td>Agenda da fábrica e recados</td><td class="hide">Recados na home</td><td class="st"><span class="tag t-part">Parcial</span></td></tr>
+    <tr><td>Hora x Hora</td><td class="hide">Tarefa sem tela</td><td class="st"><span class="tag t-todo">Falta</span></td></tr>
+    <tr><td>Sobrepeso, refugo e reprocesso</td><td class="hide">Tarefa sem tela</td><td class="st"><span class="tag t-todo">Falta</span></td></tr>
+    <tr><td>MTBF</td><td class="hide">—</td><td class="st"><span class="tag t-todo">Falta</span></td></tr>
+    <tr><td>Troca de turno</td><td class="hide">Tarefa existe; formulário não</td><td class="st"><span class="tag t-todo">Falta</span></td></tr>
+    <tr><td>Relatório do turno</td><td class="hide">—</td><td class="st"><span class="tag t-todo">Falta</span></td></tr>
+    <tr><td>Plano de produção</td><td class="hide">—</td><td class="st"><span class="tag t-todo">Falta</span></td></tr>
+    <tr><td>Instrução de trabalho e LPP</td><td class="hide">—</td><td class="st"><span class="tag t-todo">Falta</span></td></tr>
+    <tr><td>Book de defeitos</td><td class="hide">—</td><td class="st"><span class="tag t-todo">Falta</span></td></tr>
+    <tr><td>Escala</td><td class="hide">—</td><td class="st"><span class="tag t-todo">Falta</span></td></tr>
+  </table></div>
+
+  <h2>Definição de pronto do protótipo</h2>
+  <div class="card"><table>
+    <tr><th>Critério (doc 06)</th><th>Status</th></tr>
+    <tr><td>Fluxo da demo de ponta a ponta: login → rotina → PPLI com NC → alerta → tratamento → Hora x Hora → MTBF → troca de turno → relatório<span class="ev">Roda até o tratamento do alerta; a segunda metade não existe</span></td><td class="st"><span class="tag t-part">Parcial</span></td></tr>
+    <tr><td>Tablet 10,9" em paisagem e retrato, com luva, e desktop<span class="ev">Verificado com toque emulado; aparelho real pendente</span></td><td class="st"><span class="tag t-ok">Feito</span></td></tr>
+    <tr><td>Carimbo de rastreabilidade e estado de sync em todos os registros</td><td class="st"><span class="tag t-ok">Feito</span></td></tr>
+    <tr><td>Painel de demo com relógio e rede</td><td class="st"><span class="tag t-ok">Feito</span></td></tr>
+    <tr><td>Publicado na Vercel com URL estável e seed resetável</td><td class="st"><span class="tag t-todo">Falta</span></td></tr>
+    <tr><td>Testes do domínio (alertas, GE, MTBF) passando<span class="ev">186 testes passando; GE e MTBF ainda não existem no domínio</span></td><td class="st"><span class="tag t-part">Parcial</span></td></tr>
+  </table></div>
+
+  <h2>Próximos passos sugeridos</h2>
+  <p class="sub">Na ordem de construção do doc 06 (incrementos I3 a I6), que fecha primeiro os jobs P0 em aberto.</p>
+  <div class="next">
+    <div class="it"><b>I3 · Hora x Hora, MTBF e KPIs do turno</b><span>Fecha 2 P0 do operador e 1 da supervisão. Domínio de GE, toneladas e MTBF com testes; regras A-GE, A-META e A-REPET.</span></div>
+    <div class="it"><b>I4 · Troca de turno, Relatório do turno e telas da gerência</b><span>Fecha a passagem pré-preenchida, o consolidado da supervisão e o relatório do gerente. Completa o fluxo da demo.</span></div>
+    <div class="it"><b>Publicar na Vercel</b><span>URL estável para o cliente, com seed resetável. Precisa de remoto e conta.</span></div>
+    <div class="it"><b>I5 · Shoulds de maior reconhecimento</b><span>Plano de produção com importação, Book e IT/LPP, foto na rastreabilidade, pedido de ajuda, escala e agenda.</span></div>
+    <div class="it"><b>I6 · Polimento e validação</b><span>Decisões de produto pendentes (doc 13 §6), teste em tablet real com luva, Playwright do fluxo da demo.</span></div>
+  </div>
+
+  <h2>Já construído além do que os documentos pediam</h2>
+  <div class="card"><ul class="extra">
+    <li>Tela "Quem está no posto?" com bloqueio por inatividade e troca de pessoa por PIN no tablet compartilhado</li>
+    <li>Limite de tentativas do PIN, desfazer nas ações do operador e da liderança, rascunho recuperável</li>
+    <li>Modo foco no checklist, Wake Lock (tela não apaga) e prefetch das telas do tablet</li>
+    <li>Sincronização do estado entre abas do mesmo aparelho</li>
+    <li>Tema Apple com composições próprias para notebook, iPad em paisagem e iPad em retrato</li>
+  </ul></div>
+
+  <p class="src">Fontes: Documentos/ (V1 Briefing, V1 Proposta, V2 Mondelez), docs/04, 05, 06, 13 e 14, e o código em app/src (rotas, navigation/sidebar, data/seed.ts, domain/alert-engine.ts). Versão v0.4, commit edd480f.</p>
+</main>
+</body>
+</html>
