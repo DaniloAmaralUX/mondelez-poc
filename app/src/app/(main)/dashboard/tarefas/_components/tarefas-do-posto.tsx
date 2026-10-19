@@ -57,7 +57,10 @@ export function TarefasDoPosto() {
         </p>
       </header>
 
-      <section aria-label="Postos da linha" className="grid @2xl/content:grid-cols-2 @min-[60rem]/content:grid-cols-3 gap-4">
+      <section
+        aria-label="Postos da linha"
+        className="grid @2xl/content:grid-cols-2 @min-[60rem]/content:grid-cols-3 gap-4"
+      >
         {postos.map((p) => (
           <CardDoPosto key={p.id} posto={p} ativo={p.id === postoId} onEscolher={() => setEscolhido(p.id)} />
         ))}

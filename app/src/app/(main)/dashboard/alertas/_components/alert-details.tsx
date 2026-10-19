@@ -16,10 +16,10 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
+import { FotosDoRegistro } from "@/components/fotos-de-evidencia";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { FotosDoRegistro } from "@/components/fotos-de-evidencia";
 import { Button } from "@/components/ui/button";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import { Separator } from "@/components/ui/separator";
@@ -135,7 +135,9 @@ function AlertOverview({ alerta, tituloId }: { alerta: Alerta; tituloId?: string
   const itemCritico = alerta.itensNaoConformes.some((i) => i.critico);
   const aguardandoEnvio = envioPendente(registro);
   // Fotos de evidência dos itens não conformes (v0.5): a especialista vê a NC com foto (job P1).
-  const fotosDaNc = registro ? Object.values(registro.respostas).flatMap((r) => (r.valor === "NC" || r.fotos ? (r.fotos ?? []) : [])) : [];
+  const fotosDaNc = registro
+    ? Object.values(registro.respostas).flatMap((r) => (r.valor === "NC" || r.fotos ? (r.fotos ?? []) : []))
+    : [];
 
   return (
     <div className="flex flex-col gap-4">
