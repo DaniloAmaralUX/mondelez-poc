@@ -226,7 +226,7 @@ function AlertOverview({ alerta, tituloId }: { alerta: Alerta; tituloId?: string
         <div className="flex items-start justify-between gap-4">
           <h2 className="font-medium">Detalhes do alerta</h2>
 
-          <Button asChild variant="outline" size="sm" className="shrink-0">
+          <Button asChild variant="outline" size="sm" className="shrink-0 toque:text-sm">
             {/* prefetch: o registro abre mesmo com a rede caindo no meio da linha (lib/rotas.ts). */}
             <Link prefetch href={link.href}>
               {link.rotulo}

@@ -90,7 +90,7 @@ export function Padroes() {
                         {f.itens.length} itens · {localRepository.modulo(f.moduloSlug)?.nome}
                       </span>
                     </span>
-                    <Badge variant={publicados[f.id] ? "default" : "secondary"} className="tabular-nums">
+                    <Badge variant={publicados[f.id] ? "default" : "secondary"} className="toque:text-sm tabular-nums">
                       v{f.versao}
                     </Badge>
                     <ChevronRight className="size-4 shrink-0 text-muted-foreground" aria-hidden />

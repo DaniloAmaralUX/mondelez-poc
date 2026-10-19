@@ -43,6 +43,13 @@ const TELAS: Record<Persona, string[]> = {
   assistente: ["/dashboard/plano", "/dashboard/agenda", "/dashboard/usuarios"],
 };
 
+/**
+ * Avisos do navegador que não são erro do app. O WebKit (Safari do iPad) não conhece `interactive-widget` na meta
+ * viewport e avisa no console; a chave fica porque é ela que faz o Chrome do Android (Galaxy Tab) encolher a tela com o
+ * teclado aberto (docs/12 §3.1, src/styles/tablet.css).
+ */
+const AVISOS_CONHECIDOS = [/Viewport argument key "interactive-widget" not recognized/];
+
 const TOQUE = new Set(["ipad-paisagem", "ipad-retrato", "ipad-webkit"]);
 
 /** Alvos de toque abaixo de 44 px e textos abaixo de 13 px dentro do conteúdo (docs/12 §3.3). */
@@ -89,7 +96,7 @@ for (const [persona, rotas] of Object.entries(TELAS) as [Persona, string[]][]) {
         const erros: string[] = [];
         page.on("pageerror", (e) => erros.push(e.message));
         page.on("console", (m) => {
-          if (m.type() === "error") erros.push(m.text());
+          if (m.type() === "error" && !AVISOS_CONHECIDOS.some((r) => r.test(m.text()))) erros.push(m.text());
         });
 
         await page.goto(rota);

@@ -205,7 +205,9 @@ function FormularioDaHora({
             <FieldLabel htmlFor={idCaixas} className="text-base">
               Caixas na hora
             </FieldLabel>
+            {/* O id vai no NumberField (e não no input): o base-ui liga o − e o + ao input por esse id (aria-controls). */}
             <NumberField
+              id={idCaixas}
               size="lg"
               value={caixas}
               min={0}
@@ -237,7 +239,6 @@ function FormularioDaHora({
               >
                 <NumberFieldDecrement className="toque:w-16 px-4" aria-label="Menos 10 caixas" />
                 <NumberFieldInput
-                  id={idCaixas}
                   className="font-semibold tabular-nums"
                   placeholder={inteiro(metaCaixas)}
                   inputMode="numeric"

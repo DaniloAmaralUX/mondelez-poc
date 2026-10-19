@@ -85,7 +85,9 @@ function CampoNumero({
       <FieldLabel htmlFor={`${ids}-campo`} className="text-base">
         {rotulo}
       </FieldLabel>
+      {/* O id vai no NumberField (e não no input): o base-ui liga o − e o + ao input por esse id (aria-controls). */}
       <NumberField
+        id={`${ids}-campo`}
         size="lg"
         value={valor}
         min={0}
@@ -111,7 +113,6 @@ function CampoNumero({
         >
           <NumberFieldDecrement className="toque:w-16 px-4" aria-label={`Diminuir ${rotulo}`} />
           <NumberFieldInput
-            id={`${ids}-campo`}
             className="font-semibold tabular-nums"
             placeholder="0"
             inputMode="decimal"

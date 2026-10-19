@@ -77,7 +77,8 @@ export function AccountSwitcher({
           variant="ghost"
           size="icon"
           className="toque:size-14 rounded-lg p-0"
-          aria-label={`Trocar pessoa (agora: ${activeUser.name})`}
+          // O nome acessível começa pelo texto visível (as iniciais), como pede o WCAG 2.5.3 (axe, label-content-name-mismatch).
+          aria-label={`${getInitials(activeUser.name)}, trocar pessoa (agora: ${activeUser.name})`}
         >
           <Avatar className="size-8 toque:size-12 rounded-lg">
             <AvatarImage src={activeUser.avatar || undefined} alt="" />

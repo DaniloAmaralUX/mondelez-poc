@@ -97,7 +97,7 @@ export function HorasDoTurno({ linhas, podeEscrever, selecionada, onEscolher }: 
             : `${pendentes === 1 ? "1 hora pendente" : `${pendentes} horas pendentes`}: aponte a mais antiga primeiro.`}
         </CardDescription>
         <CardAction>
-          <Button asChild variant="outline" size="sm" className="toque:h-12">
+          <Button asChild variant="outline" size="sm" className="toque:h-12 toque:text-sm">
             <Link prefetch href="/dashboard/mtbf">
               Abrir MTBF
             </Link>

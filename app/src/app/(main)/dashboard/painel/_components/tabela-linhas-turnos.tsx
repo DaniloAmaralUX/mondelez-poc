@@ -66,6 +66,9 @@ export function TabelaLinhasTurnos({
   colunas: readonly ColunaDeTurno[];
 }) {
   const [indicador, setIndicador] = React.useState<Indicador>("ge");
+  // As abas trocam o indicador da tabela: aria-controls aponta para ela (o padrão do Radix aponta para um TabsContent
+  // que esta tela não usa).
+  const tabelaId = React.useId();
   const total = colunas.length;
 
   return (
@@ -78,13 +81,13 @@ export function TabelaLinhasTurnos({
         <Tabs value={indicador} onValueChange={(v) => setIndicador(v as Indicador)}>
           <TabsList className="grid @xl/tabela:w-fit w-full @xl/tabela:grid-cols-4 grid-cols-2 gap-1 toque:gap-3 group-data-horizontal/tabs:h-auto">
             {INDICADORES.map((i) => (
-              <TabsTrigger key={i.valor} value={i.valor} className="toque:text-sm">
+              <TabsTrigger key={i.valor} value={i.valor} className="toque:text-sm" aria-controls={tabelaId}>
                 {i.rotulo}
               </TabsTrigger>
             ))}
           </TabsList>
         </Tabs>
-        <Table>
+        <Table id={tabelaId}>
           <TableHeader>
             <TableRow>
               <TableHead className="w-28">Linha</TableHead>

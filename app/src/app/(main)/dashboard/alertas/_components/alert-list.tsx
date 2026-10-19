@@ -134,6 +134,8 @@ export function AlertList({ alertas, selectedAlertId, selecaoExplicita, onSelect
   // variante depois da hidratação.
   const toque = useModoToque();
   const filtrosAjudaId = React.useId();
+  // As abas filtram a lista abaixo: aria-controls aponta para ela (o padrão do Radix aponta para um TabsContent que esta tela não usa).
+  const listaId = React.useId();
   const [filtro, setFiltro] = React.useState<Filtro>("todos");
   const [busca, setBusca] = React.useState("");
   const contagem = (f: Filtro) => (f === "todos" ? alertas.length : alertas.filter((a) => a.estado === f).length);
@@ -177,6 +179,7 @@ export function AlertList({ alertas, selectedAlertId, selecaoExplicita, onSelect
                   key={f.value}
                   className="h-auto min-h-7 whitespace-normal py-1 text-center tabular-nums"
                   value={f.value}
+                  aria-controls={listaId}
                 >
                   {f.label} ({contagem(f.value)})
                 </TabsTrigger>
@@ -188,7 +191,12 @@ export function AlertList({ alertas, selectedAlertId, selecaoExplicita, onSelect
             <TabsList className="w-full border-b px-4" variant="line">
               {FILTROS.map((f) => (
                 // min-h-6: a mesma altura que o h-8 da lista dava ao gatilho no template.
-                <TabsTrigger key={f.value} className="min-h-6 text-xs tabular-nums" value={f.value}>
+                <TabsTrigger
+                  key={f.value}
+                  className="min-h-6 text-xs tabular-nums"
+                  value={f.value}
+                  aria-controls={listaId}
+                >
                   {f.label} ({contagem(f.value)})
                 </TabsTrigger>
               ))}
@@ -221,7 +229,7 @@ export function AlertList({ alertas, selectedAlertId, selecaoExplicita, onSelect
             key: busca e filtro são escolha da pessoa, então a lista remonta (sem deslize, que a cada tecla levava
             cards por até 630 px sobre os que entravam); a reordenação vinda dos dados (assumir, alerta novo) anima. */}
         <ScrollArea className="[&_[data-slot=scroll-area-viewport]>div]:block! @4xl/content:h-0 @4xl/content:flex-1">
-          <div key={`${filtro}|${termo}`} className="flex flex-col gap-4 px-4 py-1">
+          <div id={listaId} key={`${filtro}|${termo}`} className="flex flex-col gap-4 px-4 py-1">
             {visiveis.length === 0 && (
               <Empty className="min-h-48 p-6">
                 <EmptyHeader>

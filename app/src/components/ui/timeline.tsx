@@ -231,7 +231,6 @@ function Timeline(props: TimelineProps) {
       <TimelineContext.Provider value={contextValue}>
         <RootPrimitive
           role="list"
-          aria-orientation={orientation}
           data-slot="timeline"
           data-orientation={orientation}
           data-variant={variant}

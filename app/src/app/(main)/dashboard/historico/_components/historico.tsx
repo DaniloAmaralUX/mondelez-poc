@@ -246,7 +246,12 @@ export function Historico() {
                       <TableCell className="max-w-md whitespace-normal align-top">
                         <div className="text-muted-foreground text-xs toque:text-sm">{NOME_DO_TIPO[e.tipo]}</div>
                         {e.href ? (
-                          <Link prefetch href={e.href} className="font-medium underline-offset-4 hover:underline">
+                          <Link
+                            prefetch
+                            href={e.href}
+                            // No toque o link do evento vira alvo de 44 px de altura (docs/12 §3.3); no notebook segue em linha.
+                            className="toque:inline-flex toque:min-h-11 toque:items-center font-medium underline-offset-4 hover:underline"
+                          >
                             {e.titulo}
                           </Link>
                         ) : (
@@ -285,7 +290,11 @@ export function Historico() {
                   </div>
                   <div className="flex items-start justify-between gap-3">
                     {e.href ? (
-                      <Link prefetch href={e.href} className="font-medium text-base underline-offset-4 hover:underline">
+                      <Link
+                        prefetch
+                        href={e.href}
+                        className="toque:inline-flex toque:min-h-11 toque:items-center font-medium text-base underline-offset-4 hover:underline"
+                      >
                         {e.titulo}
                       </Link>
                     ) : (

@@ -956,9 +956,11 @@ function StepperTrigger(props: ButtonProps) {
       aria-controls={contentId}
       aria-current={isActive ? "step" : undefined}
       aria-describedby={`${titleId} ${descriptionId}`}
-      aria-posinset={stepPosition}
+      // O Map dos passos ainda está vazio no primeiro render (posição 0, total 0), e aria-posinset="0" é inválido: sem a
+      // posição conhecida, o atributo fica de fora (axe, aria-valid-attr-value).
+      aria-posinset={stepPosition > 0 ? stepPosition : undefined}
       aria-selected={isActive}
-      aria-setsize={stepCount}
+      aria-setsize={stepCount > 0 ? stepCount : undefined}
       data-disabled={isDisabled ? "" : undefined}
       data-state={dataState}
       data-slot="stepper-trigger"

@@ -46,6 +46,8 @@ function naTela(elemento: HTMLElement | null) {
 export function Notificacoes() {
   const todas = useNotificacoes();
   const [filtro, setFiltro] = React.useState<Filtro>("todos");
+  // As abas filtram a lista abaixo: aria-controls aponta para ela (o padrão do Radix aponta para um TabsContent que esta tela não usa).
+  const listaId = React.useId();
   const [selecionadaId, setSelecionadaId] = React.useState<string | null>(null);
   const [vista, setVista] = React.useState<"lista" | "detalhe">("lista");
   const listaRef = React.useRef<HTMLDivElement>(null);
@@ -104,14 +106,19 @@ export function Notificacoes() {
               <Tabs value={filtro} onValueChange={(v) => setFiltro(v as Filtro)}>
                 <TabsList className="grid w-full grid-cols-3 toque:gap-3 group-data-horizontal/tabs:h-auto">
                   {FILTROS.map((f) => (
-                    <TabsTrigger key={f.valor} value={f.valor} className="toque:text-sm tabular-nums">
+                    <TabsTrigger
+                      key={f.valor}
+                      value={f.valor}
+                      className="toque:text-sm tabular-nums"
+                      aria-controls={listaId}
+                    >
                       {f.rotulo} ({contagem(f.valor)})
                     </TabsTrigger>
                   ))}
                 </TabsList>
               </Tabs>
               {visiveis.length === 0 ? (
-                <Empty className="min-h-48 p-6">
+                <Empty id={listaId} className="min-h-48 p-6">
                   <EmptyHeader>
                     <EmptyMedia variant="icon">
                       <Inbox />
@@ -126,6 +133,7 @@ export function Notificacoes() {
                 // Lado a lado (notebook), a lista rola sozinha e o detalhe fica parado ao lado, como no Mail; na pilha do
                 // iPad, a página rola. Focável e nomeada para o teclado rolar (WCAG 2.1.1).
                 <ul
+                  id={listaId}
                   // biome-ignore lint/a11y/noNoninteractiveTabindex: região com rolagem precisa de foco para o teclado rolar (WCAG 2.1.1).
                   tabIndex={0}
                   aria-label="Mensagens"
