@@ -10,6 +10,7 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/s
 import { users } from "@/data/users";
 import { getPreference } from "@/server/server-actions";
 
+import { PedirAjudaBotao } from "./_components/ajuda/pedir-ajuda-botao";
 import { AlertWatcher } from "./_components/alert-watcher";
 import { AccountSwitcher } from "./_components/header/account-switcher";
 import { DemoMenu } from "./_components/header/demo-menu";
@@ -78,6 +79,9 @@ export default async function Layout({ children }: Readonly<{ children: ReactNod
               <SearchDialog />
             </div>
             <div className="flex shrink-0 items-center gap-2 toque:gap-3">
+              {/* Pedido de ajuda de qualquer tela (RF-14): só para a Operação; o mesmo Sheet do card da sidebar, que no
+                  retrato fica escondida. */}
+              <PedirAjudaBotao />
               <SyncStatus />
               <LeadershipOnly>
                 <LayoutControls />
