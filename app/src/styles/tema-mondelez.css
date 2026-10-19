@@ -78,20 +78,21 @@
 }
 
 /* ---------------------------------------------------------------------------------------------------------------- */
-/* Sidebar: a guia do YouTube (v0.7), preta e com vidro quando passa por cima do conteúdo                             */
+/* Sidebar: a do YouTube Music (v0.7), preta e com vidro quando passa por cima do conteúdo                          */
 /* ---------------------------------------------------------------------------------------------------------------- */
 
 /*
- * Medida na guia do YouTube em modo escuro (outubro de 2026, docs/20b): fundo #0f0f0f, texto #f1f1f1 (17:1),
- * secundário #aaa (8,3:1), itens de 40 px com raio de 10 px e 12 px de respiro, ícone de 24 px a 24 px do rótulo,
- * rótulo de 14/20 (500 no item ativo), ativo e hover em branco a 10 %, seções de 12 px separadas por uma linha branca a
- * 20 % e títulos de seção de 16 px. Aqui com os ícones de 20 px do lucide (traço 1,75) e a fonte do tema.
+ * Referência: a sidebar do YouTube Music (web, 2026) e as medidas da guia do YouTube em modo escuro (docs/20b): fundo
+ * preto, texto #f1f1f1 (17:1 no #0f0f0f), secundário #aaa (8,3:1), itens de 44 px com raio de 8 px e 16 px de respiro,
+ * ícone de 24 px a 24 px de um rótulo de 16/24 (500 no ativo), ativo em branco a 12 % e hover a 8 %, seções separadas
+ * por uma linha branca a 10 %, e a ação de criar como uma pílula escura com "+" ("New playlist"). Os títulos de seção
+ * ficam pequenos e no cinza secundário (o YouTube Music não tem; aqui eles ajudam a achar a tela entre 14 itens).
  *
- * Adaptação ao projeto: o logo Mondelēz em branco no topo (branco sobre fundo escuro, brand book); "Registrar agora"
- * como a pílula branca de maior ênfase; no toque os itens seguem com 56 px (tablet.css). Quando a sidebar passa por cima
- * do conteúdo (Sheet do retrato e do Split View), ela vira vidro preto: 88 % de opacidade com desfoque forte (a 78 % sobre o conteúdo branco ficava cinza), como o
- * cabeçalho do YouTube. Encostada ao lado do conteúdo não há nada atrás para desfocar, então fica sólida, com um brilho
- * roxo da marca, bem fraco, subindo do pé.
+ * Adaptação ao projeto: o logo Mondelēz em branco no topo (branco sobre fundo escuro, brand book); no toque os itens
+ * seguem com 56 px (tablet.css). No claro a sidebar é #0f0f0f ao lado do conteúdo branco; no escuro ela é a própria
+ * tela (#030303), separada pela linha branca a 10 %. Quando passa por cima do conteúdo (Sheet do retrato e do Split
+ * View), vira vidro preto: 88 % de opacidade com desfoque forte (a 78 % sobre o conteúdo branco ficava cinza).
+ * Encostada, não há nada atrás para desfocar: fica sólida, com um brilho roxo da marca, bem fraco, subindo do pé.
  */
 :root[data-theme-preset="mondelez"] [data-sidebar="sidebar"] {
   --foreground: var(--sidebar-foreground);
@@ -128,28 +129,27 @@
   }
 }
 
-/* Seções: 12 px de respiro e a linha branca a 20 % entre elas; título de seção de 16 px, no texto principal. */
+/* Seções: 8 px de respiro nas laterais (os itens ocupam a largura toda) e a linha branca a 10 % entre elas. */
 :root[data-theme-preset="mondelez"] [data-sidebar="sidebar"] [data-slot="sidebar-group"] {
-  padding: 12px;
+  padding: 10px 8px;
 }
 
 :root[data-theme-preset="mondelez"] [data-sidebar="sidebar"] [data-slot="sidebar-group"] + [data-slot="sidebar-group"] {
-  border-top: 1px solid oklch(1 0 0 / 20%);
+  border-top: 1px solid oklch(1 0 0 / 10%);
 }
 
 :root[data-theme-preset="mondelez"] [data-sidebar="sidebar"] [data-slot="sidebar-group-label"] {
   height: auto;
-  padding: 6px 12px 4px;
-  margin-bottom: 4px;
-  color: var(--sidebar-foreground);
-  font-size: 1rem;
-  line-height: 1.375rem;
-  font-weight: 600;
+  padding: 6px 16px 6px;
+  color: oklch(0.738 0 0);
+  font-size: 0.8125rem;
+  line-height: 1.125rem;
+  font-weight: 500;
 }
 
 :root[data-theme-preset="mondelez"] [data-sidebar="sidebar"] [data-slot="sidebar-footer"] {
-  border-top: 1px solid oklch(1 0 0 / 20%);
-  padding: 12px;
+  border-top: 1px solid oklch(1 0 0 / 10%);
+  padding: 12px 8px;
 }
 
 /* Itens do menu (fora o logo do topo e a pílula de "Registrar agora"). O item que abre um grupo (Checklists) é o mesmo
@@ -158,11 +158,11 @@
   [data-sidebar="sidebar"]
   [data-slot="sidebar-content"]
   :is([data-slot="sidebar-menu-button"], [data-sidebar="menu-button"]):not([class*="bg-primary"]) {
-  gap: 20px;
-  padding-inline: 12px;
-  border-radius: 10px;
-  font-size: 0.875rem;
-  line-height: 1.25rem;
+  gap: 24px;
+  padding-inline: 16px;
+  border-radius: 8px;
+  font-size: 1rem;
+  line-height: 1.5rem;
   font-weight: 400;
   color: var(--sidebar-foreground);
 }
@@ -172,30 +172,55 @@
   [data-slot="sidebar-content"]
   :is([data-slot="sidebar-menu-button"], [data-sidebar="menu-button"]):not([class*="bg-primary"])
   > svg {
-  width: 20px;
-  height: 20px;
-  stroke-width: 1.75;
+  width: 24px;
+  height: 24px;
+  stroke-width: 1.6;
 }
 
-/* 40 px com ponteiro fino (no toque, os 56 px da camada de toque). */
+/* 44 px com ponteiro fino (no toque, os 56 px da camada de toque). */
 @media (pointer: fine) {
   :root[data-theme-preset="mondelez"]
     [data-sidebar="sidebar"]
     [data-slot="sidebar-content"]
     :is([data-slot="sidebar-menu-button"], [data-sidebar="menu-button"]):not([class*="bg-primary"]) {
-    height: 40px;
+    height: 44px;
+  }
+
+  :root[data-theme-preset="mondelez"]
+    [data-sidebar="sidebar"]
+    [data-slot="sidebar-content"]
+    :is([data-slot="sidebar-menu-button"], [data-sidebar="menu-button"]):not([class*="bg-primary"]):not(
+      [data-active="true"]
+    ):hover {
+    background-color: oklch(1 0 0 / 8%);
   }
 }
 
 :root[data-theme-preset="mondelez"] [data-sidebar="sidebar"] [data-slot="sidebar-menu-button"][data-active="true"] {
-  background-color: oklch(1 0 0 / 10%);
+  background-color: oklch(1 0 0 / 12%);
   font-weight: 500;
 }
 
-/* "Registrar agora": a pílula branca, a ação de maior ênfase da sidebar. */
+/*
+ * "Registrar agora": a pílula escura do "New playlist" do YouTube Music (branco a 10 %, texto branco, "+" e rótulo
+ * centrados). A ação continua a primeira da sidebar; a ênfase vem da forma e da posição, não de um branco que gritava
+ * ao lado do menu inteiro.
+ */
 :root[data-theme-preset="mondelez"] [data-sidebar="sidebar"] [data-slot="sidebar-menu-button"][class*="bg-primary"] {
+  justify-content: center;
   border-radius: 9999px;
+  background-color: oklch(1 0 0 / 10%);
+  color: var(--sidebar-foreground);
   font-weight: 500;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  :root[data-theme-preset="mondelez"]
+    [data-sidebar="sidebar"]
+    [data-slot="sidebar-menu-button"][class*="bg-primary"]:hover {
+    background-color: oklch(1 0 0 / 16%);
+    color: var(--sidebar-foreground);
+  }
 }
 
 /* Cards da sidebar (pedido de ajuda): vidro escuro, não um cartão branco no meio do preto. */
@@ -249,4 +274,47 @@
 
 .dark .rolagem-discreta {
   scrollbar-color: oklch(1 0 0 / 22%) transparent;
+}
+
+/* ---------------------------------------------------------------------------------------------------------------- */
+/* Hero da Minha Rotina                                                                                              */
+/* ---------------------------------------------------------------------------------------------------------------- */
+
+/*
+ * Luz da marca descendo do topo, como a cor ambiente da home do YouTube Music (v0.7, docs/20b): o roxo MDLZ World à
+ * esquerda e um toque de Golden Wheat à direita, apagando na tela. No claro é só um véu (o texto continua sobre o
+ * branco quase puro); no escuro ela aparece de verdade sobre o #030303. Some de baixo para cima por máscara, sem borda.
+ */
+.ambiente-da-marca {
+  background:
+    radial-gradient(70% 95% at 22% 0%, oklch(0.55 0.12 308 / 14%), transparent 70%),
+    radial-gradient(45% 75% at 88% 0%, oklch(0.8 0.11 70 / 12%), transparent 70%);
+  mask-image: linear-gradient(to bottom, black 35%, transparent);
+}
+
+.dark .ambiente-da-marca {
+  background:
+    radial-gradient(75% 100% at 22% 0%, oklch(0.42 0.14 308 / 62%), transparent 72%),
+    radial-gradient(45% 75% at 88% 0%, oklch(0.52 0.1 63 / 26%), transparent 70%);
+}
+
+/*
+ * Campo de busca do cabeçalho no desenho do YouTube Music: largo, raio de 8 px, fundo do texto a 6 % (branco a 10 % no
+ * escuro) e contorno fino. Continua sendo o botão que abre a busca (search-dialog.tsx).
+ */
+:root[data-theme-preset="mondelez"] [data-slot="busca-do-cabecalho"] {
+  height: 40px;
+  width: min(28rem, 100%);
+  justify-content: flex-start;
+  gap: 12px;
+  padding-inline: 14px;
+  border-radius: 8px;
+  border: 1px solid oklch(0 0 0 / 8%);
+  background-color: oklch(0 0 0 / 4%);
+  color: var(--muted-foreground);
+}
+
+.dark:root[data-theme-preset="mondelez"] [data-slot="busca-do-cabecalho"] {
+  border-color: oklch(1 0 0 / 14%);
+  background-color: oklch(1 0 0 / 8%);
 }

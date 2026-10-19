@@ -245,31 +245,37 @@ value: mondelez
   --color-purple-950: oklch(28.0% 0.098 307.7);
 }
 
+/*
+ * Escuro (v0.7): o do YouTube Music. Tela #030303, superfícies #121212 e #212121 (popover, botão secundário), texto
+ * #f1f1f1 (18,3:1 na tela) e secundário #aaa (8,1:1 no card), contornos em branco a 10 %, borda de campo #717171. A
+ * sidebar é a própria tela (#030303), separada do conteúdo pela linha branca a 10 %. A ação principal é o lilás claro da
+ * rampa da marca com texto roxo.
+ */
 .dark:root[data-theme-preset="mondelez"] {
-  --background: oklch(0.16 0.004 81.3);
-  --foreground: oklch(0.9663 0.0176 81.3);
-  --card: oklch(0.205 0.005 81.3);
-  --card-foreground: oklch(0.9663 0.0176 81.3);
-  --popover: oklch(0.23 0.005 81.3);
-  --popover-foreground: oklch(0.9663 0.0176 81.3);
+  --background: oklch(0.0969 0 0);
+  --foreground: oklch(0.9581 0 0);
+  --card: oklch(0.1822 0 0);
+  --card-foreground: oklch(0.9581 0 0);
+  --popover: oklch(0.2478 0 0);
+  --popover-foreground: oklch(0.9581 0 0);
   --primary: oklch(0.8 0.08 310.4);
   --primary-foreground: oklch(0.2799 0.0975 307.7);
-  --secondary: oklch(0.26 0.005 81.3);
-  --secondary-foreground: oklch(0.9663 0.0176 81.3);
-  --muted: oklch(0.255 0.005 81.3);
-  --muted-foreground: oklch(0.74 0.01 81.3);
-  --accent: oklch(0.3 0.045 308);
-  --accent-foreground: oklch(0.9 0.04 310.4);
+  --secondary: oklch(0.2478 0 0);
+  --secondary-foreground: oklch(0.9581 0 0);
+  --muted: oklch(0.2308 0 0);
+  --muted-foreground: oklch(0.738 0 0);
+  --accent: oklch(1 0 0 / 10%);
+  --accent-foreground: oklch(0.9581 0 0);
   --destructive: oklch(0.72 0.13 22);
-  --border: oklch(1 0 0 / 9%);
-  --input: oklch(0.56 0.005 81.3);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(0.5486 0 0);
   --ring: oklch(0.8 0.08 310.4);
   --chart-1: oklch(0.72 0.1 310.4);
   --chart-2: oklch(0.7854 0.1197 70);
   --chart-3: oklch(0.7162 0.0678 246.7);
   --chart-4: oklch(0.72 0.1 140.6);
   --chart-5: oklch(0.7585 0.0269 59.8);
-  --sidebar: oklch(0.1684 0 0);
+  --sidebar: oklch(0.0969 0 0);
   --sidebar-foreground: oklch(0.9581 0 0);
   --sidebar-primary: oklch(1 0 0);
   --sidebar-primary-foreground: oklch(0.1684 0 0);

@@ -15,7 +15,8 @@ function saudacao(agora: Date) {
 const DATA_LONGA = new Intl.DateTimeFormat("pt-BR", { weekday: "long", day: "numeric", month: "long" });
 
 /**
- * Cabeçalho da tela no padrão Large Title do iOS (v0.4, docs/14): data como sobretítulo, saudação em 34 px semibold
+ * Cabeçalho da tela no padrão Large Title do iOS (v0.4, docs/14; v0.7: 40 px no notebook, como os títulos do YouTube
+ * Music): data como sobretítulo, saudação em negrito
  * com tracking negativo, turno e posto como subtítulo. A data vem do relógio da demonstração (useAgora), que antes do
  * IndexedDB usa o mesmo instante do servidor: a hidratação bate.
  */
@@ -31,7 +32,7 @@ export function Greeting() {
     // Com pouca altura útil (paisagem com o teclado do Android aberto, src/styles/tablet.css), título e turno menores.
     <header className="flex flex-col gap-1.5 pouca-altura:gap-1">
       <p className="font-semibold text-muted-foreground text-sm toque:text-base first-letter:uppercase">{data}</p>
-      <h1 className="@min-[60rem]/content:text-[2.125rem] pouca-altura:text-2xl text-[2rem] text-foreground leading-[1.1]">
+      <h1 className="@min-[60rem]/content:text-[2.5rem] pouca-altura:text-2xl text-[2rem] text-foreground leading-[1.05]">
         {saudacao(agora)}, {usuario ? primeiroNome(usuario.nome) : ""}.
       </h1>
       <p className="pouca-altura:text-base text-lg text-muted-foreground leading-snug">

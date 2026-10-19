@@ -132,13 +132,15 @@ export function SearchDialog() {
 
   return (
     <>
+      {/* v0.7: no tema Mondelēz vira o campo largo do YouTube Music (data-slot="busca-do-cabecalho", tema-mondelez.css). */}
       <Button
         onClick={() => handleOpenChange(true)}
         variant="link"
+        data-slot="busca-do-cabecalho"
         className="px-0! font-normal text-muted-foreground hover:no-underline"
       >
         <Search data-icon="inline-start" />
-        Buscar
+        <span className="flex-1 text-left">Buscar telas e checklists</span>
         {/* Atalho só faz sentido com teclado e mouse; no tablet o rótulo fica limpo. */}
         <kbd className="pointer-fine:inline-flex hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-medium text-[10px]">
           <span className="text-xs">⌘</span>J

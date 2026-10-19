@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 
+import { AtalhosDoPerfil } from "./_components/atalhos-do-perfil";
 import { FazerAgora } from "./_components/fazer-agora";
 import { FocusCard } from "./_components/focus-card";
 import { Greeting } from "./_components/greeting";
 import { LinhaDoTurno } from "./_components/linha-do-turno";
-import { QuickActions } from "./_components/quick-actions";
 import { QuoteCard } from "./_components/quote-card";
 import { RecentNotesCard } from "./_components/recent-notes-card";
 import { TasksSection } from "./_components/tasks-section";
@@ -27,7 +27,20 @@ export const metadata: Metadata = {
 export default function Page() {
   return (
     <div className="flex flex-col @min-[60rem]/content:gap-8 gap-6">
-      <Greeting />
+      {/*
+       * Hero (v0.7, docs/20b), no espírito da home do YouTube Music: uma luz da marca descendo do topo (o roxo MDLZ World
+       * e um toque de Golden Wheat) que se apaga na tela, o título grande e os atalhos em chips. "isolate" faz da seção
+       * o contexto de empilhamento: a luz (-z-10) fica atrás do conteúdo e acima do fundo, e passa por baixo do
+       * cabeçalho de vidro.
+       */}
+      <section aria-label="Início do turno" className="relative isolate flex flex-col gap-5">
+        <div
+          aria-hidden
+          className="ambiente-da-marca pointer-events-none absolute -inset-x-4 -top-[calc(var(--dashboard-header-height)+1rem)] -z-10 h-[30rem] md:-inset-x-6 md:-top-[calc(var(--dashboard-header-height)+1.5rem)]"
+        />
+        <Greeting />
+        <AtalhosDoPerfil />
+      </section>
 
       <div className="grid @2xl/content:grid-cols-12 gap-6">
         <div className="@2xl/content:col-span-8 min-w-0 empty:hidden">
@@ -45,10 +58,6 @@ export default function Page() {
           </div>
           <div className="min-w-0 empty:hidden">
             <TasksSection />
-          </div>
-          {/* Os atalhos não existem para o operador: sem conteúdo, o bloco some e não deixa espaço sobrando. */}
-          <div className="min-w-0 empty:hidden">
-            <QuickActions />
           </div>
         </section>
 
