@@ -45,7 +45,7 @@ A ordem do DOM é a ordem visual em todos os arranjos (sem `order-*`).
 | Cor de acento em tudo | Âmbar só para "parado" (bloco em curso, faixas da linha do tempo, barras do Pareto, número "Em curso"); roxo só no selecionado do equipamento | Um acento por tela e cor só para o anormal (ISA-101) |
 | Aviso de desfazer por 5 min (`JANELA_APAGAR_FALHA_MS`) | Aviso de 10 s (`JANELA_DESFAZER_MS`) com "Desfazer"; depois disso, "Desfazer" na linha da falha na lista do turno, para quem apontou, até 5 min | Mesmo padrão da Minha Rotina (aviso de 10 s + "Feitas"): um aviso de 5 min cobriria a tela; a janela do store continua valendo pela lista (WCAG 2.2.1) |
 | Encerrar com desfazer | Encerrar sem desfazer, com aviso da duração | O contrato não tem ação para reabrir uma falha (ver §5) |
-| Tempo da falha em segundos | "desde 08:12 · 14 min", no minuto do relógio único | `useAgora` anda por minuto; um timer por bloco quebraria a regra do relógio único (regras do código) |
+| Tempo da falha em segundos | "desde 08:12 · 14 min", no minuto do relógio único | `useAgora` anda por minuto; um timer por bloco quebraria a regra do relógio único (app/CONVENCOES.md) |
 | Legenda do gráfico em caixa | Número em cima de cada barra e % em cada ponto da linha; descrição do card diz o que é barra e o que é linha | Legenda direta (dataviz); altura fixa de 256 px para o card não pular |
 | Eixo do Pareto com nomes cortados | Rótulo em até duas linhas ("Ajuste de / temperatura") | Os tipos têm 2–3 palavras e não cabem numa só |
 | Gerência e Especialista com os blocos desabilitados | Blocos sem botão (só a situação), título "Falhas por tipo" e subtítulo dizendo quem aponta | Controle desabilitado sem explicação não serve; quem só lê não precisa de alvo |
@@ -73,7 +73,7 @@ O Sheet do pedido: motivo em chips grandes (`MOTIVO_AJUDA`, 64 px no toque, 2 po
 | `origem` com a rota (`/dashboard/mtbf`) | `origem` com o nome da tela ("MTBF", "Checklist PPLI e Centerlining") | O alerta A-AJUDA escreve "Pedido feito na tela {origem}."; com a rota, a liderança leria um caminho de URL |
 | Sheet inferior | Sheet à direita que encolhe acima do teclado, sem o X do canto, Cancelar e Pedir ajuda no rodapé com 16 px entre eles | Mesmo padrão do "Registrar desvio" (v0.3): um Sheet inferior ficaria sob o teclado do iPad |
 | Situação só em cor | `Status` do template com texto ("Visto por …"), `STATUS_LEGIVEL` e região `aria-live` | Cor não pode ser a única pista; o leitor de tela anuncia quando a liderança vê |
-| Sheet com o estado de quem saiu | Card e botão remontam com `key={usuarioId}` (o "aberto" e o texto) | Regra de dispositivo compartilhado (regras do código) |
+| Sheet com o estado de quem saiu | Card e botão remontam com `key={usuarioId}` (o "aberto" e o texto) | Regra de dispositivo compartilhado (app/CONVENCOES.md) |
 
 ### Jobs resolvidos
 

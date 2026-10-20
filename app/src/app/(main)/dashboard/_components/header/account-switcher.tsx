@@ -68,7 +68,7 @@ export function AccountSwitcher({
 
   return (
     <DropdownMenu>
-      {/* Gatilho focável e com nome acessível: o Avatar sozinho não recebia teclado (UI Audit, acessibilidade).
+      {/* Gatilho focável e com nome acessível: o Avatar sozinho não recebia teclado (auditoria de UX, acessibilidade).
           32 px com ponteiro fino (size="icon" do template); 56 px no toque (toque:size-14), acima do piso de 48 px que
           a camada de toque dá às utilidades do header, porque trocar de pessoa é ação do operador. O avatar acompanha
           (toque:size-12); o size-8 fixo que havia aqui o deixava com 32 px dentro de um alvo maior. */}

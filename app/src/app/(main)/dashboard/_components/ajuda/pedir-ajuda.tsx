@@ -39,7 +39,7 @@ interface Erros {
  * ficaria sob o teclado do iPad) e o Sheet encolhe acima do teclado. Motivo em chips grandes, texto curto obrigatório e
  * o contexto automático à vista (posto, tela e equipamento), para quem pede saber o que a liderança vai receber.
  *
- * O Sheet tem texto digitado: quem monta o componente passa `key={usuarioId}` (regras do código), para a próxima pessoa do
+ * O Sheet tem texto digitado: quem monta o componente passa `key={usuarioId}` (app/CONVENCOES.md), para a próxima pessoa do
  * tablet não herdar o rascunho de quem saiu.
  */
 export function PedirAjuda({

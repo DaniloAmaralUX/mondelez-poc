@@ -32,7 +32,7 @@ const ITEM_GRANDE =
  * tocados na escala do posto; mostra o que a turma faria naquele dia, para o ajuste ficar claro, e permite voltar à
  * escala da turma quando já há um ajuste. Salvar e voltar têm "Desfazer" por 10 s.
  *
- * Quem monta passa `key={usuarioId}` (regras do código).
+ * Quem monta passa `key={usuarioId}` (app/CONVENCOES.md).
  */
 export function AjustarEscala({
   alvo,

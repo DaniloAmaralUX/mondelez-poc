@@ -69,7 +69,7 @@ npm i -D vitest @testing-library/react @playwright/test
 | Recharts | recharts.org | Linha, barra, referência de meta |
 | Vitest · Playwright | vitest.dev · playwright.dev | Teste de função pura; teste de fluxo no navegador |
 | Acessibilidade | web.dev/learn/accessibility · WCAG 2.1 AA | Alvo de toque, contraste, foco, rótulos |
-| Documentação atualizada | Documentação oficial de cada biblioteca | Consultar a documentação atual antes de usar uma API de biblioteca |
+| Documentação atualizada | Documentação oficial de cada biblioteca, na versão do projeto | Consultar a documentação atual antes de usar uma API de biblioteca |
 
 ## Checklist de alinhamento do time
 

@@ -27,7 +27,7 @@ import { TabelaDaSemana } from "./tabela-da-semana";
  * erro"), em vez de ficar desabilitado sem explicação (docs/13 §2). A publicação substitui o plano da semana e tem
  * "Desfazer" por 10 s, que publica de volta o plano anterior.
  *
- * Quem monta passa `key={usuarioId}` (regras do código): a próxima pessoa do tablet não herda a planilha de quem saiu.
+ * Quem monta passa `key={usuarioId}` (app/CONVENCOES.md): a próxima pessoa do tablet não herda a planilha de quem saiu.
  */
 export function ImportarPlanilha({
   aberto,

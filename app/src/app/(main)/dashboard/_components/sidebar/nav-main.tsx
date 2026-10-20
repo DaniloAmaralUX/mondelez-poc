@@ -107,7 +107,7 @@ export function NavMain({ items }: NavMainProps) {
   const path = usePathname();
   const fecharSidebar = useFecharSidebarMovel();
   const proxima = proximaTarefa(useMinhasTarefas());
-  // Contagem de alertas sem resolução no menu e no sino (UI Audit: alertas novos passavam despercebidos).
+  // Contagem de alertas sem resolução no menu e no sino (auditoria de UX: alertas novos passavam despercebidos).
   const alertasAbertos = useAlertas().filter((a) => a.estado !== "resolvido").length;
   const contagens: Record<string, number> = { alertas: alertasAbertos };
 

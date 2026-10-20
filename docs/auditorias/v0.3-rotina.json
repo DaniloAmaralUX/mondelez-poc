@@ -26,7 +26,7 @@
     ],
     "medicoes": "shots/rotina__*.json e saida.log",
     "roteiro": "rotina.mjs: login 104233, ordem dos blocos, header, filtro, Concluir em Hora x Hora, aviso e posição em relação ao header, menu da pessoa, relógio +1 h (Atrasada), Simular sem rede; Tab paisagem e desktop para a passagem e a densidade; sistema escuro + reduzir movimento. checklist.mjs (filtro Feitas depois de registrar). movimento.mjs (saída da linha amostrada quadro a quadro).",
-    "rodada_anterior": "C:/Users/dar/AppData/Local/Temp/v03/h/ui-audit-operador"
+    "rodada_anterior": "auditoria do operador, v0.3 (rodada 1)"
   },
   "macro_bets": [
     { "category": "velocity", "description": "Saber o que fazer agora e começar com um toque", "alignment": "strong" },

@@ -23,7 +23,7 @@ import { Duracao } from "./duracao";
 import { StatusTarefa } from "./status-tarefa";
 import { abreTela, rotuloDaAcao, rotuloDaRota, useConcluirTarefa } from "./use-concluir";
 
-/** A ação dominante da tela: a próxima tarefa, com prazo vivo e um botão grande (UI Audit, prioridade 1). */
+/** A ação dominante da tela: a próxima tarefa, com prazo vivo e um botão grande (auditoria de UX, prioridade 1). */
 export function FazerAgora() {
   const tarefas = useMinhasTarefas();
   const agora = useAgora();

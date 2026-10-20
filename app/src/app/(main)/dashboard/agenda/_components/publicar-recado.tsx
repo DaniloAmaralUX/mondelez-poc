@@ -38,7 +38,7 @@ const ITEM_GRANDE =
  * direita, como o Pedir ajuda: tipo e onde em escolhas grandes, título curto, e dia e horário quando é compromisso.
  * Publicado, vai para os tablets da fábrica e para a caixa de saída (e-mail simulado), com "Desfazer" por 10 s.
  *
- * Quem monta passa `key={usuarioId}` (regras do código).
+ * Quem monta passa `key={usuarioId}` (app/CONVENCOES.md).
  */
 export function PublicarRecado({
   aberto,

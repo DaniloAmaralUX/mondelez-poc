@@ -75,7 +75,7 @@ export function TarefasDoPosto() {
             </span>
           )}
         </h2>
-        {/* Resumo do posto antes da tabela (UI Audit): onde está o problema sem precisar filtrar. Cores um tom acima do
+        {/* Resumo do posto antes da tabela (auditoria de UX): onde está o problema sem precisar filtrar. Cores um tom acima do
             Status do template (STATUS_LEGIVEL). */}
         <div className="flex flex-wrap gap-2">
           {[

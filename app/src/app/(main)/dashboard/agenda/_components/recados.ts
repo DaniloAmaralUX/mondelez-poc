@@ -24,7 +24,7 @@ export const ICONE_DO_TIPO: Record<TipoRecado, typeof Wrench> = {
 
 /**
  * Tinta por tipo, sempre junto do ícone e do nome do tipo (a cor nunca é a única pista). Paleta nomeada do Tailwind
- * (regras do código), tom 700/800 no texto para ficar acima de 4,5:1 sobre o fundo 500/15.
+ * (app/CONVENCOES.md), tom 700/800 no texto para ficar acima de 4,5:1 sobre o fundo 500/15.
  */
 export const TINTA_DO_TIPO: Record<TipoRecado, string> = {
   recado: "bg-muted text-muted-foreground",

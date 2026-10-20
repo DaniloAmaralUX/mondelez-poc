@@ -23,7 +23,7 @@
     ],
     "medicoes": "shots/login__*.json (alvos, pares a menos de 12 px, fontes dos campos, texto < 14 px, contraste WCAG) e saida.log",
     "roteiro": "login.mjs: toque na matrícula, 104233, PIN errado 1111 por toque, PIN 1234 por toque; aviso Bom turno com o sistema claro e escuro. login2.mjs: Entrar, título, indicadores e painel primário, também no desktop.",
-    "rodada_anterior": "C:/Users/dar/AppData/Local/Temp/v03/h/ui-audit-operador"
+    "rodada_anterior": "auditoria do operador, v0.3 (rodada 1)"
   },
   "macro_bets": [
     { "category": "velocity", "description": "Entrar com crachá e 4 toques no PIN, sem teclado do sistema", "alignment": "strong" },

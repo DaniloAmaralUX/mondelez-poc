@@ -77,7 +77,7 @@ export function irParaItem(itemId: string) {
 }
 
 /**
- * Checklist em etapas (padrão de steppers do UI Audit): um grupo por vez, revisão no fim e uma barra fixa com a próxima
+ * Checklist em etapas (padrão de steppers da auditoria de UX, doc 09): um grupo por vez, revisão no fim e uma barra fixa com a próxima
  * ação sempre ao alcance do polegar (modo foco, docs/12 §3.2 e §3.4).
  *
  * Lista de etapas só com 720 px ou mais de área útil (container `foco`) e altura de 600 px ou mais (pouca-altura:,
@@ -327,7 +327,7 @@ export function ChecklistStepper({
 }
 
 /**
- * Barra fixa do checklist: progresso e próxima ação sempre à vista (UI Audit, prioridade 1).
+ * Barra fixa do checklist: progresso e próxima ação sempre à vista (auditoria de UX, prioridade 1).
  *
  * - Opaca e sem blur no toque (data-touch-bar, src/styles/tablet.css).
  * - Acima do indicador de início do iPad no app instalado (safe area, com viewport-fit=cover).

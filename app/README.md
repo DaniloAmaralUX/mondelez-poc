@@ -43,7 +43,7 @@ Itens do menu com "em breve" (Hora x Hora, MTBF, Relatório do turno, Troca de t
 
 ## v0.2
 
-A v0.2 trocou componentes e layouts onde o template não servia ao chão de fábrica, com base na auditoria UI Audit da v0 (`../docs/auditorias/`) e nas guias de Emil Kowalski (lista de bibliotecas de Emil Kowalski, design engineering de Emil Kowalski, oportunidades de movimento). Decisões em `../docs/11-v0.2-componentes-e-layout.md`.
+A v0.2 trocou componentes e layouts onde o template não servia ao chão de fábrica, com base na auditoria de UX da v0 (`../docs/auditorias/`, método do doc 09) e nos princípios de interface e movimento de Emil Kowalski. Decisões em `../docs/11-v0.2-componentes-e-layout.md`.
 
 - Minha Rotina: "Fazer agora" em destaque, lista de tarefas tocável com "Desfazer", linha do turno em timeline.
 - Checklist: etapas por grupo com revisão final, barra fixa com progresso, C/NC/NA de 44 px, centerline com −/+ e régua da faixa.

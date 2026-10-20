@@ -41,7 +41,7 @@
     ],
     "medicoes": "shots/checklist__*.json, prepartida__*.json, checklist.log (posição da barra, estado dos passos e avisos em cada etapa)",
     "roteiro": "checklist.mjs: Registrar no Fazer agora → NC no item 1 + justificativa → Registrar desvio (Cancelar) → Restantes conformes → Próximo → Restantes conformes → Próximo → + nos 4 centerlines → Próximo (deve abrir Revisar) → Ver documento → Registrar → toque no avatar 1 s depois → rotina com filtro Feitas; o mesmo em paisagem, Split e desktop (mouse); pré-partida em consulta; sistema escuro + Próximo com pendência. checklist2.mjs: Enter no Próximo de Centerline (desktop) e Registrar → Desfazer. bloqueio.mjs: pré-partida no 2º turno. movimento.mjs: revelação da justificativa.",
-    "rodada_anterior": "C:/Users/dar/AppData/Local/Temp/v03/h/ui-audit-operador"
+    "rodada_anterior": "auditoria do operador, v0.3 (rodada 1)"
   },
   "macro_bets": [
     {

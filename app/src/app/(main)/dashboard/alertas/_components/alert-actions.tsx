@@ -49,7 +49,7 @@ function abreComTecladoFisico() {
 }
 
 /**
- * Ações de tratamento sempre visíveis no rodapé do detalhe (UI Audit: estavam a dois toques).
+ * Ações de tratamento sempre visíveis no rodapé do detalhe (auditoria de UX: estavam a dois toques).
  * Assumir é um toque; registrar ação e resolver pedem o texto que vai para o histórico. Nenhuma pede confirmação:
  * todas mostram "Desfazer" por 10 s (docs/12 §2 item 5).
  */

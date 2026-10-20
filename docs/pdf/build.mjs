@@ -26,7 +26,7 @@ const chapters = [
   { num: '06', title: 'Priorização MoSCoW', file: '06-moscow.md', lead: 'O que entra no protótipo, o que fica para o piloto, definição de pronto e ordem de construção.' },
   { num: '07', title: 'Processo de trabalho', file: '07-como-trabalhamos.md', lead: 'Frentes, ritmo, git e PRs, definição de pronto, convenções e comunicação.' },
   { num: '08', title: 'Plano de implementação', file: '08-plano-de-implementacao.md', lead: 'Ambiente, incrementos, frentes por módulo, backlog inicial, critérios de aceite e referências técnicas.' },
-  { num: '09', title: 'Framework de UX (UI Audit)', file: '09-framework-ux-ui-audit.md', lead: 'O guia UI Audit aplicado ao projeto: apostas, leis de psicologia por tela, padrões por template, regras pré-decididas e ritual de auditoria.' },
+  { num: '09', title: 'Framework de UX (UI Audit)', file: '09-framework-ux-ui-audit.md', lead: 'O framework UI Audit aplicado ao projeto: apostas, leis de psicologia por tela, padrões por template, regras pré-decididas e ritual de auditoria.' },
 ];
 
 const slug = (s) => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');

@@ -149,7 +149,7 @@ export function AlertList({ alertas, selectedAlertId, selecaoExplicita, onSelect
     // inteira na pilha do retrato), não pelo viewport.
     <Card className="@container/lista h-full rounded-none bg-transparent ring-0">
       <CardHeader>
-        {/* h1 da tela (UI Audit 10.5): a lista é a entrada de Alertas; o detalhe tem o próprio título. */}
+        {/* h1 da tela (auditoria de UX, 10.5): a lista é a entrada de Alertas; o detalhe tem o próprio título. */}
         <CardTitle className="text-2xl">
           <h1>Alertas</h1>
         </CardTitle>

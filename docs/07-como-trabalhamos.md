@@ -74,7 +74,7 @@ As frentes podem ser ocupadas por uma ou mais pessoas; a divisão inicial de mó
 | Git + GitLab Pitang | Versionamento, PRs, revisão |
 | Vercel (CLI e painel) | Preview por PR, produção, logs |
 | Tablet do laboratório (10.9", com luva) | Teste real de toque e layout |
-| Documentação oficial das bibliotecas | Apoio de desenvolvimento com documentação atualizada das bibliotecas |
+| Documentação oficial das bibliotecas | Consulta à versão atual de cada API antes de usar |
 
 ## Gerar este documento em PDF
 

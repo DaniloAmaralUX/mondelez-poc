@@ -24,7 +24,7 @@ function abrirAlerta(alertaId: string, irPara: (href: string) => void) {
   else irPara(href);
 }
 
-/** Avisa a liderança quando surge um alerta novo, em qualquer tela (feedback do UI Audit, padrão 25). */
+/** Avisa a liderança quando surge um alerta novo, em qualquer tela (auditoria de UX do doc 09, padrão 25). */
 export function AlertWatcher() {
   const router = useRouter();
   const usuario = useUsuarioAtual();

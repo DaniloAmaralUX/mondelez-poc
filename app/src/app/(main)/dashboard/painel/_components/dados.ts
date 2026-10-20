@@ -6,7 +6,7 @@ import type { LinhaNoRelatorio } from "@/hooks/use-producao";
 import { rotuloDoTurno } from "../../relatorio-turno/_components/indicadores";
 
 /**
- * Cor de cada linha (identidade, ordem fixa, nunca pela posição no ranking). Validada com o validador da guia dataviz
+ * Cor de cada linha (identidade, ordem fixa, nunca pela posição no ranking). Validada com um verificador de cores para gráficos
  * no fundo claro: o `--chart-3` do tema (lilás claro) reprovou em luminosidade e croma e foi trocado pelo sky-600 do
  * Tailwind. O par âmbar/verde fica na faixa 6–8 de ΔE para protanopia, legal com o rótulo direto no fim de cada linha e a
  * tabela embaixo.

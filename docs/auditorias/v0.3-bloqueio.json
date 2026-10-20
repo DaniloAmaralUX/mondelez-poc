@@ -26,7 +26,7 @@
     ],
     "medicoes": "shots/bloqueio__*.json (escopo: dialog[open]) e bloqueio.log",
     "roteiro": "bloqueio.mjs: menu da pessoa → Bloquear tablet → Outra pessoa (foco) → matrícula 999999 + PIN → Continuar como Alberto + PIN 1234 → menu da pessoa → Renata Lins → PIN 9999 → Voltar para Alberto → Demonstração: Ir para o fim do turno + Avançar 15 min (virada) → PIN 1234; troca para Renata com o sistema escuro (aviso \"Agora com…\").",
-    "rodada_anterior": "C:/Users/dar/AppData/Local/Temp/v03/h/ui-audit-operador"
+    "rodada_anterior": "auditoria do operador, v0.3 (rodada 1)"
   },
   "macro_bets": [
     { "category": "accuracy", "description": "Cada registro com a pessoa certa no tablet compartilhado (RNF-06)", "alignment": "strong" },

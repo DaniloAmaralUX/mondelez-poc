@@ -2,8 +2,8 @@ import { defineConfig, devices } from "@playwright/test";
 
 /**
  * Suíte de verificação de tela (docs/18). Segue a recomendação do Next.js e do Playwright: testa o build de produção
- * (`next build` + `next start`), não o servidor de desenvolvimento, que fica lento e instável com várias pessoas e
- * agentes compilando ao mesmo tempo. Porta própria (3200), para não disputar com o `next dev` da 3100.
+ * (`next build` + `next start`), não o servidor de desenvolvimento, que fica lento e instável com vários
+ * processos compilando ao mesmo tempo. Porta própria (3200), para não disputar com o `next dev` da 3100.
  *
  * - `npm run build` antes (o webServer só sobe o `next start`); `reuseExistingServer` reaproveita um que já esteja de pé.
  * - Projeto `setup` entra uma vez por persona e guarda o estado com IndexedDB (`storageState({ indexedDB: true })`):

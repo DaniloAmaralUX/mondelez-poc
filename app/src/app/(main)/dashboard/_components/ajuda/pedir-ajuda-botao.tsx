@@ -20,7 +20,7 @@ export function PedirAjudaBotao(props: { comRotulo?: boolean; className?: string
   const usuario = useUsuarioAtual();
   const usuarioId = useSessionStore((s) => s.usuarioId);
   if (usuario?.perfil !== "operacao") return null;
-  // Sheet com texto digitado: a troca de pessoa remonta tudo, inclusive o "aberto" (regras do código).
+  // Sheet com texto digitado: a troca de pessoa remonta tudo, inclusive o "aberto" (app/CONVENCOES.md).
   return <BotaoComSheet key={usuarioId} {...props} />;
 }
 

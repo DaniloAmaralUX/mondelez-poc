@@ -31,7 +31,7 @@ function useTarefasDaHora() {
   return (minhas.some(doHoraXHora) ? minhas : daOperacao).filter(doHoraXHora);
 }
 
-/** O rascunho é de quem está no posto: trocou a pessoa, o card começa vazio (regras do código, sessão compartilhada). */
+/** O rascunho é de quem está no posto: trocou a pessoa, o card começa vazio (app/CONVENCOES.md, tablet compartilhado). */
 export function HoraXHora() {
   const usuarioId = useSessionStore((s) => s.usuarioId);
   return <Conteudo key={usuarioId ?? "ninguem"} />;

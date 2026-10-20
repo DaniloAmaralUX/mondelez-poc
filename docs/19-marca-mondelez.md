@@ -2,6 +2,8 @@
 
 O protótipo passa a ter cara de produto interno da Mondelēz International. O acabamento da v0.4 (doc 14) continua: hierarquia por superfície e sombra, toque, movimento e tipografia por tamanho. A marca fica por cima, como um tema do template (`mondelez`), e vira o padrão.
 
+> **Atualizado na v0.7 (doc 20b).** Logo, nome, assinatura, fontes, rampas de estado e PWA continuam como aqui. Mudaram: o fundo (branco com um traço do creme, cinzas neutros), a sidebar (preta, no desenho do YouTube), o título de tela (cor do texto, não roxo), o login (página branca e painel roxo com luz em movimento) e o escuro (no desenho do YouTube Music). As tabelas dos §4 e §6 abaixo registram a v0.6.
+
 ## 1. Fontes
 
 | Fonte | O que usamos |
@@ -10,7 +12,7 @@ O protótipo passa a ter cara de produto interno da Mondelēz International. O a
 | Asset library da Mondelēz (`MDLZ_SMR_Logo.zip`: logo com a assinatura, inclusive "Over Purple") | logo com "Snacking Made Right" e o campo roxo |
 | Brand book MDLZ 2019 (SlideShare) | propósito, valores, voz, regras do logo, paleta, tipografia, ilustração, sinalização |
 | Site mondelezinternational.com | cores mais usadas (#4F2170, #724D8D, #36174D, #E18719, #287819, #FAF3E7, #A52323), fontes (Calibri, MDLZ Bite Type, Bw Surco) |
-| Guias `branding` e guia de colors; documentação oficial (Tailwind v4 theme variables, `next/font`, metadata e manifest do Next 16) | método, tokens, contraste, implementação |
+| Método de estratégia de marca e de sistema de cores (rampas, papéis e contraste medido); documentação oficial do Tailwind v4 (theme variables), `next/font` e metadata e manifest do Next 16 | método, tokens, contraste, implementação |
 
 ## 2. Estratégia de aplicação
 
@@ -53,7 +55,7 @@ Primitivas da marca, em OKLCH, conferidas com `culori` (OKLCH a partir do hex of
 | Atenção | Golden Wheat | #E18719 / #EAAB5E | 0.704 0.154 63.3 |
 | Info | Cool Blue | #2D6EAA | 0.5258 0.1154 249.5 |
 
-**Rampas de estado.** As telas usam as cores do Tailwind (`text-green-700`, `bg-amber-500`, `text-red-400`...), mais de 300 ocorrências em arquivos de várias frentes. Em vez de editar cada uma, o preset redefine as variáveis `--color-{green,emerald,lime,teal,red,rose,amber,orange,yellow,blue,sky,cyan,indigo,violet,purple}-{50…950}`. O Tailwind v4 gera os utilitários como `var(--color-…)`, então a troca vale para tudo (documentação oficial: theme variables, sem `inline`). Cada degrau mantém a **luminosidade** da rampa do Tailwind, para que os pares de contraste já medidos continuem valendo, e recebe o **matiz e a saturação** da cor da marca, interpolados entre os tons oficiais. A cor oficial ocupa o degrau de luminosidade mais próxima: green-700 = #287819, red-800 = #A52323, amber-500 = #EAAB5E, yellow-500 = #E6AF23, blue-600 = #2D6EAA, violet-700 = #724D8D, violet-900 = #4F2170. Os gráficos (`--chart-1…5`) seguem a ordem roxo, Golden Wheat, Cool Blue, Go Green e Cocoa Brown.
+**Rampas de estado.** As telas usam as cores do Tailwind (`text-green-700`, `bg-amber-500`, `text-red-400`...), mais de 300 ocorrências em arquivos de várias frentes. Em vez de editar cada uma, o preset redefine as variáveis `--color-{green,emerald,lime,teal,red,rose,amber,orange,yellow,blue,sky,cyan,indigo,violet,purple}-{50…950}`. O Tailwind v4 gera os utilitários como `var(--color-…)`, então a troca vale para tudo (documentação do Tailwind v4: theme variables, sem `inline`). Cada degrau mantém a **luminosidade** da rampa do Tailwind, para que os pares de contraste já medidos continuem valendo, e recebe o **matiz e a saturação** da cor da marca, interpolados entre os tons oficiais. A cor oficial ocupa o degrau de luminosidade mais próxima: green-700 = #287819, red-800 = #A52323, amber-500 = #EAAB5E, yellow-500 = #E6AF23, blue-600 = #2D6EAA, violet-700 = #724D8D, violet-900 = #4F2170. Os gráficos (`--chart-1…5`) seguem a ordem roxo, Golden Wheat, Cool Blue, Go Green e Cocoa Brown.
 
 **Contraste medido** (pares de token declarados; `docs/assets/v0.6` tem as capturas):
 

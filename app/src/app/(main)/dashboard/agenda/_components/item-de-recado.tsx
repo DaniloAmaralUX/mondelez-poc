@@ -26,7 +26,7 @@ import { ICONE_DO_TIPO, NOME_DO_TIPO, ondeDoRecado, publicacao, quandoDoRecado, 
  * onde e quando, e quem publicou. "Retirar" aparece para quem publicou e para a Gerência (regra de `removerRecado`).
  *
  * Retirar pede confirmação (AlertDialog) e não tem desfazer: o contrato não tem como restaurar um recado, e publicar de
- * novo mandaria outro aviso por e-mail para a fábrica toda (regras do código: AlertDialog só para o irreversível).
+ * novo mandaria outro aviso por e-mail para a fábrica toda (app/CONVENCOES.md: AlertDialog só para o irreversível).
  */
 export function ItemDeRecado({
   recado,

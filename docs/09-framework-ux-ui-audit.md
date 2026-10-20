@@ -1,10 +1,10 @@
 # 09 · Framework de decisão de UX (UI Audit) aplicado ao projeto
 
-Deep dive no repositório `tommygeoco/ui-audit` (v1.0.2, MIT), framework de auditoria baseado no livro *Making UX Decisions*, de Tommy Geoco (uxtools.co). Clonado em `refs/ui-audit/` para leitura.
+Deep dive no repositório `tommygeoco/ui-audit` (v1.0.2, MIT), o framework de auditoria baseado no livro *Making UX Decisions*, de Tommy Geoco (uxtools.co). Lido a partir de um clone local, fora deste repositório.
 
 ## 1. O que é
 
-Não é uma biblioteca de componentes nem um linter. É um **conjunto de referências em markdown** (26 arquivos) que serve para tomar e auditar decisões de interface de forma estruturada. Três camadas:
+Não é uma biblioteca de componentes nem um linter. É um **conjunto de referências em markdown** (26 arquivos) para tomar e auditar decisões de interface de forma estruturada. Três camadas:
 
 | Camada | Arquivos | Função |
 |---|---|---|
@@ -112,11 +112,11 @@ Adotadas do framework, ajustadas ao chão de fábrica:
 
 ## 9. Ritual de auditoria por incremento
 
-1. Ao fechar cada incremento (I1 a I6), gerar uma auditoria por tela nova no formato JSON do guia, com as macro-apostas da seção 4 e os JTBD do doc 04.
+1. Ao fechar cada incremento (I1 a I6), gerar uma auditoria por tela nova no formato JSON do framework, com as macro-apostas da seção 4 e os JTBD do doc 04.
 2. Seções obrigatórias: hierarquia visual, estilo visual, acessibilidade. Contextuais: navegação e usabilidade sempre; formulários nos templates T2, T3 e T5.
 3. Cada item `fail` vira issue antes do incremento seguinte; `warn` entra no backlog de polimento (I6).
 4. Guardar os relatórios em `docs/auditorias/<incremento>-<tela>.json` para comparar evolução.
-5. Pedido padrão ao assistente: "Audite a tela `/rotina` no viewport 1180 × 820 usando a guia UI Audit, com as apostas Velocidade e Acurácia e os JTBD do operador; priorize correções que reduzam toques ou tempo de registro."
+5. Escopo padrão de uma auditoria: a tela (ex.: `/rotina`) no viewport 1180 × 820, com as apostas Velocidade e Acurácia e os JTBD do operador, priorizando correções que reduzam toques ou tempo de registro.
 
 Checklists rápidas do framework que entram na revisão de PR: **Quick Fidelity Audit** (`11`), **Visual Style Audit** (`12`), **Cognitive Load Audit** (`22`), **Accessibility Checklist** (`27`).
 
@@ -126,7 +126,6 @@ Das sete, três são úteis aqui: **Seja intencional** (toda decisão tem motivo
 
 ## 11. Como usar no dia a dia
 
-- A guia está em referências locais. O o ambiente de desenvolvimento a carrega quando o pedido menciona auditoria, decisão de UI ou padrão de interface.
 - Para decidir um padrão novo: abrir o arquivo de padrões correspondente, usar a tabela de seleção no fim de cada arquivo, registrar a escolha e o motivo.
-- Para revisar uma tela: pedir a auditoria JSON e tratar a lista de correções prioritárias.
+- Para revisar uma tela: gerar a auditoria JSON e tratar a lista de correções prioritárias.
 - Fonte original e atualizações: `audit.uxtools.co` e o repositório no GitHub.
