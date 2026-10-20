@@ -248,7 +248,7 @@ export function AlertList({ alertas, selectedAlertId, selecaoExplicita, onSelect
               </Empty>
             )}
             {visiveis.map((alerta, indice) => (
-              // Reordenação por estado e criticidade desliza em vez de pular (oportunidades de movimento, item 4).
+              // Reordenação por estado e criticidade desliza em vez de pular (oportunidades de movimento da v0.2, item 4).
               // layoutDependency: o motion só mede quando a posição do card na lista muda (estado, filtro, alerta novo),
               // e não a cada virada de minuto do relógio, que re-renderiza a lista inteira (docs/12 §3.6).
               // rounded-xl bg-card: um card que desliza passa por cima, e não através, de outro que entra no meio.

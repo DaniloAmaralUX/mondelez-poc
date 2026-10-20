@@ -8,7 +8,7 @@
  * indicar estado (sombra, borda neutra, raio, tipografia, transform do toque); cor de fundo e borda de estado continuam
  * nos utilitários de cada tela.
  *
- * Fontes: princípios da Apple (§1 resposta no toque, §12 materiais, §15 tipografia), design engineering de Emil Kowalski (scale 0.97 no :active,
+ * Fontes: princípios de design da Apple (resposta no toque, materiais, tipografia), Emil Kowalski (scale no :active,
  * ease-out forte, < 300 ms), baseline-ui (tabular-nums, text-balance, um acento por tela) e HIG (Typography, Materials).
  */
 
@@ -42,7 +42,7 @@
   font-feature-settings: "cv11", "ss03";
 }
 
-/* Tracking por tamanho (princípios da Apple §15): títulos grandes apertam, corpo fica em 0. Peso dá a hierarquia. */
+/* Tracking por tamanho (princípios da Apple, tipografia): títulos grandes apertam, corpo fica em 0. Peso dá a hierarquia. */
 :root:is([data-theme-preset="apple"], [data-theme-preset="mondelez"]) :is(h1, h2) {
   font-weight: 600;
   letter-spacing: -0.021em;
@@ -77,7 +77,7 @@
   box-shadow: 0 0 0 0.5px var(--hairline);
 }
 
-/* Menus e popovers: material mais espesso que o card (princípios da Apple §12), cantos maiores. */
+/* Menus e popovers: material mais espesso que o card (princípios da Apple, materiais), cantos maiores. */
 :root:is([data-theme-preset="apple"], [data-theme-preset="mondelez"])
 :is(
   [data-slot="dropdown-menu-content"],
@@ -135,7 +135,7 @@
 }
 
 /* ---------------------------------------------------------------------------------------------------------------- */
-/* Toque: resposta no press (princípios da Apple §1, design engineering de Emil Kowalski)                                                       */
+/* Toque: resposta no press (princípios da Apple; Emil Kowalski)                                                    */
 /* ---------------------------------------------------------------------------------------------------------------- */
 
 /* v0.7: o press e as curvas saíram daqui para src/styles/movimento.css (uma regra só, em 0,96, e só sem "reduzir

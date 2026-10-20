@@ -37,7 +37,7 @@ const VAZIO: Record<Filtro, string> = {
   feitas: "Nenhuma tarefa feita ainda neste turno.",
 };
 
-// Saída rápida e sem salto quando a tarefa muda de grupo (oportunidades de movimento, item 1).
+// Saída rápida e sem salto quando a tarefa muda de grupo (oportunidades de movimento da v0.2, item 1).
 const SAIDA = { duration: 0.18, ease: [0.23, 1, 0.32, 1] } as const;
 const SAI_COM_ESCALA = { opacity: 0, scale: 0.98 } as const;
 

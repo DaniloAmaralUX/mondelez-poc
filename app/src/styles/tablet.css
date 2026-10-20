@@ -367,7 +367,7 @@ html[data-density="touch"]:has([data-slot="sidebar-inset"] > header) {
 }
 
 /* ---------------------------------------------------------------------------------------------------- */
-/* Baseline interface nativa (sempre ligada). Em @layer base para que utilitários como touch-none vençam.   */
+/* Baseline de interface nativa (sempre ligada). Em @layer base para que utilitários como touch-none vençam.   */
 /* overscroll-behavior: none já está em globals.css.                                                     */
 /* ---------------------------------------------------------------------------------------------------- */
 
