@@ -35,7 +35,10 @@ export function StatusTarefa({
   const { variante, rotulo } = statusDaTarefa(tarefa);
   return (
     <Status variant={variante} className={cn("text-sm", STATUS_LEGIVEL, className)}>
-      <StatusIndicator className={variante === "error" && pulsar ? undefined : "before:hidden"} />
+      {/* Atrasada: três pulsos e depois parado (um alarme que pisca o turno inteiro deixa de ser visto). */}
+      <StatusIndicator
+        className={variante === "error" && pulsar ? "before:[animation-iteration-count:3]" : "before:hidden"}
+      />
       <StatusLabel>{rotulo}</StatusLabel>
     </Status>
   );

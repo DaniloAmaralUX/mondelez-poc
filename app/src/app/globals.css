@@ -13,6 +13,9 @@
 /* Densidade para toque e baseline interface nativa do projeto (v0.3); não edita components/ui. */
 @import "../styles/tablet.css";
 
+/* Vocabulário de movimento e o press único (v0.7). */
+@import "../styles/movimento.css";
+
 /* Refinamento do tema Apple por data-slot (v0.4, docs/14); só age com data-theme-preset="apple". */
 @import "../styles/tema-apple.css";
 

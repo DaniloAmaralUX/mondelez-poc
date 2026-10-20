@@ -67,7 +67,8 @@ export function SyncStatus() {
   if (rede === "offline") {
     estado = {
       variante: "warning",
-      pulsar: true,
+      // Sem rede pode durar horas: ponto parado (cor, texto e a hora da última já avisam). O pulso fica só no envio.
+      pulsar: false,
       hora: "ultima",
       rotulo: (
         <>
@@ -79,7 +80,7 @@ export function SyncStatus() {
   } else if (fila.enviando > 0) {
     estado = { variante: "info", pulsar: true, rotulo: `Enviando ${fila.enviando}` };
   } else if (fila.erro > 0) {
-    estado = { variante: "error", pulsar: true, hora: "ultima", rotulo: "Erro no envio", tentarDeNovo: true };
+    estado = { variante: "error", pulsar: false, hora: "ultima", rotulo: "Erro no envio", tentarDeNovo: true };
   } else if (fila.aguardando > 0) {
     estado = {
       variante: "default",

@@ -12,12 +12,12 @@ export function Duracao({ ms }: { readonly ms: number }) {
     <span className="tabular-nums">
       {horas > 0 && (
         <>
-          <NumberFlow value={horas} /> h{minutos > 0 ? " " : ""}
+          <NumberFlow value={horas} animated={false} /> h{minutos > 0 ? " " : ""}
         </>
       )}
       {(horas === 0 || minutos > 0) && (
         <>
-          <NumberFlow value={minutos} /> min
+          <NumberFlow value={minutos} animated={false} /> min
         </>
       )}
     </span>

@@ -7,6 +7,7 @@ import { cn } from "cn";
 
 import { LIMITE_GE } from "@/domain/alertas-indicadores";
 import type { resumoDaSerie } from "@/domain/producao";
+import { TEMPO_DO_NUMERO } from "@/lib/numero";
 
 import { FarolStatus } from "./farol-status";
 import { FORMATO_TON, inteiro, pct, tonTurno } from "./formato";
@@ -54,7 +55,7 @@ export function IndicadoresDoTurno({ resumo, caixasTurno }: { readonly resumo: R
           titulo="Toneladas no turno"
           valor={
             <>
-              <NumberFlow value={resumo.toneladas} format={FORMATO_TON} locales="pt-BR" />
+              <NumberFlow {...TEMPO_DO_NUMERO} value={resumo.toneladas} format={FORMATO_TON} locales="pt-BR" />
               <span className="font-normal text-lg text-muted-foreground"> t</span>
             </>
           }
@@ -72,6 +73,7 @@ export function IndicadoresDoTurno({ resumo, caixasTurno }: { readonly resumo: R
               <span className="text-muted-foreground">—</span>
             ) : (
               <NumberFlow
+                {...TEMPO_DO_NUMERO}
                 value={resumo.ge}
                 format={{ style: "percent", maximumFractionDigits: 0 }}
                 locales="pt-BR"
@@ -87,7 +89,7 @@ export function IndicadoresDoTurno({ resumo, caixasTurno }: { readonly resumo: R
           titulo="Meta do turno"
           valor={
             <>
-              <NumberFlow value={resumo.metaTurno} format={FORMATO_TON} locales="pt-BR" />
+              <NumberFlow animated={false} value={resumo.metaTurno} format={FORMATO_TON} locales="pt-BR" />
               <span className="font-normal text-lg text-muted-foreground"> t</span>
             </>
           }
@@ -99,7 +101,7 @@ export function IndicadoresDoTurno({ resumo, caixasTurno }: { readonly resumo: R
           titulo="Horas apontadas"
           valor={
             <>
-              <NumberFlow value={resumo.horasApontadas} />
+              <NumberFlow {...TEMPO_DO_NUMERO} value={resumo.horasApontadas} />
               <span className="font-normal text-lg text-muted-foreground"> de 8</span>
             </>
           }

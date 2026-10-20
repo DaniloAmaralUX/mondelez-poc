@@ -150,7 +150,11 @@ function FormularioDaPassagem({
 
   // Depois de entregar, a tela leva ao aceite (o formulário remonta com a troca gravada).
   React.useEffect(() => {
-    if (troca && !troca.aceitePor) aceiteRef.current?.scrollIntoView({ block: "start", behavior: "smooth" });
+    if (troca && !troca.aceitePor)
+      aceiteRef.current?.scrollIntoView({
+        block: "start",
+        behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+      });
   }, [troca]);
 
   const papel = (

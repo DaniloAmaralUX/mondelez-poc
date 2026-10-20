@@ -137,7 +137,7 @@ export function NavMain({ items }: NavMainProps) {
               <SidebarMenuButton
                 asChild
                 tooltip="Registrar agora"
-                className="min-w-8 toque:gap-3 bg-primary text-primary-foreground duration-200 ease-linear hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground"
+                className="min-w-8 toque:gap-3 bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground"
               >
                 {/* prefetch: rota do operador em cache para abrir sem rede (lib/rotas.ts). */}
                 <Link prefetch href={proxima ? hrefDaTarefa(proxima) : "/dashboard/rotina"} onClick={fecharSidebar}>
@@ -319,7 +319,7 @@ function NavCollapsibleItem({ item, isActive, defaultOpen, isSubItemActive }: Na
           <SidebarMenuButton tooltip={item.title} isActive={isActive} disabled={item.disabled}>
             {Icon && <Icon />}
             <span>{item.title}</span>
-            <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+            <ChevronRight className="ml-auto group-data-[state=open]/collapsible:rotate-90" />
           </SidebarMenuButton>
         </CollapsibleTrigger>
         <NavItemBadge badge={item.badge} />

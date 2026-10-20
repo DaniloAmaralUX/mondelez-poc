@@ -179,8 +179,8 @@ function ItemRow({
                   toque:w-20, não toque:min-w-20: o min-width da camada de toque (src/styles/tablet.css, sem layer)
                   venceria um min-w-* e voltaria a 56 px.
                   Nome acessível começa pelo texto visível (WCAG 2.5.3): quem usa controle por voz diz "NC".
-                  PRESSAO: retorno no pointerdown (o Toggle do template só muda de cor no clique); troca a transição
-                  de cor do template pela de escala, e a cor da resposta muda na hora. */}
+                  PRESSAO: retorno no pointerdown (o Toggle do template só muda de cor no clique); escala 0,96 e cor
+                  em 140 ms, e só a cor com "reduzir movimento" (src/styles/movimento.css). */}
               {OPCOES.map((opcao) => (
                 <ToggleGroupItem
                   key={opcao.valor}

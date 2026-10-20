@@ -14,6 +14,7 @@ import { concluida, proximaTarefa } from "@/domain/routine-engine";
 import { useMinhasTarefas } from "@/hooks/use-turno";
 import { formatarHora } from "@/lib/format";
 import { ICONE_MODULO } from "@/lib/modulo-icones";
+import { TEMPO_DO_NUMERO } from "@/lib/numero";
 import { PRESSAO } from "@/lib/pressao";
 import { hrefDaTarefa } from "@/lib/rotas";
 import { useAgora } from "@/stores/session/session-store";
@@ -37,14 +38,16 @@ export function FazerAgora() {
   const contadores = (
     <CardFooter className="flex-wrap gap-x-6 gap-y-1 border-t text-muted-foreground text-sm">
       <span>
-        <NumberFlow value={paraAgora} className="font-medium text-foreground" /> para agora
+        <NumberFlow {...TEMPO_DO_NUMERO} value={paraAgora} className="font-medium text-foreground" /> para agora
       </span>
       <span>
-        <NumberFlow value={progresso} suffix="%" className="font-medium text-foreground" /> do turno feito
+        <NumberFlow {...TEMPO_DO_NUMERO} value={progresso} suffix="%" className="font-medium text-foreground" /> do
+        turno feito
       </span>
       {atrasadas > 0 && (
         <span className="text-destructive">
-          <NumberFlow value={atrasadas} className="font-medium" /> {atrasadas === 1 ? "atrasada" : "atrasadas"}
+          <NumberFlow {...TEMPO_DO_NUMERO} value={atrasadas} className="font-medium" />{" "}
+          {atrasadas === 1 ? "atrasada" : "atrasadas"}
         </span>
       )}
       {/* Reconhecimento (job P2 do operador, RF-17 no mínimo do doc 06): tudo o que já venceu foi feito no prazo e sem NC. */}

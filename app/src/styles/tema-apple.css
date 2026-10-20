@@ -13,9 +13,6 @@
  */
 
 :root:is([data-theme-preset="apple"], [data-theme-preset="mondelez"]) {
-  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
-  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
-  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
   /* Linha fina neutra (hairline) para separar sem desenhar caixa. */
   --hairline: oklch(0 0 0 / 6%);
 }
@@ -141,27 +138,12 @@
 /* Toque: resposta no press (princípios da Apple §1, design engineering de Emil Kowalski)                                                       */
 /* ---------------------------------------------------------------------------------------------------------------- */
 
-:root:is([data-theme-preset="apple"], [data-theme-preset="mondelez"])
-:is([data-slot="button"], [data-slot="toggle"], [data-slot="toggle-group-item"], [data-slot="sidebar-menu-button"]) {
-  transition-property: color, background-color, border-color, box-shadow, opacity, transform;
-  transition-duration: 160ms;
-  transition-timing-function: var(--ease-out);
-}
-
-:root:is([data-theme-preset="apple"], [data-theme-preset="mondelez"])
-  :is([data-slot="button"], [data-slot="toggle"], [data-slot="toggle-group-item"]):active:not(
-    :disabled,
-    [aria-haspopup]
-  ) {
-  translate: none;
-  transform: scale(0.97);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  :root:is([data-theme-preset="apple"], [data-theme-preset="mondelez"])
-    :is([data-slot="button"], [data-slot="toggle"], [data-slot="toggle-group-item"]):active {
-    transform: none;
-  }
+/* v0.7: o press e as curvas saíram daqui para src/styles/movimento.css (uma regra só, em 0,96, e só sem "reduzir
+   movimento"). Os itens da sidebar ficam só com a transição de cor. */
+:root:is([data-theme-preset="apple"], [data-theme-preset="mondelez"]) [data-slot="sidebar-menu-button"] {
+  transition-property: color, background-color;
+  transition-duration: var(--duracao-press);
+  transition-timing-function: ease;
 }
 
 /* Botão principal: um leve brilho de material no topo e sombra curta, como os botões preenchidos do iOS. */

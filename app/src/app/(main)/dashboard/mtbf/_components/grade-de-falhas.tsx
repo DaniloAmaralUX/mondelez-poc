@@ -31,7 +31,7 @@ function tempoCorrendo(falha: EventoFalha, agora: Date) {
  * "Resolvido" à vista; o segundo toque encerra. Toque errado: o aviso traz "Desfazer" por 10 s, e depois disso a linha
  * do tempo mantém o "Desfazer" para quem apontou, até `JANELA_APAGAR_FALHA_MS`.
  *
- * O retorno é o do tema no pointer-down (scale 0.97, `PRESSAO`); nenhuma animação além dele, porque o apontamento se
+ * O retorno é o do tema no pointer-down (escala 0,96, `PRESSAO`, src/styles/movimento.css); nenhuma animação além dele, porque o apontamento se
  * repete dezenas de vezes por turno (Emil).
  */
 export function GradeDeFalhas({

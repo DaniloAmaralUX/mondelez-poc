@@ -85,7 +85,10 @@ function Conteudo() {
     // O card visível (em cima no iPad, ao lado no notebook) entra na tela com o campo de caixas focado.
     const slot = [slotTopo.current, slotLado.current].find((s) => s && s.offsetParent !== null);
     requestAnimationFrame(() => {
-      slot?.scrollIntoView({ block: "start", behavior: "smooth" });
+      slot?.scrollIntoView({
+        block: "start",
+        behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+      });
       slot?.querySelector<HTMLInputElement>('input[inputmode="numeric"]')?.focus({ preventScroll: true });
     });
   }

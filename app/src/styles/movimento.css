@@ -1,0 +1,142 @@
+/*
+ * Movimento do app (v0.7, docs/20 §2 e docs/auditorias/v0.7-emil.md). Um vocabulário só, com nomes próprios: os
+ * tokens antigos do tema Apple se chamavam --ease-out e --ease-in-out, os mesmos do Tailwind, e trocavam a curva de
+ * todo utilitário ease-* conforme o preset (o Sheet herdava o ease-in-out forte e passava metade da entrada invisível).
+ *
+ * Princípios de movimento de Emil Kowalski (animations.dev) e de acabamento de Jakub Krehel: só transform, opacity e
+ * filter; ease-out para entrar e sair; interface abaixo de 300 ms; nada de animação em ação de teclado ou de alta
+ * frequência; com "reduzir movimento" fica a cor e sai o deslocamento.
+ */
+
+:root {
+  --curva-saida: cubic-bezier(0.23, 1, 0.32, 1);
+  --curva-mover: cubic-bezier(0.77, 0, 0.175, 1);
+  --curva-gaveta: cubic-bezier(0.32, 0.72, 0, 1);
+  --duracao-press: 140ms;
+  --duracao-pop: 180ms;
+  --duracao-painel: 280ms;
+  --escala-press: 0.96;
+}
+
+/* ---------------------------------------------------------------------------------------------------------------- */
+/* Press: uma regra só                                                                                               */
+/* ---------------------------------------------------------------------------------------------------------------- */
+
+/*
+ * Botões do template (nos temas Apple e Mondelēz) e tudo que leva a classe .pressao (lib/pressao.ts: respostas do
+ * checklist, blocos do MTBF, cards tocáveis). Antes eram duas escalas somadas (0,97 do tema × 0,97 do utilitário =
+ * 0,94, com um tranco no 1º quadro). Usa a propriedade scale, que não briga com transforms de posição.
+ */
+:root:is([data-theme-preset="apple"], [data-theme-preset="mondelez"])
+:is([data-slot="button"], [data-slot="toggle"], [data-slot="toggle-group-item"]),
+.pressao {
+  transition-property: color, background-color, border-color, box-shadow, opacity, scale;
+  transition-duration: var(--duracao-press);
+  transition-timing-function: var(--curva-saida);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  :root:is([data-theme-preset="apple"], [data-theme-preset="mondelez"])
+    :is([data-slot="button"], [data-slot="toggle"], [data-slot="toggle-group-item"]):active:not(
+      :disabled,
+      [aria-haspopup],
+      [aria-disabled="true"]
+    ),
+  .pressao:active:not(:disabled, [aria-disabled="true"]) {
+    translate: none;
+    scale: var(--escala-press);
+  }
+}
+
+/* Com "reduzir movimento" o botão também não desce 1 px (active:translate-y-px do template). */
+@media (prefers-reduced-motion: reduce) {
+  [data-slot="button"]:active {
+    translate: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------------------------------------------- */
+/* Camadas: Sheet, popovers e diálogos                                                                               */
+/* ---------------------------------------------------------------------------------------------------------------- */
+
+/* Sheet (e a sidebar no retrato): curva de gaveta, 280 ms para abrir e 200 para fechar. */
+:is([data-slot="sheet-content"], [data-slot="sidebar"][data-mobile="true"])[data-state="open"] {
+  animation-duration: var(--duracao-painel);
+  animation-timing-function: var(--curva-gaveta);
+}
+
+:is([data-slot="sheet-content"], [data-slot="sidebar"][data-mobile="true"])[data-state="closed"] {
+  animation-duration: 200ms;
+  animation-timing-function: var(--curva-gaveta);
+}
+
+/* Popovers, menus, selects e tooltips: 180 ms para abrir, 140 para fechar, ease-out forte. */
+:is(
+  [data-slot="popover-content"],
+  [data-slot="dropdown-menu-content"],
+  [data-slot="dropdown-menu-sub-content"],
+  [data-slot="select-content"],
+  [data-slot="tooltip-content"]
+)[data-state="open"] {
+  animation-duration: var(--duracao-pop);
+  animation-timing-function: var(--curva-saida);
+}
+
+:is(
+  [data-slot="popover-content"],
+  [data-slot="dropdown-menu-content"],
+  [data-slot="dropdown-menu-sub-content"],
+  [data-slot="select-content"],
+  [data-slot="tooltip-content"]
+)[data-state="closed"] {
+  animation-duration: var(--duracao-press);
+  animation-timing-function: var(--curva-saida);
+}
+
+/* Diálogos: centralizados, 200 ms para abrir e 140 para fechar. */
+:is([data-slot="dialog-content"], [data-slot="alert-dialog-content"])[data-state="open"] {
+  animation-duration: 200ms;
+  animation-timing-function: var(--curva-saida);
+}
+
+:is([data-slot="dialog-content"], [data-slot="alert-dialog-content"])[data-state="closed"] {
+  animation-duration: var(--duracao-press);
+  animation-timing-function: var(--curva-saida);
+}
+
+/* A busca abre por ⌘J/Ctrl+J, dezenas de vezes por turno: sem animação, nem no véu. */
+[data-slot="dialog-content"]:has(> [data-slot="command"]),
+[data-slot="dialog-overlay"]:has(+ [data-slot="dialog-content"] > [data-slot="command"]) {
+  animation: none;
+}
+
+/* ---------------------------------------------------------------------------------------------------------------- */
+/* Transições dos componentes do template                                                                            */
+/* ---------------------------------------------------------------------------------------------------------------- */
+
+/* Trocar de aba é frequente: só a cor muda (o template tinha transition: all). */
+[data-slot="tabs-trigger"],
+[data-slot="badge"],
+[data-slot="stepper-trigger"] {
+  transition-property: color, background-color, border-color, box-shadow;
+  transition-duration: var(--duracao-press);
+  transition-timing-function: ease;
+}
+
+[data-slot="switch"] {
+  transition-property: background-color, border-color, box-shadow;
+}
+
+[data-slot="progress-indicator"] {
+  transition: transform var(--duracao-pop) var(--curva-saida);
+}
+
+/*
+ * Recolher a sidebar (também pelo atalho Ctrl/⌘+B) animava largura e margem em 200 ms, e cada quadro refazia as
+ * container queries da tela inteira. Agora a troca é na hora.
+ */
+[data-slot="sidebar-gap"],
+[data-slot="sidebar-container"],
+[data-slot="sidebar-group-label"] {
+  transition: none;
+}

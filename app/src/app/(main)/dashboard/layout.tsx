@@ -61,7 +61,7 @@ export default async function Layout({ children }: Readonly<{ children: ReactNod
             // Sem o group-has-data-[collapsible=icon]/sidebar-wrapper:h-* do template: a altura já vem da variável e o
             // seletor :has() fazia o navegador recalcular o estilo da árvore inteira a cada mudança no DOM (travamento
             // de ~350 ms ao avançar o relógio com CPU 4x; ~120 ms sem ele). docs/13, desempenho.
-            "flex h-(--dashboard-header-height) shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear",
+            "flex h-(--dashboard-header-height) shrink-0 items-center gap-2 border-b",
             // Handle sticky navbar style with conditional classes so blur, background, z-index, and rounded corners remain consistent across all SidebarVariant layouts.
             "[html[data-navbar-style=sticky]_&]:sticky [html[data-navbar-style=sticky]_&]:top-0 [html[data-navbar-style=sticky]_&]:z-50 [html[data-navbar-style=sticky]_&]:overflow-hidden [html[data-navbar-style=sticky]_&]:rounded-t-[inherit] [html[data-navbar-style=sticky]_&]:bg-background/50 [html[data-navbar-style=sticky]_&]:backdrop-blur-md",
             // No tablet a barra fixa é opaca e sem blur (legibilidade sob luz forte e GPU modesta). Aqui fica

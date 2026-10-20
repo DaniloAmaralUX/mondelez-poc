@@ -10,6 +10,7 @@ import { pode } from "@/domain/permissoes";
 import { chaveTurno, turnoAtual } from "@/domain/turno";
 import { useMinhasTarefas, useTarefas } from "@/hooks/use-turno";
 import { formatarHora } from "@/lib/format";
+import { TEMPO_DO_NUMERO } from "@/lib/numero";
 import { useAgora, useSessionStore, useUsuarioAtual } from "@/stores/session/session-store";
 
 import { CabecalhoDaProducao } from "../../hora-x-hora/_components/cabecalho-da-producao";
@@ -92,7 +93,10 @@ function Conteudo() {
     setEscolhida(linha.tarefa.id);
     setRascunho(rascunhoDe(linha.tarefa.id, linha.apontamento));
     requestAnimationFrame(() => {
-      cardRef.current?.scrollIntoView({ block: "start", behavior: "smooth" });
+      cardRef.current?.scrollIntoView({
+        block: "start",
+        behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+      });
       cardRef.current?.querySelector<HTMLInputElement>('input[inputmode="decimal"]')?.focus({ preventScroll: true });
     });
   }
@@ -134,7 +138,7 @@ function Conteudo() {
                 titulo="Refugo no turno"
                 valor={
                   <>
-                    <NumberFlow value={refugo} format={UMA_CASA} locales="pt-BR" />
+                    <NumberFlow {...TEMPO_DO_NUMERO} value={refugo} format={UMA_CASA} locales="pt-BR" />
                     <span className="font-normal text-lg text-muted-foreground"> kg</span>
                   </>
                 }
@@ -145,7 +149,7 @@ function Conteudo() {
                 titulo="Reprocesso no turno"
                 valor={
                   <>
-                    <NumberFlow value={reprocesso} format={UMA_CASA} locales="pt-BR" />
+                    <NumberFlow {...TEMPO_DO_NUMERO} value={reprocesso} format={UMA_CASA} locales="pt-BR" />
                     <span className="font-normal text-lg text-muted-foreground"> kg</span>
                   </>
                 }
@@ -159,7 +163,7 @@ function Conteudo() {
                     <span className="text-muted-foreground">—</span>
                   ) : (
                     <span className={cn(sobrepesoMedio > LIMITE_SOBREPESO_G && "text-red-700 dark:text-red-400")}>
-                      <NumberFlow value={sobrepesoMedio} format={UMA_CASA} locales="pt-BR" />
+                      <NumberFlow {...TEMPO_DO_NUMERO} value={sobrepesoMedio} format={UMA_CASA} locales="pt-BR" />
                       <span className="font-normal text-lg text-muted-foreground"> g</span>
                     </span>
                   )
