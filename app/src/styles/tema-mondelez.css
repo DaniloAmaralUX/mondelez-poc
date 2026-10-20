@@ -318,3 +318,8 @@
   border-color: oklch(1 0 0 / 14%);
   background-color: oklch(1 0 0 / 8%);
 }
+
+/* No escuro o cabeçalho não tem linha embaixo (YouTube Music): o vidro e o fundo #030303 já separam. */
+.dark:root[data-theme-preset="mondelez"] [data-slot="sidebar-inset"] > header {
+  border-bottom-color: transparent;
+}
