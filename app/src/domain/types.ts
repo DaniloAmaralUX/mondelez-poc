@@ -399,6 +399,27 @@ export interface TrocaDeTurno {
   aceiteEm?: string;
 }
 
+/** Respostas da passagem enquanto a pessoa digita (os campos de texto do formulário, etiquetas como texto). */
+export interface RespostasDaTroca {
+  etiquetasAbertas: string;
+  ondeEtiquetas: string;
+  paradas: string;
+  pendencias: string;
+  pedidosAjuda: string;
+  comentario: string;
+}
+
+/**
+ * Rascunho da troca de turno, por `postoId|turnoChave`: sair da tela não perde o que foi digitado. Só volta para quem
+ * digitou (RNF-06, dispositivo compartilhado), como o rascunho do checklist.
+ */
+export interface RascunhoTroca {
+  id: string;
+  usuarioId: string;
+  em: string;
+  respostas: RespostasDaTroca;
+}
+
 // Pedido de ajuda --------------------------------------------------------------------------------------
 
 export type MotivoAjuda = "manutencao" | "qualidade" | "material" | "seguranca" | "processo" | "outro";

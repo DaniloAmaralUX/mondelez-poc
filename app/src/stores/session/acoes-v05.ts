@@ -22,6 +22,7 @@ import type {
   Perfil,
   PlanoProducao,
   Recado,
+  RespostasDaTroca,
   TarefaInstancia,
   TrocaDeTurno,
   Turma,
@@ -77,6 +78,12 @@ export interface AcoesV05 {
    * errados do login.
    */
   aceitarTurno: (trocaId: string, usuarioId: string, pin: string) => { ok: true } | { ok: false; erro: string };
+  /**
+   * Rascunho da passagem enquanto a pessoa digita (`postoId|turnoChave` do turno atual, com o autor). Sair da tela não
+   * perde o texto; outra pessoa no tablet não vê o rascunho de quem saiu. A entrega apaga o rascunho.
+   */
+  salvarRascunhoTroca: (respostas: RespostasDaTroca) => void;
+  descartarRascunhoTroca: () => void;
   /** Pedido de ajuda com o contexto da tela (RF-14). Vira alerta A-AJUDA e mensagem no Teams (simulado). */
   pedirAjuda: (input: {
     motivo: MotivoAjuda;
@@ -308,10 +315,48 @@ export function criarAcoesV05(d: DependenciasV05): AcoesV05 {
       };
       d.setState((s) => ({
         trocasDeTurno: { ...s.trocasDeTurno, [id]: troca },
+        rascunhosTroca: Object.fromEntries(Object.entries(s.rascunhosTroca).filter(([chave]) => chave !== id)),
         conclusoes: { ...s.conclusoes, ...concluir(tarefaId, usuario.id, troca.entregueEm) },
       }));
       d.gravarJa();
       return troca;
+    },
+
+    salvarRascunhoTroca: (respostas) => {
+      const usuario = autorizado("troca-de-turno", "escrever");
+      const { contexto, trocasDeTurno } = d.getState();
+      if (!usuario || !contexto) return;
+      const agora = d.agora();
+      const id = `${contexto.postoId}|${chaveTurno(turnoAtual(agora))}`;
+      if (trocasDeTurno[id]) return;
+      const texto = (t: string) => limitarTexto(t, LIMITES.observacao);
+      d.setState((s) => ({
+        rascunhosTroca: {
+          ...s.rascunhosTroca,
+          [id]: {
+            id,
+            usuarioId: usuario.id,
+            em: agora.toISOString(),
+            respostas: {
+              etiquetasAbertas: respostas.etiquetasAbertas.slice(0, 4),
+              ondeEtiquetas: texto(respostas.ondeEtiquetas),
+              paradas: texto(respostas.paradas),
+              pendencias: texto(respostas.pendencias),
+              pedidosAjuda: texto(respostas.pedidosAjuda),
+              comentario: texto(respostas.comentario),
+            },
+          },
+        },
+      }));
+    },
+
+    descartarRascunhoTroca: () => {
+      const { contexto } = d.getState();
+      if (!contexto) return;
+      const id = `${contexto.postoId}|${chaveTurno(turnoAtual(d.agora()))}`;
+      d.setState((s) => ({
+        rascunhosTroca: Object.fromEntries(Object.entries(s.rascunhosTroca).filter(([chave]) => chave !== id)),
+      }));
     },
 
     aceitarTurno: (trocaId, usuarioId, pin) => {

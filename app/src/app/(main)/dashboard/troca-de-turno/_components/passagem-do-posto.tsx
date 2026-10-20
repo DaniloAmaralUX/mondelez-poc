@@ -38,7 +38,7 @@ import { candidatosAoAceite, type Passagem, turmaDoTurnoSeguinte, usePassagem } 
 /** Perguntas guiadas (etiquetas, onde, paradas, pendências, pedidos de ajuda, comentário). */
 const CAMPOS_DE_PERGUNTA = 6;
 
-function valoresIniciais(passagem: Passagem): RespostasDaPassagem {
+function valoresIniciais(passagem: Passagem, rascunho: RespostasDaPassagem | undefined): RespostasDaPassagem {
   const { troca, sugestoes } = passagem;
   if (troca) {
     return {
@@ -50,6 +50,8 @@ function valoresIniciais(passagem: Passagem): RespostasDaPassagem {
       comentario: troca.comentario,
     };
   }
+  // Rascunho de quem está no posto (sair da tela e voltar não perde o texto); sem ele, as sugestões do turno.
+  if (rascunho) return rascunho;
   return { etiquetasAbertas: "", ondeEtiquetas: "", comentario: "", ...sugestoes };
 }
 
@@ -92,8 +94,23 @@ function FormularioDaPassagem({
   const { troca, kpis, turno } = passagem;
   const recebida = Boolean(troca?.aceitePor);
   const aceiteRef = React.useRef<HTMLDivElement>(null);
-  const form = useForm<RespostasDaPassagem>({ defaultValues: valoresIniciais(passagem) });
+  const salvarRascunho = useSessionStore((s) => s.salvarRascunhoTroca);
+  // Só o rascunho de quem está logado volta (RNF-06): o texto de quem saiu não passa para quem entrou.
+  const rascunho = useSessionStore((s) => {
+    const r = s.rascunhosTroca[`${postoId}|${passagem.turnoChave}`];
+    return r && r.usuarioId === usuario?.id ? r.respostas : undefined;
+  });
+  // biome-ignore lint/correctness/useExhaustiveDependencies: valores iniciais só na montagem (o form remonta por key).
+  const iniciais = React.useMemo(() => valoresIniciais(passagem, rascunho), []);
+  const form = useForm<RespostasDaPassagem>({ defaultValues: iniciais });
   const respostas = useWatch({ control: form.control }) as RespostasDaPassagem;
+
+  // Rascunho gravado meio segundo depois da última tecla, só enquanto a passagem não foi entregue.
+  React.useEffect(() => {
+    if (troca || !form.formState.isDirty) return;
+    const espera = window.setTimeout(() => salvarRascunho(respostas), 500);
+    return () => window.clearTimeout(espera);
+  }, [respostas, troca, salvarRascunho, form.formState.isDirty]);
   const antesDaJanela = Boolean(tarefa?.futura);
 
   const preenchidas =

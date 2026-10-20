@@ -467,3 +467,37 @@ describe("desfazer conclusão", () => {
     expect(estado().desfazerConclusao("tarefa-y")).toBe(false);
   });
 });
+
+describe("rascunho da troca de turno (doc 17 §4)", () => {
+  const respostas = {
+    etiquetasAbertas: "2",
+    ondeEtiquetas: "Loeschpack 4",
+    paradas: "Enrosco às 13:10",
+    pendencias: "",
+    pedidosAjuda: "",
+    comentario: "Trocar a bobina no início do turno",
+  };
+  const chaveDoRascunho = () => Object.keys(estado().rascunhosTroca)[0];
+
+  it("guarda o texto de quem está no posto e a entrega apaga o rascunho", () => {
+    estado().salvarRascunhoTroca(respostas);
+    const id = chaveDoRascunho();
+    expect(id).toBeDefined();
+    expect(estado().rascunhosTroca[id as string]).toMatchObject({ usuarioId: "u-alberto", respostas });
+
+    const kpis = {} as Parameters<ReturnType<typeof estado>["entregarTurno"]>[0]["kpis"];
+    expect(estado().entregarTurno({ ...respostas, etiquetasAbertas: 2, kpis })).toBeDefined();
+    expect(estado().rascunhosTroca).toEqual({});
+  });
+
+  it("com o tablet bloqueado não grava, e descartar apaga", () => {
+    estado().bloquear("inatividade");
+    estado().salvarRascunhoTroca(respostas);
+    expect(estado().rascunhosTroca).toEqual({});
+
+    expect(estado().entrarComPin("u-alberto", PIN_DEMO).ok).toBe(true);
+    estado().salvarRascunhoTroca(respostas);
+    estado().descartarRascunhoTroca();
+    expect(estado().rascunhosTroca).toEqual({});
+  });
+});

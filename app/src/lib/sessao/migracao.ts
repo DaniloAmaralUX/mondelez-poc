@@ -12,6 +12,7 @@ import type {
   PedidoAjuda,
   PlanoProducao,
   Rascunho,
+  RascunhoTroca,
   Recado,
   Registro,
   TrocaDeTurno,
@@ -48,6 +49,8 @@ export interface DadosV5 {
   falhas: Record<string, EventoFalha>;
   /** Troca de turno: por `postoId|turnoChave`. */
   trocasDeTurno: Record<string, TrocaDeTurno>;
+  /** Rascunho da passagem antes da entrega: por `postoId|turnoChave`. */
+  rascunhosTroca: Record<string, RascunhoTroca>;
   pedidosAjuda: Record<string, PedidoAjuda>;
   /** Agenda e recados publicados (os iniciais da demo inclusive). */
   recados: Record<string, Recado>;
@@ -71,6 +74,7 @@ export function dadosV5Vazios(): DadosV5 {
     apontamentosPerdas: {},
     falhas: {},
     trocasDeTurno: {},
+    rascunhosTroca: {},
     pedidosAjuda: {},
     recados: {},
     planos: {},
