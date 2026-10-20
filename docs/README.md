@@ -13,7 +13,7 @@
 | [06 · MoSCoW](06-moscow.md) | Priorização protótipo × piloto, definição de pronto, ordem de construção |
 | [07 · Processo de trabalho](07-como-trabalhamos.md) | Frentes, ritmo, git e PRs, definição de pronto, convenções, comunicação, ferramentas |
 | [08 · Plano de implementação](08-plano-de-implementacao.md) | Ambiente, incrementos, frentes por módulo, backlog inicial, critérios de aceite, referências técnicas |
-| [09 · Framework de UX (UI Audit)](09-framework-ux-ui-audit.md) | Deep dive no guia UI Audit: apostas do projeto, leis de psicologia por tela, padrões por template, scaffold de regras, ritual de auditoria |
+| [09 · Framework de UX (UI Audit)](09-framework-ux-ui-audit.md) | Deep dive no framework UI Audit (Tommy Geoco): apostas do projeto, leis de psicologia por tela, padrões por template, scaffold de regras, ritual de auditoria |
 
 ### Versões do protótipo (fora do PDF)
 
@@ -24,7 +24,14 @@
 | [12 · v0.3: tablet-first](12-v0.3-tablet-first.md) | Estudo e plano: usuário do tablet, princípios, decisões, backlog em fases A–H e critérios de aceite |
 | [13 · v0.3: resultado](13-v0.3-tablet-first-resultado.md) | O que mudou por fase e na costura final, decisões e porquês, desvios do template, critérios de aceite, auditorias, pendências e decisões de produto pendentes, verificação em aparelho real e como testar no desktop |
 | [14 · v0.4: estética Apple](14-v0.4-estetica-apple.md) | Tema Apple pelo mecanismo de presets, refinamento por data-slot, composição de cada tela no notebook e no iPad (paisagem e retrato), decisões com antes/depois/porquê, verificação e capturas |
+| [15 · Status dos JTBD e funcionalidades](15-status-jtbd-e-funcionalidades.html) | Jobs por persona, MoSCoW, módulos do V2 e definição de pronto, com o estado na v0.7 |
+| [16 · v0.5: plano dos jobs restantes](16-v0.5-plano-jobs-restantes.md) e [16a · contrato das frentes](16a-v0.5-contrato-das-frentes.md) | Plano das telas que faltavam e o contrato entre as quatro frentes |
+| [17 · v0.5: resultado](17-v0.5-resultado.md) | Onde cada job é resolvido, verificação final, correções e backlog para o piloto; relatórios das frentes em `17-partes/` |
+| [18 · Boas práticas e processo](18-boas-praticas-e-processo.md) | Documentação oficial de cada peça da stack e o que ela muda no processo; verificação no build de produção |
+| [19 · v0.6: marca Mondelēz](19-marca-mondelez.md) | Estratégia de aplicação da marca, logo, cor, tipografia e onde a marca aparece |
+| [20 · v0.7: craft, movimento e handoff](20-v0.7-craft-movimento-e-handoff.md) e [20b · tema Mondelēz refeito](20b-tema-mondelez-v0.7.md) | Plano da rodada final; tema refeito (sidebar preta, login vivo, escuro), movimento e verificação |
+| [21 · Handoff](21-handoff.md) | Arquitetura, o que é simulado, decisões em aberto, riscos e próximos passos para o piloto |
 
-Auditorias UI Audit por tela em `auditorias/` (`v0-*.json` e `v0.3-*.json`). Auditoria do código para tablet e receitas técnicas da v0.3 em `pesquisa/`.
+Auditorias de UX por tela em `auditorias/` (`v0-*.json` e `v0.3-*.json`) e a revisão de movimento da v0.7 (`v0.7-emil.md`). Auditoria do código para tablet e receitas técnicas da v0.3 em `pesquisa/`.
 
-Fontes originais em `../Documentos/`. Foto de referência do estado atual em `assets/`. Pipeline do PDF em `pdf/` (Node + Edge/Chrome local; sem dependências globais).
+Fontes originais (briefing, proposta e material da Mondelēz) ficam fora do repositório. Foto de referência do estado atual em `assets/`. Pipeline do PDF em `pdf/` (Node + Edge/Chrome local; sem dependências globais).

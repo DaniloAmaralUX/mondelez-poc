@@ -1,93 +1,62 @@
-# Mondelez
+# Rotinas Operacionais · Mondelēz International
 
+Protótipo funcional de um app tablet-first para as rotinas operacionais do chão de fábrica da Mondelēz (VSA, linha Bis 2, posto de Embalagem), feito pela Pitang Labs como proposta para o edital do Porto Digital.
 
+O operador recebe a rotina do turno na ordem certa, marca checklists de luva num toque, aponta produção e falhas, registra desvios com foto e passa o turno com os números já preenchidos. A liderança é avisada na hora, trata os alertas e acompanha as linhas. Tudo continua funcionando sem rede.
 
-## Getting started
+## Como rodar
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+Pré-requisito: Node.js 20.9 ou mais novo (o projeto foi feito no 24).
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
-
-## Add your files
-
-* [Create](https://docs.gitlab.com/user/project/repository/web_editor/#create-a-file) or [upload](https://docs.gitlab.com/user/project/repository/web_editor/#upload-a-file) files
-* [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
-
-```
-cd existing_repo
-git remote add origin https://gitlab.pitang.com/pitang-labs/mondelez.git
-git branch -M main
-git push -uf origin main
+```bash
+cd app
+npm ci
+npm run dev          # http://localhost:3000
 ```
 
-## Integrate with your tools
+Verificação completa (typecheck, testes, build de produção e suíte Playwright):
 
-* [Set up project integrations](https://gitlab.pitang.com/pitang-labs/mondelez/-/settings/integrations)
+```bash
+npm run verificar
+npm run test:e2e:relatorio   # capturas de cada tela por perfil e tamanho
+```
 
-## Collaborate with your team
+## Logins da demonstração
 
-* [Invite team members and collaborators](https://docs.gitlab.com/user/project/members/)
-* [Create a new merge request](https://docs.gitlab.com/user/project/merge_requests/creating_merge_requests/)
-* [Automatically close issues from merge requests](https://docs.gitlab.com/user/project/issues/managing_issues/#closing-issues-automatically)
-* [Enable merge request approvals](https://docs.gitlab.com/user/project/merge_requests/approvals/)
-* [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
+PIN de todos: `1234`. O login por SSO é simulado.
 
-## Test and Deploy
+| Perfil | Pessoa | Matrícula |
+| --- | --- | --- |
+| Operador | Alberto | 104233 |
+| Supervisão | Renata | 201145 |
+| Gerência de Seção | Marcos | 300512 |
+| Especialista | Juliana | 250078 |
+| Assistência | Carlos | 220390 |
 
-Use the built-in continuous integration in GitLab.
+O menu do relógio, no cabeçalho, avança o horário simulado do turno, simula a queda de rede e restaura os dados. A troca de pessoa no tablet compartilhado fica no avatar.
 
-* [Get started with GitLab CI/CD](https://docs.gitlab.com/ci/quick_start/)
-* [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/user/application_security/sast/)
-* [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/topics/autodevops/requirements/)
-* [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/user/clusters/agent/)
-* [Set up protected environments](https://docs.gitlab.com/ci/environments/protected_environments/)
+## O que tem
 
-***
+| Turno | Telas |
+| --- | --- |
+| Assumir | Minha Rotina, troca de turno (leitura da passagem), recados, plano de produção, agenda e escala |
+| Preparar | Checklists: pré-partida, PPLI & Centerlining, manutenção autônoma, limpeza, rastreabilidade com foto |
+| Produzir e apontar | Hora x Hora, Sobrepeso e refugo, MTBF por toque |
+| Desviar e tratar | NC com foto e justificativa, alertas com contexto e tratamento, pedido de ajuda, IT/LPP e book |
+| Encerrar e analisar | Troca de turno com aceite, relatório do turno, painel das linhas, histórico com CSV, tendências, notificações |
 
-# Editing this README
+Status completo dos Jobs to be Done e do MoSCoW: [`docs/15-status-jtbd-e-funcionalidades.html`](docs/15-status-jtbd-e-funcionalidades.html).
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+## Stack
 
-## Suggestions for a good README
+Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4 e shadcn/ui sobre o template Studio Admin; Zustand com persistência em IndexedDB; Serwist (PWA e offline); Vitest e Playwright com axe. Regras de domínio em TypeScript puro (`app/src/domain/`), com testes.
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+## Documentação
 
-## Name
-Choose a self-explaining name for your project.
+- [`docs/`](docs/README.md): brief, personas, jobs, requisitos, MoSCoW, decisões de cada versão (v0.2 a v0.7) e a marca Mondelēz. Também em PDF: [`docs/Documentacao-do-Projeto-Mondelez.pdf`](docs/Documentacao-do-Projeto-Mondelez.pdf).
+- [`docs/21-handoff.md`](docs/21-handoff.md): arquitetura, o que é simulado, decisões em aberto, riscos e próximos passos para o piloto.
+- [`app/CONVENCOES.md`](app/CONVENCOES.md): regras do código.
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+## Marca
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
-
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
-
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
-
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+O logo e as cores seguem o brand book da Mondelēz International. As fontes proprietárias (Bw Surco e MDLZ Bite Type) não fazem parte do repositório: o app usa as que estiverem instaladas e, fora delas, Calibri ou Carlito (doc 19).
