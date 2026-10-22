@@ -1,0 +1,13 @@
+{
+  "enabledMcpjsonServers": ["shadcn"],
+  "permissions": {
+    "allow": [
+      "mcp__shadcn__*",
+      "mcp__ui-skills__*",
+      "Bash(npx shadcn@latest *)",
+      "Bash(npx ui-skills *)",
+      "Bash(npx -y ui-skills *)",
+      "Skill(shadcn)"
+    ]
+  }
+}
